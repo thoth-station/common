@@ -17,7 +17,7 @@ setup(
     author_email='fridolin@redhat.com',
     license='GPLv2+',
     packages=[
-        'thoth.analyzer',
+        'thoth.common',
     ],
     zip_safe=False,
     install_requires=get_install_requires()
