@@ -25,3 +25,8 @@ def parse_datetime(datetime_string: str) -> datetime.datetime:
 def datetime_str2timestamp(datetime_string: str) -> int:
     """Parse datetime string represented in ISO format and return timestamp."""
     return int(parse_datetime(datetime_string).timestamp())
+
+
+def datetime2datetime_str(dt: datetime.datetime) -> str:
+    """Create a string representation of a datetime."""
+    return dt.isoformat()
