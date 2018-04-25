@@ -30,3 +30,8 @@ def datetime_str2timestamp(datetime_string: str) -> int:
 def datetime2datetime_str(dt: datetime.datetime) -> str:
     """Create a string representation of a datetime."""
     return dt.isoformat()
+
+
+def datetime_str_from_timestamp(timestamp: int) -> str:
+    """Convert a timestamp to datetime string representation"""
+    return datetime2datetime_str(datetime.datetime.fromtimestamp(timestamp))
