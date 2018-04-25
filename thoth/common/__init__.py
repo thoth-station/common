@@ -1,7 +1,7 @@
 """Shared code across Thoth analyzers."""
 
 __name__ = 'thoth-common'
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 from .helpers import cwd
 from .helpers import datetime2datetime_str
