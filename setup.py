@@ -27,7 +27,7 @@ setup(
     long_description='Shared code logic in the project Thoth.',
     author='Fridolin Pokorny',
     author_email='fridolin@redhat.com',
-    license='GPLv2+',
+    license='GPLv3+',
     packages=[
         'thoth.common',
     ],
