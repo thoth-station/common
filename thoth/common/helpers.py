@@ -33,5 +33,5 @@ def datetime2datetime_str(dt: datetime.datetime) -> str:
 
 
 def datetime_str_from_timestamp(timestamp: int) -> str:
-    """Convert a timestamp to datetime string representation"""
+    """Convert a timestamp to datetime string representation."""
     return datetime2datetime_str(datetime.datetime.fromtimestamp(timestamp))

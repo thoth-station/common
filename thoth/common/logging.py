@@ -29,7 +29,7 @@ def init_logging(logging_configuration: dict=None) -> None:
     >>> init_logging({'thoth.solver': 'DEBUG'})
     """
     # TODO: JSON in deployments?
-    #deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
+    # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
     logging.basicConfig()
 

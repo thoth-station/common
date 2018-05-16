@@ -6,6 +6,7 @@ class SafeJSONEncoder(json.JSONEncoder):
     """Convert objects to JSON, safely."""
 
     def default(self, o):
+        """Convert an object to JSON, safely."""
         if isinstance(o, datetime.datetime):
             return o.isoformat()
         try:
