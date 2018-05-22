@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+"rfc5424-logging-handler" = "*"
 
 [dev-packages]
 coala = "*"
