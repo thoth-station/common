@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c807b015fe0968b911fe18af6f726f9b05ac4c8a5615e6687d4096f309fd95c0"
+            "sha256": "1a52c7eb1d6c3f8549359f11b87d5c7f102c8a5fcb9fdc8ef705552737f5d2d6"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -13,7 +13,29 @@
             }
         ]
     },
-    "default": {},
+    "default": {
+        "pytz": {
+            "hashes": [
+                "sha256:65ae0c8101309c45772196b21b74c46b2e5d11b6275c45d251b150d5da334555",
+                "sha256:c06425302f2cf668f1bba7a0a03f3c1d34d4ebeef2c72003da308b3947c7f749"
+            ],
+            "version": "==2018.4"
+        },
+        "rfc5424-logging-handler": {
+            "hashes": [
+                "sha256:0fa181ba9ef4b517c938c90608f4c3a5c1abf3ea29250f0df294bef439ba2c9e",
+                "sha256:a78a0a42b19e44215cd8a5be4ab42bfd3593c0c30a9cbfde9478e398f502ea00"
+            ],
+            "index": "pypi",
+            "version": "==1.1.2"
+        },
+        "tzlocal": {
+            "hashes": [
+                "sha256:4ebeb848845ac898da6519b9b31879cf13b6626f7184c496037b818e238f2c4e"
+            ],
+            "version": "==1.5.1"
+        }
+    },
     "develop": {
         "appdirs": {
             "hashes": [
