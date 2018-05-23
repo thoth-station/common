@@ -9,4 +9,4 @@ from .json import SafeJSONEncoder
 from .logging import init_logging
 
 __name__ = 'thoth-common'
-__version__ = '0.0.5'
+__version__ = '0.0.6'
