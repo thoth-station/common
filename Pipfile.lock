@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7d1772992f0a67dd35bb06cf2d13fabeefbf1f0ee658612f6f8ef69c6b543343"
+            "sha256": "1a52c7eb1d6c3f8549359f11b87d5c7f102c8a5fcb9fdc8ef705552737f5d2d6"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -23,11 +23,11 @@
         },
         "rfc5424-logging-handler": {
             "hashes": [
-                "sha256:34800268ac4a09580b89a3352afc6f3221302b95f5e74a300b14f3d355b28844",
-                "sha256:f9ac979772e7f417b89dae560d9de8741eb97dc31e71068dafa297ea38ea09f2"
+                "sha256:0fa181ba9ef4b517c938c90608f4c3a5c1abf3ea29250f0df294bef439ba2c9e",
+                "sha256:a78a0a42b19e44215cd8a5be4ab42bfd3593c0c30a9cbfde9478e398f502ea00"
             ],
             "index": "pypi",
-            "version": "==1.1.0"
+            "version": "==1.1.2"
         },
         "tzlocal": {
             "hashes": [
