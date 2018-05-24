@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 "rfc5424-logging-handler" = "*"
-thoth-storages = "*"
 
 [dev-packages]
 coala = "*"
