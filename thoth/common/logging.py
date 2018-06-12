@@ -57,7 +57,7 @@ def init_logging(logging_configuration: dict=None) -> None:
     You can also specify more closely which sub-module logging you are configuring - submodules are separated with
     double dash:
 
-    >>> os.environ['THOTH_LOG_SOLVER__t PYTHON']
+    >>> os.environ['THOTH_LOG_SOLVER__PYTHON']
     DEBUG
 
     You can also use arguments explicitly that override configuration in env variables (a shorthand for
