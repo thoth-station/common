@@ -70,17 +70,17 @@ def init_logging(logging_configuration: dict=None) -> None:
 
     logging.basicConfig()
 
-    thoth_root_logger = logging.getLogger('thoth')
-    thoth_root_logger.setLevel(logging.INFO)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
 
     _init_log_levels(logging_configuration)
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
-        thoth_root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
+        root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
         syslog_handler = Rfc5424SysLogHandler(address=(_RSYSLOG_HOST, _RSYSLOG_PORT))
-        thoth_root_logger.addHandler(syslog_handler)
+        root_logger.addHandler(syslog_handler)
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
                            f"in order to use rsyslog logging, host: {_RSYSLOG_HOST}, port: {_RSYSLOG_PORT}")
     else:
-        thoth_root_logger.info("Logging to rsyslog endpoint is turned off")
+        root_logger.info("Logging to rsyslog endpoint is turned off")
