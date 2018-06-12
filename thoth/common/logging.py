@@ -73,6 +73,16 @@ def init_logging(logging_configuration: dict=None) -> None:
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
+    # Disable annoying unverified HTTPS request warnings.
+    try:
+        import urllib3
+        urllib3.disable_warnings()
+    except ImportError:
+        pass
+
+    thoth_root_logger = logging.getLogger('thoth')
+    thoth_root_logger.setLevel(logging.INFO)
+
     _init_log_levels(logging_configuration)
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
