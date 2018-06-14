@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 "rfc5424-logging-handler" = "*"
+daiquiri = "*"
 
 [dev-packages]
 coala = "*"
