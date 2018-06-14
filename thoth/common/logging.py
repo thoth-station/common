@@ -18,6 +18,7 @@
 
 import os
 import logging
+import daiquiri
 
 from rfc5424logging import Rfc5424SysLogHandler
 
@@ -68,10 +69,9 @@ def init_logging(logging_configuration: dict=None) -> None:
     # TODO: JSON in deployments?
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
-    logging.basicConfig()
+    daiquiri.setup(level=logging.INFO)
 
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
+    root_logger = daiquiri.getLogger()
 
     # Disable annoying unverified HTTPS request warnings.
     try:
@@ -79,9 +79,6 @@ def init_logging(logging_configuration: dict=None) -> None:
         urllib3.disable_warnings()
     except ImportError:
         pass
-
-    thoth_root_logger = logging.getLogger('thoth')
-    thoth_root_logger.setLevel(logging.INFO)
 
     _init_log_levels(logging_configuration)
 
