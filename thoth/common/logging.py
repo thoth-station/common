@@ -70,8 +70,7 @@ def init_logging(logging_configuration: dict=None) -> None:
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
     daiquiri.setup(level=logging.INFO)
-
-    root_logger = daiquiri.getLogger()
+    root_logger = logging.getLogger()
 
     # Disable annoying unverified HTTPS request warnings.
     try:
@@ -84,7 +83,7 @@ def init_logging(logging_configuration: dict=None) -> None:
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
         root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
-        syslog_handler = Rfc5424SysLogHandler(address=(_RSYSLOG_HOST, _RSYSLOG_PORT))
+        syslog_handler = Rfc5424SysLogHandler(address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
         root_logger.addHandler(syslog_handler)
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
