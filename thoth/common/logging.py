@@ -18,9 +18,10 @@
 
 import os
 import logging
-import daiquiri
-
+import typing
 from functools import wraps
+
+import daiquiri
 from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv('RSYSLOG_HOST')
@@ -92,17 +93,19 @@ def init_logging(logging_configuration: dict=None) -> None:
     else:
         root_logger.info("Logging to rsyslog endpoint is turned off")
 
-def logger_setup(arg1, arg2):
-  """ This function defines a wrapper to set Verbosity level for any module within levels such as (DEBUG, INFO , WARNING , ERROR) and it helps to customise logger outputs for every function/module.
-      The wrapper could be extended on any function by specifying arguments like (Logger type, logger level) """
-  def wrapper(fn):
-    @wraps(fn)
-    def wrapper_func(*args, **kwargs):
 
-      logging.getLogger(arg1).setLevel(level=arg2)
-      return fn(*args, **kwargs)
-
-    return wrapper_func
-
-  return wrapper
+def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
+    """ This function defines a wrapper to set Verbosity level for any module within levels(DEBUG, INFO , WARNING , ERROR)
+    
+    It helps to customise logger outputs for every function/module.
+    The wrapper could be extended on any function by specifying arguments like (Logger name, Logging level) """
+    def wrapper(fn: typing.Callable):
+        @wraps(fn)
+        def wrapper_func(*args, **kwargs):
+            logging.getLogger(arg1).setLevel(level=arg2)
+            return fn(*args, **kwargs)
+  
+        return wrapper_func
+  
+    return wrapper
 
