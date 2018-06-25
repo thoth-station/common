@@ -46,7 +46,7 @@ def _init_log_levels(logging_configuration: dict) -> None:
             logging.getLogger(logger).setLevel(level)
 
 
-def init_logging(logging_configuration: dict=None) -> None:
+def init_logging(logging_configuration: dict = None) -> None:
     """Initialize Thoth's logging - respects all namespaces.
 
     This function allows you to control logging facilities in Thoth. Logging can be configured via env variables
@@ -95,10 +95,13 @@ def init_logging(logging_configuration: dict=None) -> None:
 
 
 def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
-    """The function defines a wrapper to set Verbosity level for any module within levels(DEBUG, INFO , WARNING , ERROR).
+    """The function defines a wrapper to set Verbosity level.
+
+    The verbosity can be set for any module within levels DEBUG, INFO , WARNING , ERROR.
 
     It helps to customise logger outputs for every function/module.
-    The wrapper could be extended on any function by specifying arguments like (Logger name, Logging level).
+    The wrapper could be extended on any function by specifying arguments
+    like (Logger name, Logging level).
     """
     def wrapper(fn: typing.Callable):
         @wraps(fn)
