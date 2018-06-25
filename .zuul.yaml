@@ -1,0 +1,14 @@
+- project:
+    check:
+      jobs:
+        - linters:
+            vars:
+              linters:
+                - coala
+    gate:
+      jobs:
+        - linters
+
+    release:
+      jobs:
+        - upload-test-pypi
