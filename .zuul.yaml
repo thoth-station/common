@@ -7,8 +7,11 @@
                 - coala
     gate:
       jobs:
-        - linters
+        - linters:
+            vars:
+              linters:
+                - coala
 
     release:
       jobs:
-        - upload-test-pypi
+        - upload-pypi-sesheta 
