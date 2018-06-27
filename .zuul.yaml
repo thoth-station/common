@@ -15,4 +15,4 @@
 
     release:
       jobs:
-        - upload-pypi-sesheta 
+        - upload-pypi-sesheta
