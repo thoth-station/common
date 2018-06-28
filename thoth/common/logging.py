@@ -107,7 +107,7 @@ def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
     def wrapper(fn: typing.Callable):
         @wraps(fn)
         def wrapper_func(*args, **kwargs):
-            logging.getLogger(arg1).setLevel(level=arg2)
+            logging.getLogger(logger_name).setLevel(level=logging_level)
             return fn(*args, **kwargs)
 
         return wrapper_func
