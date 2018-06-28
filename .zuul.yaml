@@ -6,6 +6,7 @@
               linters:
                 - coala
     gate:
+      queue: core
       jobs:
         - linters:
             vars:
@@ -14,4 +15,4 @@
 
     release:
       jobs:
-        - upload-pypi-sesheta 
+        - upload-pypi-sesheta
