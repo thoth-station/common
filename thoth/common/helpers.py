@@ -52,3 +52,13 @@ def datetime2datetime_str(dt: datetime.datetime) -> str:
 def datetime_str_from_timestamp(timestamp: int) -> str:
     """Convert a timestamp to datetime string representation."""
     return datetime2datetime_str(datetime.datetime.fromtimestamp(timestamp))
+
+
+def get_service_account_token():
+    """Get token from service account token file."""
+    try:
+        with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as token_file:
+            return token_file.read()
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Unable to get service account token, please check "
+                                "that service has service account assigned with exposed token") from exc
