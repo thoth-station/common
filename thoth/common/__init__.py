@@ -28,4 +28,4 @@ from .logging import init_logging
 from .logging import logger_setup
 
 __name__ = 'thoth-common'
-__version__ = '0.0.8'
+__version__ = '0.0.9'

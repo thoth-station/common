@@ -37,7 +37,8 @@ def _init_log_levels(logging_configuration: dict) -> None:
     }
 
     for logger, level in env_logging_conf.items():
-        logger = 'thoth.' + logger[len(_LOGGING_CONF_START):].lower().replace('__', '.')
+        logger = 'thoth.' + \
+            logger[len(_LOGGING_CONF_START):].lower().replace('__', '.')
         level = getattr(logging, level)
         logging.getLogger(logger).setLevel(level)
 
@@ -85,8 +86,10 @@ def init_logging(logging_configuration: dict = None) -> None:
     _init_log_levels(logging_configuration)
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
-        root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
-        syslog_handler = Rfc5424SysLogHandler(address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
+        root_logger.info(
+            f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
+        syslog_handler = Rfc5424SysLogHandler(
+            address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
         root_logger.addHandler(syslog_handler)
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
@@ -107,7 +110,7 @@ def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
     def wrapper(fn: typing.Callable):
         @wraps(fn)
         def wrapper_func(*args, **kwargs):
-            logging.getLogger(arg1).setLevel(level=arg2)
+            logging.getLogger(logger_name).setLevel(level=logging_level)
             return fn(*args, **kwargs)
 
         return wrapper_func
