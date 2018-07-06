@@ -1,5 +1,11 @@
 # Changelog for the Thoth common module
 
+## [0.1.0] - 2018-Jul-06 - goern
+
+### Changed
+
+Nothing, just to bounce from 0.0.9 to 0.1.0
+
 ## [0.0.9] - 2018-Jun-28 - goern
 
 ### Fixed
