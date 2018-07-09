@@ -20,6 +20,7 @@
 import os
 import logging
 import typing
+import socket
 from functools import wraps
 
 import daiquiri
@@ -88,9 +89,13 @@ def init_logging(logging_configuration: dict = None) -> None:
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
         root_logger.info(
             f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
-        syslog_handler = Rfc5424SysLogHandler(
-            address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
-        root_logger.addHandler(syslog_handler)
+
+        try:
+            syslog_handler = Rfc5424SysLogHandler(
+                address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
+            root_logger.addHandler(syslog_handler)
+        except socket.gaierror as e:
+            root_logger.error(f"RSYSLOG_HOST and RSYSLOG_PORT have been set but host:post cant be reached: {e}")
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
                            f"in order to use rsyslog logging, host: {_RSYSLOG_HOST}, port: {_RSYSLOG_PORT}")
