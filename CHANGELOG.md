@@ -1,5 +1,11 @@
 # Changelog for the Thoth common module
 
+## [0.2.0] - 2018-Jul-09 - goern
+
+### Fixed
+
+* https://github.com/thoth-station/result-api/issues/39
+
 ## [0.1.0] - 2018-Jul-06 - goern
 
 ### Changed
