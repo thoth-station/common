@@ -96,7 +96,8 @@ def init_logging(logging_configuration: dict = None) -> None:
             root_logger.addHandler(syslog_handler)
         except socket.gaierror as exc:
             root_logger.exception(
-                f"RSYSLOG_HOST and RSYSLOG_PORT have been set but {_RSYSLOG_HOST}:{_RSYSLOG_PORT} cannot be reached") from exc  # Ignore PycodestyleBear (E501)
+                f"RSYSLOG_HOST and RSYSLOG_PORT have been set but {_RSYSLOG_HOST}:{_RSYSLOG_PORT} cannot be reached"
+            )
 
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
