@@ -106,10 +106,10 @@ def init_logging(logging_configuration: dict = None) -> None:
         root_logger.info("Logging to rsyslog endpoint is turned off")
 
 
-def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
+def logger_setup(logger_name: str, logging_level: int, disable: bool = True) -> typing.Callable:
     """The function defines a wrapper to set Verbosity level.
 
-    The verbosity can be set for any module within levels DEBUG, INFO , WARNING , ERROR.
+    The verbosity can be set for any module within levels DEBUG, INFO, WARNING, ERROR.
 
     It helps to customise logger outputs for every function/module.
     The wrapper could be extended on any function by specifying arguments
@@ -118,8 +118,15 @@ def logger_setup(logger_name: str, logging_level: int) -> typing.Callable:
     def wrapper(fn: typing.Callable):
         @wraps(fn)
         def wrapper_func(*args, **kwargs):
-            logging.getLogger(logger_name).setLevel(level=logging_level)
-            return fn(*args, **kwargs)
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(level=logging_level)
+            old_disabled = logger.disabled
+            logger.disabled = disable
+
+            result = fn(*args, **kwargs)
+
+            logger.disabled = old_disabled
+            return result
 
         return wrapper_func
 
