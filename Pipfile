@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 "rfc5424-logging-handler" = "*"
 daiquiri = "*"
+requests = "*"
 
 [dev-packages]
 pytest = "*"
