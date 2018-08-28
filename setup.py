@@ -48,6 +48,9 @@ setup(
     packages=[
         'thoth.common',
     ],
+    extras_require={
+        'openshift': ['openshift', 'kubernetes']
+    },
     zip_safe=False,
     install_requires=get_install_requires()
 )

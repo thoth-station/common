@@ -38,8 +38,7 @@ def _init_log_levels(logging_configuration: dict) -> None:
     }
 
     for logger, level in env_logging_conf.items():
-        logger = 'thoth.' + \
-            logger[len(_LOGGING_CONF_START):].lower().replace('__', '.')
+        logger = 'thoth.' + logger[len(_LOGGING_CONF_START):].lower().replace('__', '.')
         level = getattr(logging, level)
         logging.getLogger(logger).setLevel(level)
 

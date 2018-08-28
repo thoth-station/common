@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # thoth-common
 # Copyright(C) 2018 Fridolin Pokorny
 #
@@ -15,18 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Shared code across Thoth analyzers."""
+"""Exceptions used within thoth-common package."""
 
-from .helpers import cwd
-from .helpers import datetime2datetime_str
-from .helpers import datetime_str2timestamp
-from .helpers import datetime_str_from_timestamp
-from .helpers import get_service_account_token
-from .helpers import parse_datetime
-from .json import SafeJSONEncoder
-from .logging import init_logging
-from .logging import logger_setup
-from .openshift import OpenShift
 
-__name__ = 'thoth-common'
-__version__ = "0.2.2"
+class ThothCommonException(Exception):
+    """A base class for Thoth-common exception hierarchy."""
+
+
+class NotFoundException(ThothCommonException):
+    """Raised if the given resource cannot be found."""
+
+
+class ConfigurationError(ThothCommonException):
+    """Raised on miss-configuration issues."""
