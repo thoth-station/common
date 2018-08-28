@@ -329,7 +329,7 @@ class OpenShift(object):
 
     def _oc_process(self, namespace: str, template: dict) -> dict:
         """Process the given template in OpenShift."""
-        # This does not work - see issue reported upstream:
+        # TODO: This does not work - see issue reported upstream:
         #   https://github.com/openshift/openshift-restclient-python/issues/190
         # return TemplateOpenshiftIoApi().create_namespaced_processed_template_v1(namespace, template)
         endpoint = "{}/apis/template.openshift.io/v1/namespaces/{}/processedtemplates".format(
