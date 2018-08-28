@@ -54,10 +54,10 @@ class OpenShift(object):
         self.backend_namespace = backend_namespace or os.getenv('THOTH_BACKEND_NAMESPACE')
         self.infra_namespace = infra_namespace or os.getenv('THOTH_INFRA_NAMESPACE')
         self.kubernetes_api_url = kubernetes_api_url or \
-                                  os.getenv('KUBERNETES_API_URL', 'https://kubernetes.default.svc.cluster.local')
+            os.getenv('KUBERNETES_API_URL', 'https://kubernetes.default.svc.cluster.local')
         self.kubernetes_verify_tls = bool(kubernetes_verify_tls or os.getenv('KUBERNETES_VERIFY_TLS', True))
         self.openshift_api_url = openshift_api_url or \
-                                 os.getenv('OPENSHIFT_API_URL', 'https://openshift.default.svc.cluster.local')
+            os.getenv('OPENSHIFT_API_URL', 'https://openshift.default.svc.cluster.local')
         self._token = token
 
     @property
