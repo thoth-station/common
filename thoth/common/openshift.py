@@ -45,17 +45,22 @@ class OpenShift(object):
                 "installed with openshift extras?"
             ) from exc
 
+        self.kubernetes_verify_tls = bool(kubernetes_verify_tls or os.getenv('KUBERNETES_VERIFY_TLS', True))
+
         # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
         config.load_incluster_config()
 
-        self.ocp_client = DynamicClient(client.ApiClient(configuration=client.Configuration()))
+        # We need to explicitly set whether we want to verify SSL/TLS connection to the master.
+        configuration = client.Configuration()
+        configuration.verify_ssl = self.kubernetes_verify_tls
+
+        self.ocp_client = DynamicClient(client.ApiClient(configuration=configuration))
         self.frontend_namespace = frontend_namespace or os.getenv('THOTH_FRONTEND_NAMESPACE')
         self.middletier_namespace = middletier_namespace or os.getenv('THOTH_MIDDLETIER_NAMESPACE')
         self.backend_namespace = backend_namespace or os.getenv('THOTH_BACKEND_NAMESPACE')
         self.infra_namespace = infra_namespace or os.getenv('THOTH_INFRA_NAMESPACE')
         self.kubernetes_api_url = kubernetes_api_url or \
             os.getenv('KUBERNETES_API_URL', 'https://kubernetes.default.svc.cluster.local')
-        self.kubernetes_verify_tls = bool(kubernetes_verify_tls or os.getenv('KUBERNETES_VERIFY_TLS', True))
         self.openshift_api_url = openshift_api_url or \
             os.getenv('OPENSHIFT_API_URL', 'https://openshift.default.svc.cluster.local')
         self._token = token
