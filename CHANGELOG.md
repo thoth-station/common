@@ -32,3 +32,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 - lints on Pull Requrest and gate/merge
 - uploads to pypi (test) on tag
+
+## Release 0.2.6 (2018-09-03T09:48:51)
+
