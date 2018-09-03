@@ -45,7 +45,7 @@ class OpenShift(object):
                 "installed with openshift extras?"
             ) from exc
 
-        self.kubernetes_verify_tls = bool(kubernetes_verify_tls or os.getenv('KUBERNETES_VERIFY_TLS', True))
+        self.kubernetes_verify_tls = bool(kubernetes_verify_tls or int(os.getenv('KUBERNETES_VERIFY_TLS', 1)))
 
         # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
         config.load_incluster_config()
