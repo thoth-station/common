@@ -35,3 +35,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.2.6 (2018-09-03T09:48:51)
 
+
+## Release 0.2.7 (2018-09-03T13:53:07)
+
