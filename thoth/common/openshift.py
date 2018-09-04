@@ -269,7 +269,7 @@ class OpenShift(object):
 
         self._set_template_parameters(
             template,
-            THOTH_LOG_PACKAGE__EXTRACT='DEBUG' if debug else 'INFO',
+            THOTH_LOG_PACKAGE_EXTRACT='DEBUG' if debug else 'INFO',
             THOTH_ANALYZED_IMAGE=image,
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output
