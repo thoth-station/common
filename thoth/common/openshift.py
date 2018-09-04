@@ -174,9 +174,16 @@ class OpenShift(object):
 
         return response.text
 
-    def get_pod_status(self, pod_id: str, namespace: str) -> dict:
+    def get_pod_status(self, pod_id: str, namespace: str = None) -> dict:
         """Get status entry for a pod - this applies only for solver and package-extract pods."""
         import openshift
+
+        if not namespace:
+            if not self.middletier_namespace:
+                raise ConfigurationError(
+                    "Middletier namespace is required to check status of pods run in this namespace"
+                )
+            namespace = self.middletier_namespace
 
         try:
             response = self.ocp_client.resources.get(api_version='v1', kind='Pod').get(
@@ -267,7 +274,7 @@ class OpenShift(object):
 
         self._set_template_parameters(
             template,
-            THOTH_LOG_PACKAGE__EXTRACT='DEBUG' if debug else 'INFO',
+            THOTH_LOG_PACKAGE_EXTRACT='DEBUG' if debug else 'INFO',
             THOTH_ANALYZED_IMAGE=image,
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output
