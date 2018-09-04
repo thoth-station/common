@@ -101,6 +101,11 @@ class OpenShift(object):
                     entry['value'] = str(parameter_value)
                     break
             else:
+                _LOGGER.warning(
+                    "Requested to assign parameter %r (value %r) to template but template "
+                    "does not provide the given parameter, forcing...",
+                    parameter_name, parameter_value
+                )
                 template['parameters'].append({
                     'name': parameter_name,
                     'value': str(parameter_value)
