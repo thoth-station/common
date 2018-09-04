@@ -289,7 +289,7 @@ class OpenShift(object):
                     runtime_environment: str = None, debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
-            raise ConfigurationError("Running adviser requires backand namespace configuration")
+            raise ConfigurationError("Running adviser requires backend namespace configuration")
 
         if not self.infra_namespace:
             raise ConfigurationError("Infra namespace is required to gather adviser template when running it")
@@ -318,6 +318,43 @@ class OpenShift(object):
 
         response = self.ocp_client.resources.get(api_version='v1', kind=adviser['kind']).create(
             body=adviser,
+            namespace=self.backend_namespace
+        )
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def run_provenance_checker(self, application_stack: dict, output: str, debug: bool = False) -> str:
+        """Run provenance checks on the provided user input."""
+        if not self.backend_namespace:
+            raise ConfigurationError("Running provenance checks requires backend namespace configuration")
+
+        if not self.infra_namespace:
+            raise ConfigurationError("Infra namespace is required to gather provenance template when running it")
+
+        response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
+            namespace=self.infra_namespace,
+            label_selector='template=provenance-checker'
+        )
+        _LOGGER.debug("OpenShift response for getting provenance-checker template: %r", response.to_dict())
+        self._raise_on_invalid_response_size(response)
+
+        requirements = application_stack.pop('requirements').replace('\n', '\\n')
+        requirements_locked = application_stack.pop('requirements_lock').replace('\n', '\\n')
+        template = response.to_dict()['items'][0]
+        self._set_template_parameters(
+            template,
+            THOTH_PROVENANCE_CHECKER_REQUIREMENTS=requirements,
+            THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED=requirements_locked,
+            THOTH_PROVENANCE_CHECKER_OUTPUT=output,
+            THOTH_LOG_PROVENANCE_CHECKER='DEBUG' if debug else 'INFO'
+        )
+
+        template = self._oc_process(self.backend_namespace, template)
+        provenance_checker = template['objects'][0]
+
+        response = self.ocp_client.resources.get(api_version='v1', kind=provenance_checker['kind']).create(
+            body=provenance_checker,
             namespace=self.backend_namespace
         )
 
