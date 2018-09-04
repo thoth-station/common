@@ -152,8 +152,15 @@ class OpenShift(object):
         _LOGGER.debug(f"Started graph-sync pod with name {response.metadata.name}")
         return response.metadata.name
 
-    def get_pod_log(self, pod_id: str, namespace: str) -> str:
+    def get_pod_log(self, pod_id: str, namespace: str = None) -> str:
         """Get log of a pod based on assigned pod ID."""
+        if not namespace:
+            if not self.middletier_namespace:
+                raise ConfigurationError(
+                    "Middletier namespace is required to check log of pods run in this namespace"
+                )
+            namespace = self.middletier_namespace
+
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/api/v1/namespaces/{}/pods/{}/log".format(
             self.kubernetes_api_url,
