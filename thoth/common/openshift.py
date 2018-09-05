@@ -363,10 +363,10 @@ class OpenShift(object):
         template = response.to_dict()['items'][0]
         self._set_template_parameters(
             template,
-            THOTH_PROVENANCE_CHECKER_REQUIREMENTS=requirements,
-            THOTH_PROVENANCE_CHECKER_REQUIREMENTS_LOCKED=requirements_locked,
-            THOTH_PROVENANCE_CHECKER_OUTPUT=output,
-            THOTH_LOG_PROVENANCE_CHECKER='DEBUG' if debug else 'INFO'
+            THOTH_ADVISER_REQUIREMENTS=requirements,
+            THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
+            THOTH_ADVISER_OUTPUT=output,
+            THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
         template = self._oc_process(self.backend_namespace, template)
