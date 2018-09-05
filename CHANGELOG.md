@@ -38,3 +38,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.2.7 (2018-09-03T13:53:07)
 
+
+## Release 0.3.0 (2018-09-05T12:27:24)
+* Let's reuse adviser env var names
+* Issue warning on suspicious parameter expansion in templates
+* Fix propagating debug flag to package-extract
+* Fix gathering pod logs for default middletier namespace
+* Fix gathering pod status for default middletier namespace
+* Automatic update of dependency pytest-cov from 2.5.1 to 2.6.0
+* Introduce routine for running provenance checker
