@@ -304,7 +304,7 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_adviser(self, application_stack: dict, output: str, type: str,
+    def run_adviser(self, application_stack: dict, output: str, recommendation_type: str,
                     runtime_environment: str = None, debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -326,7 +326,7 @@ class OpenShift(object):
             THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
             THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get('requirements_lock', '').replace('\n', '\\n'),
             THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get('requirements_formant', 'pipenv'),
-            THOTH_ADVISER_RECOMMENDATION_TYPE=type,
+            THOTH_ADVISER_RECOMMENDATION_TYPE=recommendation_type,
             THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
             THOTH_ADVISER_OUTPUT=output,
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
