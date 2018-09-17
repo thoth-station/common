@@ -47,3 +47,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix gathering pod status for default middletier namespace
 * Automatic update of dependency pytest-cov from 2.5.1 to 2.6.0
 * Introduce routine for running provenance checker
+
+## Release 0.3.1 (2018-09-17T07:39:06)
+* added github configuration
+* Automatic update of dependency pytest from 3.7.4 to 3.8.0
+* Fix built-in type shadowing
