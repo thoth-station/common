@@ -327,7 +327,7 @@ class OpenShift(object):
             THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get('requirements_lock', '').replace('\n', '\\n'),
             THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get('requirements_formant', 'pipenv'),
             THOTH_ADVISER_RECOMMENDATION_TYPE=recommendation_type,
-            THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
+            THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment if runtime_environment else "",
             THOTH_ADVISER_OUTPUT=output,
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
