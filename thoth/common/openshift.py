@@ -193,9 +193,14 @@ class OpenShift(object):
         except openshift.dynamic.exceptions.NotFoundError as exc:
             raise NotFoundException(f"The given pod with id {pod_id} could not be found") from exc
 
-        _LOGGER.debug("OpenShift master response for pod status (%d): %r", response.to_dict())
+        response = response.to_dict()
+        _LOGGER.debug("OpenShift master response for pod status: %r", response)
 
-        state = response.to_dict()['status']['containerStatuses'][0]['state']
+        if 'containerStatuses' not response['status']:
+            # No status - pod is being scheduled.
+            return {}
+
+        state = response['status']['containerStatuses'][0]['state']
         # Translate kills of liveness probes to our messages reported to user.
         if state.get('terminated', {}).get('exitCode') == 137 and state['terminated']['reason'] == 'Error':
             # Reason can be set by OpenShift to be OOMKilled for example - we expect only "Error" to be set to
