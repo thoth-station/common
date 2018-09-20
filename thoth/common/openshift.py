@@ -98,7 +98,7 @@ class OpenShift(object):
         for parameter_name, parameter_value in parameters.items():
             for entry in template['parameters']:
                 if entry['name'] == parameter_name:
-                    entry['value'] = str(parameter_value)
+                    entry['value'] = str(parameter_value) if parameter_value is not None else ''
                     break
             else:
                 _LOGGER.warning(
@@ -108,7 +108,7 @@ class OpenShift(object):
                 )
                 template['parameters'].append({
                     'name': parameter_name,
-                    'value': str(parameter_value)
+                    'value': str(parameter_value) if parameter_value is not None else ''
                 })
 
     def run_sync(self, force_analysis_results_sync: bool = False, force_solver_results_sync: bool = False) -> str:
