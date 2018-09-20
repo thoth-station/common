@@ -181,16 +181,9 @@ class OpenShift(object):
 
         return response.text
 
-    def get_pod_status(self, pod_id: str, namespace: str = None) -> dict:
-        """Get status entry for a pod - this applies only for solver and package-extract pods."""
+    def get_pod_status(self, pod_id: str, namespace: str) -> dict:
+        """Get status entry for a pod - low level routine."""
         import openshift
-
-        if not namespace:
-            if not self.middletier_namespace:
-                raise ConfigurationError(
-                    "Middletier namespace is required to check status of pods run in this namespace"
-                )
-            namespace = self.middletier_namespace
 
         try:
             response = self.ocp_client.resources.get(api_version='v1', kind='Pod').get(
@@ -201,7 +194,48 @@ class OpenShift(object):
             raise NotFoundException(f"The given pod with id {pod_id} could not be found") from exc
 
         _LOGGER.debug("OpenShift master response for pod status (%d): %r", response.to_dict())
-        return response.to_dict()['status']['containerStatuses'][0]['state']
+
+        state = response.to_dict()['status']['containerStatuses'][0]['state']
+        # Translate kills of liveness probes to our messages reported to user.
+        if state.get('terminated', {}).get('exitCode') == 137 and state['terminated']['reason'] == 'Error':
+            # Reason can be set by OpenShift to be OOMKilled for example - we expect only "Error" to be set to
+            # treat this as timeout.
+            status['terminated']['reason'] = "TimeoutKilled"
+
+        return state
+
+    @staticmethod
+    def _status_report(status):
+        """Construct status response for API response from master API response."""
+        _TRANSLATION_TABLE = {
+            'exitCode': 'exit_code',
+            'finishedAt': 'finished_at',
+            'reason': 'reason',
+            'startedAt': 'started_at',
+            'containerID': 'container'
+        }
+
+        if len(status.keys()) != 1:
+            # This is unexpected behavior as we rely on master to always return this. Report this to logs...
+            _LOGGER.error("Status reported from master does not contain one key representing state %r", status)
+
+        state = list(status.keys())[0]
+
+        reported_status = dict.fromkeys(tuple(_TRANSLATION_TABLE.values()))
+        reported_status['state'] = state
+        for key, value in status[state].items():
+            if key == 'containerID':
+                value = value[len('docker://'):] if value.startswith('docker://') else value
+                reported_status['container'] = value
+            else:
+                reported_status[_TRANSLATION_TABLE[key]] = value
+
+        return reported_status
+
+    def get_pod_status_report(self, pod_id: str, namespace: str) -> dict:
+        """Get pod state and convert it to a user-friendly response."""
+        state = self.get_pod_status(pod_id, namespace)
+        return self._status_report(state)
 
     def get_solver_names(self) -> list:
         """Retrieve name of solvers available in installation."""
