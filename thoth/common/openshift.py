@@ -221,8 +221,10 @@ class OpenShift(object):
         }
 
         if len(status.keys()) != 1:
-            # This is unexpected behavior as we rely on master to always return this. Report this to logs...
-            _LOGGER.error("Status reported from master does not contain one key representing state %r", status)
+            # If pod was not initialized yet and user asks for status, return default values with state scheduling.
+            reported_status = dict.fromkeys(tuple(_TRANSLATION_TABLE.values()))
+            reported_status['state'] = 'scheduling'
+            return reported_status
 
         state = list(status.keys())[0]
 
