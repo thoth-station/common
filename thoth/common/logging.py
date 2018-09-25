@@ -23,11 +23,13 @@ import typing
 import socket
 from functools import wraps
 
+import sentry_sdk
 import daiquiri
 from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv('RSYSLOG_HOST')
 _RSYSLOG_PORT = os.getenv('RSYSLOG_PORT')
+_SENTRY_DSN = os.getnev('SENTRY_DSN')
 _LOGGING_CONF_START = 'THOTH_LOG_'
 
 
@@ -85,9 +87,14 @@ def init_logging(logging_configuration: dict = None) -> None:
 
     _init_log_levels(logging_configuration)
 
+    if _SENTRY_DSN:
+        root_logger.info("Setting up logging to a Sentry instance %r", _SENTRY_DSN.rsplit('@', maxsplit=1)[1])
+        sentry_sdk.init(_SENTRY_DSN)
+    else:
+        root_logger.info("Logging to a Sentry instance is turned off")
+
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
-        root_logger.info(
-            f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
+        root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
 
         try:
             syslog_handler = Rfc5424SysLogHandler(
@@ -97,7 +104,6 @@ def init_logging(logging_configuration: dict = None) -> None:
             root_logger.exception(
                 f"RSYSLOG_HOST and RSYSLOG_PORT have been set but {_RSYSLOG_HOST}:{_RSYSLOG_PORT} cannot be reached"
             )
-
     elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
         raise RuntimeError(f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
                            f"in order to use rsyslog logging, host: {_RSYSLOG_HOST}, port: {_RSYSLOG_PORT}")

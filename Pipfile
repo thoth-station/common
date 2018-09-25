@@ -7,6 +7,7 @@ name = "pypi"
 "rfc5424-logging-handler" = "*"
 daiquiri = "*"
 requests = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 pytest = "*"
