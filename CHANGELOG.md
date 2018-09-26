@@ -52,3 +52,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 * added github configuration
 * Automatic update of dependency pytest from 3.7.4 to 3.8.0
 * Fix built-in type shadowing
+
+## Release 0.3.2 (2018-09-26T20:34:32)
+* Add Sentry support
+* Report scheduling status if pod was not initialized yet
+* Report back empty pod status is pod is being scheduled
+* Automatic update of dependency pytest from 3.8.0 to 3.8.1
+* Automatic update of dependency rfc5424-logging-handler from 1.1.2 to 1.2.1
+* Unify pod status reports
+* Treat None parameter values as empty values
