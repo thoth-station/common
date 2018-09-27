@@ -61,3 +61,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency rfc5424-logging-handler from 1.1.2 to 1.2.1
 * Unify pod status reports
 * Treat None parameter values as empty values
+
+## Release 0.3.3 (2018-09-27T18:45:47)
+* fixed the typo, this closes #114
+* Automatic update of dependency sentry-sdk from 0.3.5 to 0.3.6
+* Initial dependency lock
