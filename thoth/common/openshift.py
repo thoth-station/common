@@ -45,7 +45,8 @@ class OpenShift(object):
                 "installed with openshift extras?"
             ) from exc
 
-        self.kubernetes_verify_tls = bool(int(os.getenv('KUBERNETES_VERIFY_TLS', 1)) and kubernetes_verify_tls)
+        self.kubernetes_verify_tls = bool(
+            int(os.getenv('KUBERNETES_VERIFY_TLS', 1)) and kubernetes_verify_tls)
 
         # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
         config.load_incluster_config()
@@ -54,15 +55,22 @@ class OpenShift(object):
         configuration = client.Configuration()
         configuration.verify_ssl = self.kubernetes_verify_tls
 
-        self.ocp_client = DynamicClient(client.ApiClient(configuration=configuration))
-        self.frontend_namespace = frontend_namespace or os.getenv('THOTH_FRONTEND_NAMESPACE')
-        self.middletier_namespace = middletier_namespace or os.getenv('THOTH_MIDDLETIER_NAMESPACE')
-        self.backend_namespace = backend_namespace or os.getenv('THOTH_BACKEND_NAMESPACE')
-        self.infra_namespace = infra_namespace or os.getenv('THOTH_INFRA_NAMESPACE')
+        self.ocp_client = DynamicClient(
+            client.ApiClient(configuration=configuration))
+        self.frontend_namespace = frontend_namespace or os.getenv(
+            'THOTH_FRONTEND_NAMESPACE')
+        self.middletier_namespace = middletier_namespace or os.getenv(
+            'THOTH_MIDDLETIER_NAMESPACE')
+        self.backend_namespace = backend_namespace or os.getenv(
+            'THOTH_BACKEND_NAMESPACE')
+        self.infra_namespace = infra_namespace or os.getenv(
+            'THOTH_INFRA_NAMESPACE')
         self.kubernetes_api_url = kubernetes_api_url or \
-            os.getenv('KUBERNETES_API_URL', 'https://kubernetes.default.svc.cluster.local')
+            os.getenv('KUBERNETES_API_URL',
+                      'https://kubernetes.default.svc.cluster.local')
         self.openshift_api_url = openshift_api_url or \
-            os.getenv('OPENSHIFT_API_URL', 'https://openshift.default.svc.cluster.local')
+            os.getenv('OPENSHIFT_API_URL',
+                      'https://openshift.default.svc.cluster.local')
         self._token = token
 
     @property
@@ -98,7 +106,8 @@ class OpenShift(object):
         for parameter_name, parameter_value in parameters.items():
             for entry in template['parameters']:
                 if entry['name'] == parameter_name:
-                    entry['value'] = str(parameter_value) if parameter_value is not None else ''
+                    entry['value'] = str(
+                        parameter_value) if parameter_value is not None else ''
                     break
             else:
                 _LOGGER.warning(
@@ -116,7 +125,8 @@ class OpenShift(object):
         # Let's reuse pod definition from the cronjob definition so any changes in
         # deployed application work out of the box.
         if not self.frontend_namespace:
-            raise ConfigurationError("Graph sync requires frontend namespace configuration")
+            raise ConfigurationError(
+                "Graph sync requires frontend namespace configuration")
 
         _LOGGER.debug("Retrieving graph-sync CronJob definition")
         response = self.ocp_client.resources.get(api_version='v2alpha1', kind='CronJob').get(
@@ -129,8 +139,10 @@ class OpenShift(object):
         job_template = template['spec']['jobTemplate']['spec']['template']
         self._set_env_var(
             job_template,
-            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(force_analysis_results_sync),
-            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(force_solver_results_sync)
+            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(
+                force_analysis_results_sync),
+            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(
+                force_solver_results_sync)
         )
 
         # Construct a Pod spec.
@@ -149,7 +161,8 @@ class OpenShift(object):
             namespace=self.frontend_namespace
         )
 
-        _LOGGER.debug(f"Started graph-sync pod with name {response.metadata.name}")
+        _LOGGER.debug(
+            f"Started graph-sync pod with name {response.metadata.name}")
         return response.metadata.name
 
     def get_pod_log(self, pod_id: str, namespace: str = None) -> str:
@@ -176,7 +189,8 @@ class OpenShift(object):
             },
             verify=self.kubernetes_verify_tls
         )
-        _LOGGER.debug("Kubernetes master response for pod log (%d): %r", response.status_code, response.text)
+        _LOGGER.debug("Kubernetes master response for pod log (%d): %r",
+                      response.status_code, response.text)
         response.raise_for_status()
 
         return response.text
@@ -191,12 +205,13 @@ class OpenShift(object):
                 name=pod_id
             )
         except openshift.dynamic.exceptions.NotFoundError as exc:
-            raise NotFoundException(f"The given pod with id {pod_id} could not be found") from exc
+            raise NotFoundException(
+                f"The given pod with id {pod_id} could not be found") from exc
 
         response = response.to_dict()
         _LOGGER.debug("OpenShift master response for pod status: %r", response)
 
-        if 'containerStatuses' not response['status']:
+        if 'containerStatuses' not in response['status']:
             # No status - pod is being scheduled.
             return {}
 
@@ -205,7 +220,7 @@ class OpenShift(object):
         if state.get('terminated', {}).get('exitCode') == 137 and state['terminated']['reason'] == 'Error':
             # Reason can be set by OpenShift to be OOMKilled for example - we expect only "Error" to be set to
             # treat this as timeout.
-            status['terminated']['reason'] = "TimeoutKilled"
+            state['terminated']['reason'] = "TimeoutKilled"
 
         return state
 
@@ -232,7 +247,8 @@ class OpenShift(object):
         reported_status['state'] = state
         for key, value in status[state].items():
             if key == 'containerID':
-                value = value[len('docker://'):] if value.startswith('docker://') else value
+                value = value[len('docker://')
+                                  :] if value.startswith('docker://') else value
                 reported_status['container'] = value
             else:
                 reported_status[_TRANSLATION_TABLE[key]] = value
@@ -247,13 +263,15 @@ class OpenShift(object):
     def get_solver_names(self) -> list:
         """Retrieve name of solvers available in installation."""
         if not self.infra_namespace:
-            raise ConfigurationError("Infra namespace is required in order to list solvers")
+            raise ConfigurationError(
+                "Infra namespace is required in order to list solvers")
 
         response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
             namespace=self.infra_namespace,
             label_selector='template=solver'
         )
-        _LOGGER.debug("OpenShift response for getting solver template: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for getting solver template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
         return [obj['metadata']['labels']['component'] for obj in response.to_dict()['items'][0]['objects']]
 
@@ -261,16 +279,19 @@ class OpenShift(object):
                    transitive: bool = True, solver: str = None) -> dict:
         """Run solver or all solver to solve the given requirements."""
         if not self.middletier_namespace:
-            ConfigurationError("Solver requires middletier namespace to be specified")
+            ConfigurationError(
+                "Solver requires middletier namespace to be specified")
 
         if not self.infra_namespace:
-            raise ConfigurationError("Infra namespace is required to gather solver template when running solver")
+            raise ConfigurationError(
+                "Infra namespace is required to gather solver template when running solver")
 
         response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
             namespace=self.infra_namespace,
             label_selector='template=solver'
         )
-        _LOGGER.debug("OpenShift response for getting solver template: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for getting solver template: %r", response.to_dict())
 
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()['items'][0]
@@ -289,7 +310,8 @@ class OpenShift(object):
         for obj in template['objects']:
             solver_name = obj['metadata']['labels']['component']
             if solver and solver != solver_name:
-                _LOGGER.debug(f"Skipping solver %r as the requested solver is %r", solver_name, solver)
+                _LOGGER.debug(
+                    f"Skipping solver %r as the requested solver is %r", solver_name, solver)
                 continue
 
             response = self.ocp_client.resources.get(api_version='v1', kind=obj['kind']).create(
@@ -298,7 +320,8 @@ class OpenShift(object):
             )
 
             _LOGGER.debug("Starting solver %r", solver_name)
-            _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+            _LOGGER.debug(
+                "OpenShift response for creating a pod: %r", response.to_dict())
             solvers[solver_name] = response.metadata.name
 
         return solvers
@@ -307,16 +330,19 @@ class OpenShift(object):
                             registry_user: str = None, registry_password: str = None, verify_tls: bool = True) -> str:
         """Run package-extract analyzer to extract information from the provided image."""
         if not self.middletier_namespace:
-            raise ConfigurationError("Running package-extract requires middletier namespace to be specified")
+            raise ConfigurationError(
+                "Running package-extract requires middletier namespace to be specified")
 
         if not self.infra_namespace:
-            raise ConfigurationError("Infra namespace is required to gather package-extract template when running it")
+            raise ConfigurationError(
+                "Infra namespace is required to gather package-extract template when running it")
 
         response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
             namespace=self.infra_namespace,
             label_selector='template=package-extract'
         )
-        _LOGGER.debug("OpenShift response for getting package-extract template: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for getting package-extract template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()['items'][0]
 
@@ -342,31 +368,38 @@ class OpenShift(object):
             namespace=self.middletier_namespace
         )
 
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        _LOGGER.debug("OpenShift response for creating a pod: %r",
+                      response.to_dict())
         return response.metadata.name
 
     def run_adviser(self, application_stack: dict, output: str, recommendation_type: str,
                     runtime_environment: str = None, debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
-            raise ConfigurationError("Running adviser requires backend namespace configuration")
+            raise ConfigurationError(
+                "Running adviser requires backend namespace configuration")
 
         if not self.infra_namespace:
-            raise ConfigurationError("Infra namespace is required to gather adviser template when running it")
+            raise ConfigurationError(
+                "Infra namespace is required to gather adviser template when running it")
 
         response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
             namespace=self.infra_namespace,
             label_selector='template=adviser'
         )
-        _LOGGER.debug("OpenShift response for getting adviser template: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for getting adviser template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
 
         template = response.to_dict()['items'][0]
         self._set_template_parameters(
             template,
-            THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
-            THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get('requirements_lock', '').replace('\n', '\\n'),
-            THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get('requirements_formant', 'pipenv'),
+            THOTH_ADVISER_REQUIREMENTS=application_stack.pop(
+                'requirements').replace('\n', '\\n'),
+            THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get(
+                'requirements_lock', '').replace('\n', '\\n'),
+            THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get(
+                'requirements_formant', 'pipenv'),
             THOTH_ADVISER_RECOMMENDATION_TYPE=recommendation_type,
             THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
             THOTH_ADVISER_OUTPUT=output,
@@ -381,26 +414,32 @@ class OpenShift(object):
             namespace=self.backend_namespace
         )
 
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        _LOGGER.debug("OpenShift response for creating a pod: %r",
+                      response.to_dict())
         return response.metadata.name
 
     def run_provenance_checker(self, application_stack: dict, output: str, debug: bool = False) -> str:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
-            raise ConfigurationError("Running provenance checks requires backend namespace configuration")
+            raise ConfigurationError(
+                "Running provenance checks requires backend namespace configuration")
 
         if not self.infra_namespace:
-            raise ConfigurationError("Infra namespace is required to gather provenance template when running it")
+            raise ConfigurationError(
+                "Infra namespace is required to gather provenance template when running it")
 
         response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
             namespace=self.infra_namespace,
             label_selector='template=provenance-checker'
         )
-        _LOGGER.debug("OpenShift response for getting provenance-checker template: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for getting provenance-checker template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
 
-        requirements = application_stack.pop('requirements').replace('\n', '\\n')
-        requirements_locked = application_stack.pop('requirements_lock').replace('\n', '\\n')
+        requirements = application_stack.pop(
+            'requirements').replace('\n', '\\n')
+        requirements_locked = application_stack.pop(
+            'requirements_lock').replace('\n', '\\n')
         template = response.to_dict()['items'][0]
         self._set_template_parameters(
             template,
@@ -418,7 +457,8 @@ class OpenShift(object):
             namespace=self.backend_namespace
         )
 
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        _LOGGER.debug("OpenShift response for creating a pod: %r",
+                      response.to_dict())
         return response.metadata.name
 
     def _raise_on_invalid_response_size(self, response):
@@ -447,7 +487,8 @@ class OpenShift(object):
             },
             verify=self.kubernetes_verify_tls
         )
-        _LOGGER.debug("OpenShift master response template (%d): %r", response.status_code, response.text)
+        _LOGGER.debug("OpenShift master response template (%d): %r",
+                      response.status_code, response.text)
 
         try:
             response.raise_for_status()
