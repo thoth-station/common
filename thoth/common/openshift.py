@@ -247,8 +247,7 @@ class OpenShift(object):
         reported_status['state'] = state
         for key, value in status[state].items():
             if key == 'containerID':
-                value = value[len('docker://')
-                                  :] if value.startswith('docker://') else value
+                value = value[len('docker://'):] if value.startswith('docker://') else value
                 reported_status['container'] = value
             else:
                 reported_status[_TRANSLATION_TABLE[key]] = value
