@@ -196,7 +196,7 @@ class OpenShift(object):
         response = response.to_dict()
         _LOGGER.debug("OpenShift master response for pod status: %r", response)
 
-        if 'containerStatuses' not response['status']:
+        if 'containerStatuses' not in response['status']:
             # No status - pod is being scheduled.
             return {}
 
