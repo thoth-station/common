@@ -305,3 +305,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.3.6 (2018-09-29T09:25:43)
+* fixed another typo
+* fixed a few typos
