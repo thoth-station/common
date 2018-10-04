@@ -55,8 +55,7 @@ class OpenShift(object):
         configuration = client.Configuration()
         configuration.verify_ssl = self.kubernetes_verify_tls
 
-        self.ocp_client = DynamicClient(
-            client.ApiClient(configuration=configuration))
+        self.ocp_client = DynamicClient(client.ApiClient(configuration=configuration))
         self.frontend_namespace = frontend_namespace or os.getenv('THOTH_FRONTEND_NAMESPACE')
         self.middletier_namespace = middletier_namespace or os.getenv('THOTH_MIDDLETIER_NAMESPACE')
         self.backend_namespace = backend_namespace or os.getenv('THOTH_BACKEND_NAMESPACE')
@@ -89,10 +88,10 @@ class OpenShift(object):
                 )
 
     @staticmethod
-    def _set_template_parameters(template: dict, **parameters: object) -> None:
+    def set_template_parameters(template: dict, **parameters: object) -> None:
         """Set parameters in the template - replace existing ones or append to parameter list if not exist.
 
-        >>> _set_template_parameters(template, THOTH_LOG_ADVISER='DEBUG')
+        >>> set_template_parameters(template, THOTH_LOG_ADVISER='DEBUG')
         """
         if 'parameters' not in template:
             template['parameters'] = []
@@ -281,7 +280,7 @@ class OpenShift(object):
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()['items'][0]
 
-        self._set_template_parameters(
+        self.set_template_parameters(
             template,
             THOTH_SOLVER_NO_TRANSITIVE=int(not transitive),
             THOTH_SOLVER_PACKAGES=packages.replace('\n', '\\n'),
@@ -289,7 +288,7 @@ class OpenShift(object):
             THOTH_SOLVER_OUTPUT=output
         )
 
-        template = self._oc_process(self.middletier_namespace, template)
+        template = self.oc_process(self.middletier_namespace, template)
 
         solvers = {}
         for obj in template['objects']:
@@ -328,7 +327,7 @@ class OpenShift(object):
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()['items'][0]
 
-        self._set_template_parameters(
+        self.set_template_parameters(
             template,
             THOTH_LOG_PACKAGE_EXTRACT='DEBUG' if debug else 'INFO',
             THOTH_ANALYZED_IMAGE=image,
@@ -337,12 +336,12 @@ class OpenShift(object):
         )
 
         if registry_user and registry_password:
-            self._set_template_parameters(
+            self.set_template_parameters(
                 template,
                 THOTH_REGISTRY_CREDENTIALS=f"{registry_user}:{registry_password}"
             )
 
-        template = self._oc_process(self.middletier_namespace, template)
+        template = self.oc_process(self.middletier_namespace, template)
         analyzer = template['objects'][0]
 
         response = self.ocp_client.resources.get(api_version='v1', kind=analyzer['kind']).create(
@@ -373,7 +372,7 @@ class OpenShift(object):
 
         template = response.to_dict()['items'][0]
 
-        self._set_template_parameters(
+        self.set_template_parameters(
             template,
             THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
             THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
@@ -381,7 +380,7 @@ class OpenShift(object):
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
-        template = self._oc_process(self.middletier_namespace, template)
+        template = self.oc_process(self.middletier_namespace, template)
         dependency_monkey = template['objects'][0]
 
         response = self.ocp_client.resources.get(api_version='v1', kind=dependency_monkey['kind']).create(
@@ -409,7 +408,7 @@ class OpenShift(object):
         self._raise_on_invalid_response_size(response)
 
         template = response.to_dict()['items'][0]
-        self._set_template_parameters(
+        self.set_template_parameters(
             template,
             THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
             THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get('requirements_lock', '').replace('\n', '\\n'),
@@ -420,7 +419,7 @@ class OpenShift(object):
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
-        template = self._oc_process(self.backend_namespace, template)
+        template = self.oc_process(self.backend_namespace, template)
         adviser = template['objects'][0]
 
         response = self.ocp_client.resources.get(api_version='v1', kind=adviser['kind']).create(
@@ -449,7 +448,7 @@ class OpenShift(object):
         requirements = application_stack.pop('requirements').replace('\n', '\\n')
         requirements_locked = application_stack.pop('requirements_lock').replace('\n', '\\n')
         template = response.to_dict()['items'][0]
-        self._set_template_parameters(
+        self.set_template_parameters(
             template,
             THOTH_ADVISER_REQUIREMENTS=requirements,
             THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
@@ -457,7 +456,7 @@ class OpenShift(object):
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
-        template = self._oc_process(self.backend_namespace, template)
+        template = self.oc_process(self.backend_namespace, template)
         provenance_checker = template['objects'][0]
 
         response = self.ocp_client.resources.get(api_version='v1', kind=provenance_checker['kind']).create(
@@ -476,7 +475,7 @@ class OpenShift(object):
                 f"{self.infra_namespace!r} is {len(response.items)}, should be 1."
             )
 
-    def _oc_process(self, namespace: str, template: dict) -> dict:
+    def oc_process(self, namespace: str, template: dict) -> dict:
         """Process the given template in OpenShift."""
         # TODO: This does not work - see issue reported upstream:
         #   https://github.com/openshift/openshift-restclient-python/issues/190
