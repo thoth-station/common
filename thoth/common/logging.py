@@ -29,19 +29,19 @@ from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv('RSYSLOG_HOST')
 _RSYSLOG_PORT = os.getenv('RSYSLOG_PORT')
+_DEFAULT_LOGGING_CONF_START = 'THOTH_LOG_'
 _SENTRY_DSN = os.getenv('SENTRY_DSN')
-_LOGGING_CONF_START = 'THOTH_LOG_'
 
 
-def _init_log_levels(logging_configuration: dict) -> None:
+def _init_log_levels(logging_env_var_start: str, logging_configuration: dict) -> None:
     """Initialize log level based on configuration or env variables."""
     env_logging_conf = {
-        key: val for key, val in os.environ.items() if key.startswith(_LOGGING_CONF_START)
+        key: val for key, val in os.environ.items() if key.startswith(logging_env_var_start)
     }
 
     for logger, level in env_logging_conf.items():
         logger = 'thoth.' + \
-            logger[len(_LOGGING_CONF_START):].lower().replace('__', '.')
+            logger[len(logging_env_var_start):].lower().replace('__', '.')
         level = getattr(logging, level)
         logging.getLogger(logger).setLevel(level)
 
@@ -51,7 +51,7 @@ def _init_log_levels(logging_configuration: dict) -> None:
             logging.getLogger(logger).setLevel(level)
 
 
-def init_logging(logging_configuration: dict = None) -> None:
+def init_logging(logging_configuration: dict = None, logging_env_var_start: str = None) -> None:
     """Initialize Thoth's logging - respects all namespaces.
 
     This function allows you to control logging facilities in Thoth. Logging can be configured via env variables
@@ -72,6 +72,9 @@ def init_logging(logging_configuration: dict = None) -> None:
     standard logging functionality):
 
     >>> init_logging({'thoth.solver': 'DEBUG'})
+
+    Optionally you can specify prefix of the logging environment variable
+    determining logging configuration via env vars (defaults to THOTH_LOG_).
     """
     # TODO: JSON in deployments?
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
@@ -86,7 +89,7 @@ def init_logging(logging_configuration: dict = None) -> None:
     except ImportError:
         pass
 
-    _init_log_levels(logging_configuration)
+    _init_log_levels(logging_env_var_start or _DEFAULT_LOGGING_CONF_START, logging_configuration)
 
     if _SENTRY_DSN:
         root_logger.info("Setting up logging to a Sentry instance %r",
