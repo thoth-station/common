@@ -249,6 +249,35 @@ class OpenShift(object):
         state = self.get_pod_status(pod_id, namespace)
         return self._status_report(state)
 
+    def _get_pod_id_from_job(self, job_id: str, namespace: str) -> str:
+        """Get pod name from a job."""
+        # Kubernetes automatically adds 'job-name' label -> reuse it.
+        response = self.ocp_client.resources.get(api_version='v1', kind='Pod').get(
+            namespace=self.infra_namespace,
+            label_selector=f'job-name={job_id}'
+        )
+        response = response.to_dict()
+        _LOGGER.debug("OpenShift response for pod id from job: %r", response)
+
+        if len(response['items']) != 1:
+            if len(response['items']) > 1:
+                # Log this error and report back to user not found.
+                _LOGGER.error(f"Multiple pods for the same job name selector {job_id} found")
+
+            raise NotFoundException(f"Job with the given id {job_id} was not found")
+
+        return response['items'][0]['metadata']['name']
+
+    def get_job_status_report(self, job_id: str, namespace: str) -> dict:
+        """Get status of a pod running inside a job."""
+        pod_id = self._get_pod_id_from_job(job_id, namespace)
+        return self.get_pod_status_report(pod_id, namespace)
+
+    def get_job_log(self, job_id: str, namespace: str = None) -> str:
+        """Get log of a pod running inside a job."""
+        pod_id = self._get_pod_id_from_job(job_id, namespace)
+        return self.get_pod_log(pod_id, namespace)
+
     def get_solver_names(self) -> list:
         """Retrieve name of solvers available in installation."""
         if not self.infra_namespace:
