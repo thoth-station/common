@@ -185,6 +185,29 @@ class OpenShift(object):
 
         return response.text
 
+    def get_build_log(self, build_id: str, namespace: str) -> str:
+        """Get log of a build in the given namespace."""
+        # TODO: rewrite to OpenShift rest client once it will support it.
+        endpoint = "{}/apis/build.openshift.io/v1/namespaces/{}/builds/{}/log".format(
+            _OPENSHIFT.openshift_api_url,
+            namespace,
+            build_id
+        )
+
+        response = requests.get(
+            endpoint,
+            headers={
+                'Authorization': 'Bearer {}'.format(_OPENSHIFT.token),
+                'Content-Type': 'application/json'
+            },
+            verify=self.kubernetes_verify_tls
+        )
+
+        _LOGGER.debug("OpenShift master response for build log (%d): %r", response.status_code, response.text)
+        response.raise_for_status()
+
+        return response.text
+
     def get_pod_status(self, pod_id: str, namespace: str) -> dict:
         """Get status entry for a pod - low level routine."""
         import openshift
