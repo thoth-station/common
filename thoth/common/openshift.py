@@ -276,7 +276,7 @@ class OpenShift(object):
         """Get pod name from a job."""
         # Kubernetes automatically adds 'job-name' label -> reuse it.
         response = self.ocp_client.resources.get(api_version='v1', kind='Pod').get(
-            namespace=self.infra_namespace,
+            namespace=namespace or self.infra_namespace,
             label_selector=f'job-name={job_id}'
         )
         response = response.to_dict()
