@@ -325,3 +325,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.3.8 (2018-10-09T20:35:55)
 * Automatic update of dependency sentry-sdk from 0.3.11 to 0.4.0
 * Fix undefined name error
+
+## Release 0.3.9 (2018-10-09T22:14:22)
+* Fix gathering pod id from job name
