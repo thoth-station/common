@@ -321,3 +321,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency pytest from 3.8.1 to 3.8.2
 * Automatic update of dependency sentry-sdk from 0.3.7 to 0.3.8
 * Automatic update of dependency sentry-sdk from 0.3.6 to 0.3.7
+
+## Release 0.3.8 (2018-10-09T20:35:55)
+* Automatic update of dependency sentry-sdk from 0.3.11 to 0.4.0
+* Fix undefined name error
