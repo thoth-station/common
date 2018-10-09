@@ -45,8 +45,7 @@ class OpenShift(object):
                 "installed with openshift extras?"
             ) from exc
 
-        self.kubernetes_verify_tls = bool(
-            int(os.getenv('KUBERNETES_VERIFY_TLS', 1)) and kubernetes_verify_tls)
+        self.kubernetes_verify_tls = bool(int(os.getenv('KUBERNETES_VERIFY_TLS', 1)) and kubernetes_verify_tls)
 
         # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
         config.load_incluster_config()
@@ -181,6 +180,10 @@ class OpenShift(object):
             verify=self.kubernetes_verify_tls
         )
         _LOGGER.debug("Kubernetes master response for pod log (%d): %r", response.status_code, response.text)
+
+        if response.status_code == 404:
+            raise NotFoundException(f"Pod with id {pod_id} was not found in namespace {namespace}")
+
         response.raise_for_status()
 
         return response.text
@@ -202,6 +205,9 @@ class OpenShift(object):
             },
             verify=self.kubernetes_verify_tls
         )
+
+        if response.status_code == 404:
+            raise NotFoundException(f"Build with id {build_id} was not found in namespace {namespace}")
 
         _LOGGER.debug("OpenShift master response for build log (%d): %r", response.status_code, response.text)
         response.raise_for_status()
