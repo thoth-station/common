@@ -189,7 +189,7 @@ class OpenShift(object):
         """Get log of a build in the given namespace."""
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/apis/build.openshift.io/v1/namespaces/{}/builds/{}/log".format(
-            _OPENSHIFT.openshift_api_url,
+            self.openshift_api_url,
             namespace,
             build_id
         )
@@ -197,7 +197,7 @@ class OpenShift(object):
         response = requests.get(
             endpoint,
             headers={
-                'Authorization': 'Bearer {}'.format(_OPENSHIFT.token),
+                'Authorization': 'Bearer {}'.format(self.token),
                 'Content-Type': 'application/json'
             },
             verify=self.kubernetes_verify_tls
