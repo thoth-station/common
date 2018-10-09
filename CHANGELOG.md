@@ -309,3 +309,15 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.3.6 (2018-09-29T09:25:43)
 * fixed another typo
 * fixed a few typos
+
+## Release 0.3.7 (2018-10-09T11:15:31)
+* Automatic update of dependency sentry-sdk from 0.3.9 to 0.3.11
+* Add routines for jobs handling
+* Gather build logs from OpenShift
+* Allow explicitly specifying the logging configuration prefix
+* Make reusable methods public
+* Introduce methods for running dependency monkey
+* Automatic update of dependency sentry-sdk from 0.3.8 to 0.3.9
+* Automatic update of dependency pytest from 3.8.1 to 3.8.2
+* Automatic update of dependency sentry-sdk from 0.3.7 to 0.3.8
+* Automatic update of dependency sentry-sdk from 0.3.6 to 0.3.7
