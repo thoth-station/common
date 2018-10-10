@@ -328,3 +328,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.3.9 (2018-10-09T22:14:22)
 * Fix gathering pod id from job name
+
+## Release 0.3.10 (2018-10-10T17:53:11)
+* Return None if there are no pod logs yet
+* Add message to translate table
+* Raise appropriate not found exception exception
