@@ -20,6 +20,7 @@
 import os
 import logging
 import requests
+import typing
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -155,7 +156,7 @@ class OpenShift(object):
         _LOGGER.debug(f"Started graph-sync pod with name {response.metadata.name}")
         return response.metadata.name
 
-    def get_pod_log(self, pod_id: str, namespace: str = None) -> str:
+    def get_pod_log(self, pod_id: str, namespace: str = None) -> typing.Optional[str]:
         """Get log of a pod based on assigned pod ID."""
         if not namespace:
             if not self.middletier_namespace:
@@ -184,8 +185,11 @@ class OpenShift(object):
         if response.status_code == 404:
             raise NotFoundException(f"Pod with id {pod_id} was not found in namespace {namespace}")
 
-        response.raise_for_status()
+        if response.status_code == 400:
+            # If Pod has not been initialized yet, there is returned 400 status code. Return None in this case.
+            return None
 
+        response.raise_for_status()
         return response.text
 
     def get_build_log(self, build_id: str, namespace: str) -> str:
