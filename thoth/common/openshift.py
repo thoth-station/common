@@ -252,6 +252,7 @@ class OpenShift(object):
             'reason': 'reason',
             'startedAt': 'started_at',
             'containerID': 'container'
+            'message': 'reason'
         }
 
         if len(status.keys()) != 1:
