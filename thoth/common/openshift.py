@@ -255,7 +255,7 @@ class OpenShift(object):
             'finishedAt': 'finished_at',
             'reason': 'reason',
             'startedAt': 'started_at',
-            'containerID': 'container'
+            'containerID': 'container',
             'message': 'reason'
         }
 
