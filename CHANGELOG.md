@@ -333,3 +333,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Return None if there are no pod logs yet
 * Add message to translate table
 * Raise appropriate not found exception exception
+
+## Release 0.3.11 (2018-10-11T14:17:58)
+* Fix syntax error
