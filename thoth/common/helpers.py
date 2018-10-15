@@ -44,8 +44,11 @@ def datetime_str2timestamp(datetime_string: str) -> int:
     return int(parse_datetime(datetime_string).timestamp())
 
 
-def datetime2datetime_str(dt: datetime.datetime) -> str:
+def datetime2datetime_str(dt: datetime.datetime = None) -> str:
     """Create a string representation of a datetime."""
+    if not dt:
+        return datetime.datetime.utcnow().isoformat()
+
     return dt.isoformat()
 
 
