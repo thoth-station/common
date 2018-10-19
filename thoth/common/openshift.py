@@ -312,6 +312,25 @@ class OpenShift(object):
         pod_id = self._get_pod_id_from_job(job_id, namespace)
         return self.get_pod_log(pod_id, namespace)
 
+    def get_jobs(self, label_selector: str, namespace: str = None) -> dict:
+        """Get all Jobs, select them by the provided label."""
+        import openshift
+
+        response = None
+
+        try:
+            response = self.ocp_client.resources.get(api_version='v1', kind='JobList').get(
+                namespace=namespace,
+                label_selector=label_selector
+            )
+        except openshift.dynamic.exceptions.NotFoundError as exc:
+            raise NotFoundException(
+                f"No Jobs with label {label_selector} could be found") from exc
+
+        _LOGGER.debug("OpenShift response: %r", response)
+
+        return response
+
     def get_solver_names(self) -> list:
         """Retrieve name of solvers available in installation."""
         if not self.infra_namespace:
