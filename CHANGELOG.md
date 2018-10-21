@@ -336,3 +336,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.3.11 (2018-10-11T14:17:58)
 * Fix syntax error
+
+## Release 0.3.12 (2018-10-21T15:04:13)
+* Automatic update of dependency rfc5424-logging-handler from 1.2.1 to 1.3.0
+* added get_jobs(), it will be used for thoth-metrics
+* Automatic update of dependency sentry-sdk from 0.4.2 to 0.4.3
+* Automatic update of dependency requests from 2.19.1 to 2.20.0
+* Automatic update of dependency sentry-sdk from 0.4.1 to 0.4.2
+* Automatic update of dependency pytest from 3.8.2 to 3.9.1
+* Default to now if no datetime was provided
+* Automatic update of dependency sentry-sdk from 0.4.0 to 0.4.1
