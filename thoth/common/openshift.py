@@ -319,7 +319,7 @@ class OpenShift(object):
         response = None
 
         try:
-            response = self.ocp_client.resources.get(api_version='v1', kind='JobList').get(
+            response = self.ocp_client.resources.get(api_version='batch/v1', kind='JobList').get(
                 namespace=namespace,
                 label_selector=label_selector
             )
