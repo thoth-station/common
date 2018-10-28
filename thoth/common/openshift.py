@@ -24,7 +24,7 @@ import typing
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
-from .helpers import get_service_account_token
+from .helpers import get_service_account_token, get_incluster_token_file, get_incluster_ca_file
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,11 +35,13 @@ class OpenShift(object):
     def __init__(self, *,
                  frontend_namespace: str = None, middletier_namespace: str = None, backend_namespace: str = None,
                  infra_namespace: str = None, kubernetes_api_url: str = None, kubernetes_verify_tls: bool = True,
-                 openshift_api_url: str = None, token: str = None):
+                 openshift_api_url: str = None, token: str = None, token_file: str = None, cert_file: str = None,
+                 environ=os.environ):
         """Initialize OpenShift class responsible for handling objects in deployment."""
         try:
             from kubernetes import client, config
             from openshift.dynamic import DynamicClient
+            from kubernetes.config.incluster_config import InClusterConfigLoader
         except ImportError as exc:
             raise ImportError(
                 "Unable to import OpenShift and Kubernetes packages. Was thoth-common library "
@@ -49,7 +51,9 @@ class OpenShift(object):
         self.kubernetes_verify_tls = bool(int(os.getenv('KUBERNETES_VERIFY_TLS', 1)) and kubernetes_verify_tls)
 
         # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
-        config.load_incluster_config()
+        InClusterConfigLoader(token_filename=get_incluster_token_file(token_file),
+                              cert_filename=get_incluster_ca_file(cert_file),
+                              environ=environ).load_and_set()
 
         # We need to explicitly set whether we want to verify SSL/TLS connection to the master.
         configuration = client.Configuration()
