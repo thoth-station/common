@@ -390,8 +390,9 @@ class OpenShift(object):
 
         return solvers
 
-    def run_package_extract(self, image: str, output: str, debug: bool = False,
-                            registry_user: str = None, registry_password: str = None, verify_tls: bool = True) -> str:
+    def run_package_extract(self, image: str, output: str,
+                            registry_user: str = None, registry_password: str = None, verify_tls: bool = True,
+                            debug: bool = False, force: bool = False) -> str:
         """Run package-extract analyzer to extract information from the provided image."""
         if not self.middletier_namespace:
             raise ConfigurationError("Running package-extract requires middletier namespace to be specified")
