@@ -346,3 +346,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency pytest from 3.8.2 to 3.9.1
 * Default to now if no datetime was provided
 * Automatic update of dependency sentry-sdk from 0.4.0 to 0.4.1
+
+## Release 0.3.13 (2018-10-28T13:17:08)
+* added parameter force:bool, why was it missing?
+* Automatic update of dependency pytest from 3.9.2 to 3.9.3
+* add InClusterConfigLoader to load SA and cert
+* Automatic update of dependency sentry-sdk from 0.5.0 to 0.5.1
+* using the correct api
+* Automatic update of dependency sentry-sdk from 0.4.3 to 0.5.0
+* Automatic update of dependency pytest from 3.9.1 to 3.9.2
