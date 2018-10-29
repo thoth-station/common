@@ -23,7 +23,7 @@ import os
 from contextlib import contextmanager
 
 SERVICE_TOKEN_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-SERVICE_CERT_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/ca.cert'
+SERVICE_CERT_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 
 @contextmanager
 def cwd(target):
@@ -59,24 +59,18 @@ def datetime_str_from_timestamp(timestamp: int) -> str:
     return datetime2datetime_str(datetime.datetime.fromtimestamp(timestamp))
 
 
-def get_incluster_token_file(token_file=None):
-    if token_file:
-        return token_file
-    else:
-        return SERVICE_TOKEN_FILENAME
+def _get_incluster_token_file(token_file=None):
+    return token_file if token_file else SERVICE_TOKEN_FILENAME
 
 
-def get_incluster_ca_file(ca_file=None):
-    if ca_file:
-        return ca_file
-    else:
-        return SERVICE_CERT_FILENAME
+def _get_incluster_ca_file(ca_file=None):
+    return ca_file if ca_file else SERVICE_CERT_FILENAME
 
 
 def get_service_account_token():
     """Get token from service account token file."""
     try:
-        with open(get_incluster_token_file(), 'r') as token_file:
+        with open(_get_incluster_token_file(), 'r') as token_file:
             return token_file.read()
     except FileNotFoundError as exc:
         raise FileNotFoundError("Unable to get service account token, please check "
