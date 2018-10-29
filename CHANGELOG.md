@@ -355,3 +355,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * using the correct api
 * Automatic update of dependency sentry-sdk from 0.4.3 to 0.5.0
 * Automatic update of dependency pytest from 3.9.1 to 3.9.2
+
+## Release 0.3.14 (2018-10-29T15:40:41)
+* refactor methods into pythonic way
