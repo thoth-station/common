@@ -26,6 +26,7 @@ SERVICE_TOKEN_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 SERVICE_CERT_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 
+
 @contextmanager
 def cwd(target):
     """Manage cwd in a pushd/popd fashion."""
