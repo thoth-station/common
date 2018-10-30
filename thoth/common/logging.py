@@ -95,7 +95,7 @@ def init_logging(logging_configuration: dict = None, logging_env_var_start: str 
         try:
             root_logger.info("Setting up logging to a Sentry instance %r", _SENTRY_DSN.rsplit('@', maxsplit=1)[1])
             sentry_sdk.init(_SENTRY_DSN)
-        except:
+        except Exception:
             root_logger.exception("Failed to initialize logging to Sentry instance, check configuration")
             raise
     else:
