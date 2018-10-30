@@ -92,19 +92,20 @@ def init_logging(logging_configuration: dict = None, logging_env_var_start: str 
     _init_log_levels(logging_env_var_start or _DEFAULT_LOGGING_CONF_START, logging_configuration)
 
     if _SENTRY_DSN:
-        root_logger.info("Setting up logging to a Sentry instance %r",
-                         _SENTRY_DSN.rsplit('@', maxsplit=1)[1])
-        sentry_sdk.init(_SENTRY_DSN)
+        try:
+            root_logger.info("Setting up logging to a Sentry instance %r", _SENTRY_DSN.rsplit('@', maxsplit=1)[1])
+            sentry_sdk.init(_SENTRY_DSN)
+        except:
+            root_logger.exception("Failed to initialize logging to Sentry instance, check configuration")
+            raise
     else:
         root_logger.info("Logging to a Sentry instance is turned off")
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
-        root_logger.info(
-            f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
+        root_logger.info(f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}")
 
         try:
-            syslog_handler = Rfc5424SysLogHandler(
-                address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
+            syslog_handler = Rfc5424SysLogHandler(address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT)))
             root_logger.addHandler(syslog_handler)
         except socket.gaierror as exc:
             root_logger.exception(
