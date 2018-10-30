@@ -358,3 +358,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.3.14 (2018-10-29T15:40:41)
 * refactor methods into pythonic way
+
+## Release 0.3.15 (2018-10-30T19:36:48)
+* Make all datetimes timezone aware
+* Report error if sentry initialization fails
+* Do not propagate force to actual package-extract run
+* Automatic update of dependency sentry-sdk from 0.5.1 to 0.5.2
