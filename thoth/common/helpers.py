@@ -24,6 +24,7 @@ from contextlib import contextmanager
 
 SERVICE_TOKEN_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 SERVICE_CERT_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+_DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 
 @contextmanager
 def cwd(target):
@@ -38,7 +39,9 @@ def cwd(target):
 
 def parse_datetime(datetime_string: str) -> datetime.datetime:
     """Parse datetime string represented in ISO format."""
-    return datetime.datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%f")
+    parsed = datetime.datetime.strptime(datetime_string, _DATETIME_FORMAT_STRING)
+    # Make all timezone unaware datetimes timezone aware.
+    return parsed.replace(tzinfo=timezone.utc)
 
 
 def datetime_str2timestamp(datetime_string: str) -> int:
@@ -48,10 +51,11 @@ def datetime_str2timestamp(datetime_string: str) -> int:
 
 def datetime2datetime_str(dt: datetime.datetime = None) -> str:
     """Create a string representation of a datetime."""
+    # We use strftime to make sure we do not propagate timezone information. We use UTC all over the places.
     if not dt:
-        return datetime.datetime.utcnow().isoformat()
+        return datetime.datetime.utcnow().strftime(_DATETIME_FORMAT_STRING)
 
-    return dt.isoformat()
+    return dt.strftime(_DATETIME_FORMAT_STRING)
 
 
 def datetime_str_from_timestamp(timestamp: int) -> str:
