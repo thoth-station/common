@@ -1,16 +1,16 @@
 - project:
     check:
-      queue: thoth-station/core
+      queue: "thoth-station/core"
       jobs:
-        - linters
+        - "thoth-coala"
     gate:
-      queue: thoth-station/core
+      queue: "thoth-station/core"
       jobs:
-        - linters
+        - "thoth-coala"
     kebechet-auto-gate:
-      queue: thoth-station/core
+      queue: "thoth-station/core"
       jobs:
-        - linters
+        - "thoth-coala"
     release:
       jobs:
-        - upload-pypi-sesheta
+        - "upload-pypi-sesheta"
