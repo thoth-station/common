@@ -62,7 +62,12 @@ def datetime2datetime_str(dt: datetime.datetime = None) -> str:
 
 def datetime_str_from_timestamp(timestamp: int) -> str:
     """Convert a timestamp to datetime string representation."""
-    return datetime2datetime_str(datetime.datetime.fromtimestamp(timestamp))
+    return datetime2datetime_str(timestamp2datetime(timestamp))
+
+
+def timestamp2datetime(timestamp: int) -> datetime.datetime:
+    """Convert a timestamp to datetime respecting UTC."""
+    return datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.utc)
 
 
 def _get_incluster_token_file(token_file=None):
