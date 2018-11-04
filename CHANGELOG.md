@@ -368,3 +368,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.3.16 (2018-10-30T22:14:31)
 * Fix missing import
 * Make CI happy again
+
+## Release 0.4.0 (2018-11-04T21:28:14)
+* Automatic update of dependency pytest from 3.9.3 to 3.10.0
+* Introduce method for creating datetime from timestamp
+* using thoht-* jobs now
