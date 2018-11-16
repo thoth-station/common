@@ -373,3 +373,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency pytest from 3.9.3 to 3.10.0
 * Introduce method for creating datetime from timestamp
 * using thoht-* jobs now
+
+## Release 0.4.1 (2018-11-15T23:20:21)
+* Propagate dependency monkey parameters to template
+* Automatic update of dependency sentry-sdk from 0.5.4 to 0.5.5
+* Automatic update of dependency pytest from 3.10.1 to 4.0.0
+* Automatic update of dependency pytest from 3.10.0 to 3.10.1
+* Automatic update of dependency sentry-sdk from 0.5.3 to 0.5.4
+* Automatic update of dependency requests from 2.20.0 to 2.20.1
+* Automatic update of dependency sentry-sdk from 0.5.2 to 0.5.3
