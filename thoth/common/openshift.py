@@ -440,7 +440,7 @@ class OpenShift(object):
 
     def run_dependency_monkey(self, requirements: str, context: dict, stack_output: str = None,
                               report_output: str = None, seed: int = None, dry_run: bool = False,
-                              decision: str = None, debug: bool = False) -> str:
+                              decision: str = None, count: int = None, debug: bool = False) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
             raise ConfigurationError("Running Dependency Monkey requires middletier namespace configuration")
@@ -458,17 +458,27 @@ class OpenShift(object):
         self._raise_on_invalid_response_size(response)
 
         template = response.to_dict()['items'][0]
+        parameters = {
+            'THOTH_ADVISER_REQUIREMENTS': requirements.replace('\n', '\\n'),
+            'THOTH_AMUN_CONTEXT': json.dumps(context).replace('\n', '\\n'),
+            'THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT': stack_output or '-',
+            'THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT': report_output or '-',
+            'THOTH_DEPENDENCY_MONKEY_DRY_RUN': int(bool(dry_run)),
+            'THOTH_LOG_ADVISER': 'DEBUG' if debug else 'INFO'
+        }
+
+        if count is not None:
+            parameters['THOTH_DEPENDENCY_MONKEY_COUNT'] = count
+
+        if decision is not None:
+            parameters['THOTH_DEPENDENCY_MONKEY_DECISION'] = decision
+
+        if seed is not None:
+            parameters['THOTH_DEPENCENCY_MONKEY_SEED'] = seed
 
         self.set_template_parameters(
             template,
-            THOTH_ADVISER_REQUIREMENTS=requirements.replace('\n', '\\n'),
-            THOTH_AMUN_CONTEXT=json.dumps(context).replace('\n', '\\n'),
-            THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT=stack_output or '-',
-            THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT=report_output or '-',
-            THOTH_DEPENCENCY_MONKEY_SEED=seed if seed is not None else '',
-            THOTH_DEPENDENCY_MONKEY_DRY_RUN=int(bool(dry_run)),
-            THOTH_DEPENDENCY_MONKEY_DECISION=decision if decision is not None else '',
-            THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
+            **parameters
         )
 
         template = self.oc_process(self.middletier_namespace, template)
