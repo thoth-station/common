@@ -382,3 +382,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency sentry-sdk from 0.5.3 to 0.5.4
 * Automatic update of dependency requests from 2.20.0 to 2.20.1
 * Automatic update of dependency sentry-sdk from 0.5.2 to 0.5.3
+
+## Release 0.4.2 (2018-11-16T11:53:53)
+* Add count parameter to dependency monkey
+* Use api version from template
