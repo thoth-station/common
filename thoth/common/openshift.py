@@ -382,7 +382,7 @@ class OpenShift(object):
                 _LOGGER.debug(f"Skipping solver %r as the requested solver is %r", solver_name, solver)
                 continue
 
-            response = self.ocp_client.resources.get(api_version='v1', kind=obj['kind']).create(
+            response = self.ocp_client.resources.get(api_version=obj['apiVersion'], kind=obj['kind']).create(
                 body=obj,
                 namespace=self.middletier_namespace
             )
@@ -430,7 +430,7 @@ class OpenShift(object):
         template = self.oc_process(self.middletier_namespace, template)
         analyzer = template['objects'][0]
 
-        response = self.ocp_client.resources.get(api_version='v1', kind=analyzer['kind']).create(
+        response = self.ocp_client.resources.get(api_version=analyzer['apiVersion'], kind=analyzer['kind']).create(
             body=analyzer,
             namespace=self.middletier_namespace
         )
@@ -484,7 +484,10 @@ class OpenShift(object):
         template = self.oc_process(self.middletier_namespace, template)
         dependency_monkey = template['objects'][0]
 
-        response = self.ocp_client.resources.get(api_version='v1', kind=dependency_monkey['kind']).create(
+        response = self.ocp_client.resources.get(
+            api_version=dependency_monkey['apiVersion'],
+            kind=dependency_monkey['kind']
+        ).create(
             body=dependency_monkey,
             namespace=self.middletier_namespace
         )
@@ -523,7 +526,7 @@ class OpenShift(object):
         template = self.oc_process(self.backend_namespace, template)
         adviser = template['objects'][0]
 
-        response = self.ocp_client.resources.get(api_version='v1', kind=adviser['kind']).create(
+        response = self.ocp_client.resources.get(api_version=adviser['apiVersion'], kind=adviser['kind']).create(
             body=adviser,
             namespace=self.backend_namespace
         )
@@ -560,7 +563,10 @@ class OpenShift(object):
         template = self.oc_process(self.backend_namespace, template)
         provenance_checker = template['objects'][0]
 
-        response = self.ocp_client.resources.get(api_version='v1', kind=provenance_checker['kind']).create(
+        response = self.ocp_client.resources.get(
+            api_version=provenance_checker['apiVersion'],
+            kind=provenance_checker['kind']
+        ).create(
             body=provenance_checker,
             namespace=self.backend_namespace
         )
