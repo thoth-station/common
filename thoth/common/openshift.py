@@ -21,6 +21,7 @@ import os
 import logging
 import requests
 import typing
+import json
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -135,10 +136,8 @@ class OpenShift(object):
         job_template = template['spec']['jobTemplate']['spec']['template']
         self._set_env_var(
             job_template,
-            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(
-                force_analysis_results_sync),
-            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(
-                force_solver_results_sync)
+            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(force_analysis_results_sync),
+            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(force_solver_results_sync)
         )
 
         # Construct a Pod spec.
@@ -439,8 +438,9 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_dependency_monkey(self, application_stack: dict, output: str, runtime_environment: str,
-                              debug: bool = False) -> str:
+    def run_dependency_monkey(self, requirements: str, context: dict, stack_output: str = None,
+                              report_output: str = None, seed: int = None, dry_run: bool = False,
+                              decision: str = None, debug: bool = False) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
             raise ConfigurationError("Running Dependency Monkey requires middletier namespace configuration")
@@ -461,9 +461,13 @@ class OpenShift(object):
 
         self.set_template_parameters(
             template,
-            THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
-            THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
-            THOTH_ADVISER_OUTPUT=output,
+            THOTH_ADVISER_REQUIREMENTS=requirements.replace('\n', '\\n'),
+            THOTH_AMUN_CONTEXT=json.dumps(context).replace('\n', '\\n'),
+            THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT=stack_output or '-',
+            THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT=report_output or '-',
+            THOTH_DEPENCENCY_MONKEY_SEED=seed if seed is not None else '',
+            THOTH_DEPENDENCY_MONKEY_DRY_RUN=int(bool(dry_run)),
+            THOTH_DEPENDENCY_MONKEY_DECISION=decision if decision is not None else '',
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
