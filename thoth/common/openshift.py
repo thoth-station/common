@@ -195,6 +195,32 @@ class OpenShift(object):
         response.raise_for_status()
         return response.text
 
+    def get_build(self, build_id: str, namespace: str) -> str:
+        """Get a build in the given namespace."""
+        # TODO: rewrite to OpenShift rest client once it will support it.
+        endpoint = "{}/apis/build.openshift.io/v1/namespaces/{}/builds/{}".format(
+            self.openshift_api_url,
+            namespace,
+            build_id
+        )
+
+        response = requests.get(
+            endpoint,
+            headers={
+                'Authorization': 'Bearer {}'.format(self.token),
+                'Content-Type': 'application/json'
+            },
+            verify=self.kubernetes_verify_tls
+        )
+
+        if response.status_code == 404:
+            raise NotFoundException(f"Build with id {build_id} was not found in namespace {namespace}")
+
+        _LOGGER.debug("OpenShift master response for build (%d): %r", response.status_code, response.text)
+        response.raise_for_status()
+
+        return response.json()
+
     def get_build_log(self, build_id: str, namespace: str) -> str:
         """Get log of a build in the given namespace."""
         # TODO: rewrite to OpenShift rest client once it will support it.
