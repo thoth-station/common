@@ -386,3 +386,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.4.2 (2018-11-16T11:53:53)
 * Add count parameter to dependency monkey
 * Use api version from template
+
+## Release 0.4.3 (2018-11-17T13:19:36)
+* Introduce method for getting build in a namespace
+* Automatic update of dependency pytest-timeout from 1.3.2 to 1.3.3
