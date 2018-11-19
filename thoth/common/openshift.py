@@ -466,7 +466,7 @@ class OpenShift(object):
 
     def run_dependency_monkey(self, requirements: str, context: dict, stack_output: str = None,
                               report_output: str = None, seed: int = None, dry_run: bool = False,
-                              decision: str = None, count: int = None, debug: bool = False) -> str:
+                              decision: str = None, limit: int = None, debug: bool = False) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
             raise ConfigurationError("Running Dependency Monkey requires middletier namespace configuration")
@@ -493,8 +493,8 @@ class OpenShift(object):
             'THOTH_LOG_ADVISER': 'DEBUG' if debug else 'INFO'
         }
 
-        if count is not None:
-            parameters['THOTH_DEPENDENCY_MONKEY_COUNT'] = count
+        if limit is not None:
+            parameters['THOTH_DEPENDENCY_MONKEY_LIMIT'] = limit
 
         if decision is not None:
             parameters['THOTH_DEPENDENCY_MONKEY_DECISION'] = decision
@@ -522,7 +522,8 @@ class OpenShift(object):
         return response.metadata.name
 
     def run_adviser(self, application_stack: dict, output: str, recommendation_type: str,
-                    runtime_environment: str = None, debug: bool = False) -> str:
+                    count: int = None, limit: int = None, runtime_environment: str = None,
+                    debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
             raise ConfigurationError("Running adviser requires backend namespace configuration")
@@ -545,6 +546,8 @@ class OpenShift(object):
             THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get('requirements_formant', 'pipenv'),
             THOTH_ADVISER_RECOMMENDATION_TYPE=recommendation_type,
             THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
+            THOTH_ADVISER_COUNT=count if count is not None else '',
+            THOTH_ADVISER_LIMIT=limit if limit is not None else '',
             THOTH_ADVISER_OUTPUT=output,
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
