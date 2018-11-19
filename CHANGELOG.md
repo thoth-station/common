@@ -390,3 +390,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.4.3 (2018-11-17T13:19:36)
 * Introduce method for getting build in a namespace
 * Automatic update of dependency pytest-timeout from 1.3.2 to 1.3.3
+
+## Release 0.4.4 (2018-11-19T19:08:36)
+* Fix CI
+* Rename dependency monkey limit to respect its semantics
+* Introduce count and limit for adviser
