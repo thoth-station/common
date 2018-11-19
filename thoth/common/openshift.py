@@ -521,8 +521,9 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_adviser(self, application_stack: dict, output: str, recommendation_type: str, count: int = None, limit: int = None,
-                    runtime_environment: str = None, debug: bool = False) -> str:
+    def run_adviser(self, application_stack: dict, output: str, recommendation_type: str,
+                    count: int = None, limit: int = None, runtime_environment: str = None,
+                    debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
             raise ConfigurationError("Running adviser requires backend namespace configuration")
