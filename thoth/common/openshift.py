@@ -466,7 +466,7 @@ class OpenShift(object):
 
     def run_dependency_monkey(self, requirements: str, context: dict, stack_output: str = None,
                               report_output: str = None, seed: int = None, dry_run: bool = False,
-                              decision: str = None, count: int = None, debug: bool = False) -> str:
+                              decision: str = None, limit: int = None, debug: bool = False) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
             raise ConfigurationError("Running Dependency Monkey requires middletier namespace configuration")
@@ -493,8 +493,8 @@ class OpenShift(object):
             'THOTH_LOG_ADVISER': 'DEBUG' if debug else 'INFO'
         }
 
-        if count is not None:
-            parameters['THOTH_DEPENDENCY_MONKEY_COUNT'] = count
+        if limit is not None:
+            parameters['THOTH_DEPENDENCY_MONKEY_LIMIT'] = limit
 
         if decision is not None:
             parameters['THOTH_DEPENDENCY_MONKEY_DECISION'] = decision
