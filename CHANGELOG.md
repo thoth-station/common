@@ -395,3 +395,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix CI
 * Rename dependency monkey limit to respect its semantics
 * Introduce count and limit for adviser
+
+## Release 0.4.5 (2018-11-20T22:33:13)
+* Introduce method for gathering buildconfigs
