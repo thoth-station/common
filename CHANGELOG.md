@@ -398,3 +398,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.4.5 (2018-11-20T22:33:13)
 * Introduce method for gathering buildconfigs
+
+## Release 0.4.6 (2018-11-22T04:57:58)
+* Runtime environment is now a dict
