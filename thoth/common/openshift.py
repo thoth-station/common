@@ -548,7 +548,7 @@ class OpenShift(object):
         return response.metadata.name
 
     def run_adviser(self, application_stack: dict, output: str, recommendation_type: str,
-                    count: int = None, limit: int = None, runtime_environment: str = None,
+                    count: int = None, limit: int = None, runtime_environment: dict = None,
                     debug: bool = False) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -563,6 +563,9 @@ class OpenShift(object):
         )
         _LOGGER.debug("OpenShift response for getting adviser template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
+
+        if runtime_environment:
+            runtime_environment = json.dumps(runtime_environment)
 
         template = response.to_dict()['items'][0]
         self.set_template_parameters(
