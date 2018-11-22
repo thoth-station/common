@@ -118,7 +118,7 @@ class OpenShift(object):
                     'value': str(parameter_value) if parameter_value is not None else ''
                 })
 
-    def run_sync(self, force_analysis_results_sync: bool = False, force_solver_results_sync: bool = False) -> str:
+    def run_sync(self, force_sync: bool = False) -> str:
         """Run graph sync, base pod definition based on job definition."""
         # Let's reuse pod definition from the cronjob definition so any changes in
         # deployed application work out of the box.
@@ -136,8 +136,7 @@ class OpenShift(object):
         job_template = template['spec']['jobTemplate']['spec']['template']
         self._set_env_var(
             job_template,
-            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(force_analysis_results_sync),
-            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(force_solver_results_sync)
+            THOTH_FORCE_SYNC=int(force_sync),
         )
 
         # Construct a Pod spec.
