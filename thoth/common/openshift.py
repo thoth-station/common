@@ -118,7 +118,7 @@ class OpenShift(object):
                     'value': str(parameter_value) if parameter_value is not None else ''
                 })
 
-    def run_sync(self, force_analysis_results_sync: bool = False, force_solver_results_sync: bool = False) -> str:
+    def run_sync(self, force_sync: bool = False) -> str:
         """Run graph sync, base pod definition based on job definition."""
         # Let's reuse pod definition from the cronjob definition so any changes in
         # deployed application work out of the box.
@@ -136,8 +136,7 @@ class OpenShift(object):
         job_template = template['spec']['jobTemplate']['spec']['template']
         self._set_env_var(
             job_template,
-            THOTH_GRAPH_SYNC_FORCE_ANALYSIS_RESULTS_SYNC=int(force_analysis_results_sync),
-            THOTH_GRAPH_SYNC_FORCE_SOLVER_RESULTS_SYNC=int(force_solver_results_sync)
+            THOTH_FORCE_SYNC=int(force_sync),
         )
 
         # Construct a Pod spec.
@@ -592,7 +591,8 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_provenance_checker(self, application_stack: dict, output: str, debug: bool = False) -> str:
+    def run_provenance_checker(self, application_stack: dict, output: str,
+                               whitelisted_sources: list = None, debug: bool = False) -> str:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
             raise ConfigurationError("Running provenance checks requires backend namespace configuration")
@@ -609,12 +609,14 @@ class OpenShift(object):
 
         requirements = application_stack.pop('requirements').replace('\n', '\\n')
         requirements_locked = application_stack.pop('requirements_lock').replace('\n', '\\n')
+        whitelisted_sources = ','.join(whitelisted_sources or [])
         template = response.to_dict()['items'][0]
         self.set_template_parameters(
             template,
             THOTH_ADVISER_REQUIREMENTS=requirements,
             THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
             THOTH_ADVISER_OUTPUT=output,
+            THOTH_WHITELISTED_SOURCES=whitelisted_sources,
             THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
         )
 
