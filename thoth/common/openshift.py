@@ -398,7 +398,7 @@ class OpenShift(object):
         self._raise_on_invalid_response_size(response)
         return [obj['metadata']['labels']['component'] for obj in response.to_dict()['items'][0]['objects']]
 
-    def run_solver(self, packages: str, output: str, debug: bool = False,
+    def run_solver(self, packages: str, output: str, indexes: list = None, debug: bool = False,
                    transitive: bool = True, solver: str = None) -> dict:
         """Run solver or all solver to solve the given requirements."""
         if not self.middletier_namespace:
@@ -420,6 +420,7 @@ class OpenShift(object):
             template,
             THOTH_SOLVER_NO_TRANSITIVE=int(not transitive),
             THOTH_SOLVER_PACKAGES=packages.replace('\n', '\\n'),
+            THOTH_SOLVER_INDEXES=','.join(indexes) if indexes else '',
             THOTH_LOG_SOLVER='DEBUG' if debug else 'INFO',
             THOTH_SOLVER_OUTPUT=output
         )
