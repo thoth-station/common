@@ -399,7 +399,7 @@ class OpenShift(object):
         return [obj['metadata']['labels']['component'] for obj in response.to_dict()['items'][0]['objects']]
 
     def run_solver(self, packages: str, output: str, indexes: list = None, debug: bool = False,
-                   transitive: bool = True, solver: str = None) -> dict:
+                   subgraph_check_api: str = None, transitive: bool = True, solver: str = None) -> dict:
         """Run solver or all solver to solve the given requirements."""
         if not self.middletier_namespace:
             ConfigurationError("Solver requires middletier namespace to be specified")
@@ -422,7 +422,8 @@ class OpenShift(object):
             THOTH_SOLVER_PACKAGES=packages.replace('\n', '\\n'),
             THOTH_SOLVER_INDEXES=','.join(indexes) if indexes else '',
             THOTH_LOG_SOLVER='DEBUG' if debug else 'INFO',
-            THOTH_SOLVER_OUTPUT=output
+            THOTH_SOLVER_OUTPUT=output,
+            THOTH_SOLVER_SUBGRAPH_CHECK_API=subgraph_check_api
         )
 
         template = self.oc_process(self.middletier_namespace, template)
