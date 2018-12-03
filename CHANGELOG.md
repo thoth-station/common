@@ -401,3 +401,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.4.6 (2018-11-22T04:57:58)
 * Runtime environment is now a dict
+
+## Release 0.4.7 (2018-12-03T10:11:46)
+* Automatic update of dependency pylint from 2.2.1 to 2.2.2
