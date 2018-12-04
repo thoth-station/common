@@ -527,7 +527,7 @@ class OpenShift(object):
             parameters['THOTH_DEPENCENCY_MONKEY_SEED'] = seed
 
         if count is not None:
-            parameters['THOTH_DEPENCENCY_MONKEY_COUNT'] = count
+            parameters['THOTH_DEPENDENCY_MONKEY_COUNT'] = count
 
         self.set_template_parameters(
             template,
