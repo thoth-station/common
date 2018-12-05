@@ -491,7 +491,7 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_dependency_monkey(self, requirements: str, context: dict, stack_output: str = None,
+    def run_dependency_monkey(self, requirements: typing.Union[str, dict], context: dict, stack_output: str = None,
                               report_output: str = None, seed: int = None, dry_run: bool = False,
                               decision: str = None, count: int = None, debug: bool = False) -> str:
         """Run Dependency Monkey on the provided user input."""
@@ -509,6 +509,10 @@ class OpenShift(object):
         )
         _LOGGER.debug("OpenShift response for getting dependency-monkey template: %r", response.to_dict())
         self._raise_on_invalid_response_size(response)
+
+        if isinstance(requirements, dict):
+            # There was passed a serialized Pipfile into dict, serialize it into JSON.
+            requirements = json.dumps(requirements)
 
         template = response.to_dict()['items'][0]
         parameters = {
