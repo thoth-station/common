@@ -404,3 +404,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.4.7 (2018-12-03T10:11:46)
 * Automatic update of dependency pylint from 2.2.1 to 2.2.2
+
+## Release 0.5.0 (2018-12-11T23:34:06)
+* Automatic update of dependency requests from 2.20.1 to 2.21.0
+* Automatic update of dependency sentry-sdk from 0.6.1 to 0.6.2
+* Dependency monkey can accept a serialized JSON representing Pipfile
+* Fix env variable typo
+* Propagate count to dependency monkey runs
+* Automatic update of dependency sentry-sdk from 0.6.0 to 0.6.1
+* Solver now accepts subgraph check API parameter
+* Automatic update of dependency sentry-sdk from 0.5.5 to 0.6.0
