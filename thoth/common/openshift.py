@@ -572,18 +572,26 @@ class OpenShift(object):
         if runtime_environment:
             runtime_environment = json.dumps(runtime_environment)
 
+        parameters = {
+            'THOTH_ADVISER_REQUIREMENTS': application_stack.pop('requirements').replace('\n', '\\n'),
+            'THOTH_ADVISER_REQUIREMENTS_LOCKED': application_stack.get('requirements_lock', '').replace('\n', '\\n'),
+            'THOTH_ADVISER_REQUIREMENTS_FORMAT': application_stack.get('requirements_formant', 'pipenv'),
+            'THOTH_ADVISER_RECOMMENDATION_TYPE': recommendation_type,
+            'THOTH_ADVISER_RUNTIME_ENVIRONMENT': runtime_environment,
+            'THOTH_ADVISER_OUTPUT': output,
+            'THOTH_LOG_ADVISER': 'DEBUG' if debug else 'INFO'
+        }
+
+        if count:
+            parameters['THOTH_ADVISER_COUNT'] = count
+
+        if limit:
+            parameters['THOTH_ADVISER_LIMIT'] = limit
+
         template = response.to_dict()['items'][0]
         self.set_template_parameters(
             template,
-            THOTH_ADVISER_REQUIREMENTS=application_stack.pop('requirements').replace('\n', '\\n'),
-            THOTH_ADVISER_REQUIREMENTS_LOCKED=application_stack.get('requirements_lock', '').replace('\n', '\\n'),
-            THOTH_ADVISER_REQUIREMENTS_FORMAT=application_stack.get('requirements_formant', 'pipenv'),
-            THOTH_ADVISER_RECOMMENDATION_TYPE=recommendation_type,
-            THOTH_ADVISER_RUNTIME_ENVIRONMENT=runtime_environment,
-            THOTH_ADVISER_COUNT=count if count is not None else '',
-            THOTH_ADVISER_LIMIT=limit if limit is not None else '',
-            THOTH_ADVISER_OUTPUT=output,
-            THOTH_LOG_ADVISER='DEBUG' if debug else 'INFO'
+            **parameters
         )
 
         template = self.oc_process(self.backend_namespace, template)
