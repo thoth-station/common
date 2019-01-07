@@ -98,6 +98,8 @@ class OpenShift(object):
 
         >>> set_template_parameters(template, THOTH_LOG_ADVISER='DEBUG')
         """
+        _LOGGER.debug("Setting parameters for template %r: %s", template['metadata']['name'], parameters)
+
         if 'parameters' not in template:
             template['parameters'] = []
 
