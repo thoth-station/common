@@ -23,8 +23,8 @@ from datetime import timezone
 
 from contextlib import contextmanager
 
-SERVICE_TOKEN_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-SERVICE_CERT_FILENAME = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+SERVICE_TOKEN_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+SERVICE_CERT_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 
 
@@ -81,8 +81,10 @@ def _get_incluster_ca_file(ca_file=None):
 def get_service_account_token():
     """Get token from service account token file."""
     try:
-        with open(_get_incluster_token_file(), 'r') as token_file:
+        with open(_get_incluster_token_file(), "r") as token_file:
             return token_file.read()
     except FileNotFoundError as exc:
-        raise FileNotFoundError("Unable to get service account token, please check "
-                                "that service has service account assigned with exposed token") from exc
+        raise FileNotFoundError(
+            "Unable to get service account token, please check "
+            "that service has service account assigned with exposed token"
+        ) from exc
