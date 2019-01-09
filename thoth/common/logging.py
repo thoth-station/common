@@ -25,6 +25,7 @@ from functools import wraps
 
 import sentry_sdk
 import daiquiri
+import daiquiri.formatter
 from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv('RSYSLOG_HOST')
@@ -79,7 +80,14 @@ def init_logging(logging_configuration: dict = None, logging_env_var_start: str 
     # TODO: JSON in deployments?
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
-    daiquiri.setup(level=logging.INFO)
+    daiquiri.setup(
+        level=logging.INFO,
+        outputs=(daiquiri.output.Stream(
+            formatter=daiquiri.formatter.ColorFormatter(
+                fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:%(lineno)d: %(message)s%(color_stop)s"
+            )
+        ),)
+    )
     root_logger = logging.getLogger()
 
     # Disable annoying unverified HTTPS request warnings.
