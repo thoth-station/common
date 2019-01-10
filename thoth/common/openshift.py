@@ -581,9 +581,10 @@ class OpenShift(object):
         return response.metadata.name
 
     def create_config_map(
-        self, configmap_name: str, namespace: str, labels: dict, data: dict
+        self, configmap_name: str, namespace: str, *, labels: dict, data: dict
     ) -> str:
         """Create a ConfigMap in the given namespace."""
+        print(locals())
         v1_configmaps = self.ocp_client.resources.get(
             api_version="v1", kind="ConfigMap"
         )
