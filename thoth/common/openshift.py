@@ -609,7 +609,7 @@ class OpenShift(object):
             job_id,
             namespace,
             labels={"app": "thoth", "operator": "workload"},
-            data={"method_name": method_name, "parameters": parameters},
+            data={"method_name": method_name, "parameters": json.dumps(parameters)},
         )
         return job_id
 
