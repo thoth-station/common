@@ -22,6 +22,7 @@ import logging
 import requests
 import typing
 import json
+import random
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -579,10 +580,49 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
-    def run_dependency_monkey(
+    def create_config_map(
+        self, configmap_name: str, namespace: str, labels: dict, data: dict
+    ) -> str:
+        """Create a ConfigMap in the given namespace."""
+        v1_configmaps = self.ocp_client.resources.get(
+            api_version="v1", kind="ConfigMap"
+        )
+        v1_configmaps.create(
+            body={
+                "apiVersion": "v1",
+                "kind": "ConfigMap",
+                "data": data,
+                "metadata": {
+                    "labels": labels,
+                    "name": configmap_name,
+                    "namespace": namespace,
+                },
+            }
+        )
+        return configmap_name
+
+    def _schedule_job(
+        self, method_name: str, parameters: dict, job_id: str, namespace: str
+    ) -> str:
+        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
+        self.create_config_map(
+            job_id,
+            namespace,
+            labels={"app": "thoth", "operator": "workload"},
+            data={"method_name": method_name, "parameters": parameters},
+        )
+        return job_id
+
+    @staticmethod
+    def _generate_id(prefix: str):
+        """Generate an identifier"""
+        return prefix + "-%016x" % random.getrandbits(64)
+
+    def schedule_dependency_monkey(
         self,
         requirements: typing.Union[str, dict],
         context: dict,
+        *,
         stack_output: str = None,
         report_output: str = None,
         seed: int = None,
@@ -590,6 +630,31 @@ class OpenShift(object):
         decision: str = None,
         count: int = None,
         debug: bool = False,
+        job_id: str = None,
+    ) -> str:
+        """Schedule a dependency monkey run."""
+        job_id = job_id or self._generate_id("dependency-monkey")
+        parameters = locals()
+        return self._schedule_job(
+            self.run_dependency_monkey.__name__,
+            parameters,
+            job_id,
+            self.middletier_namespace,
+        )
+
+    def run_dependency_monkey(
+        self,
+        requirements: typing.Union[str, dict],
+        context: dict,
+        *,
+        stack_output: str = None,
+        report_output: str = None,
+        seed: int = None,
+        dry_run: bool = False,
+        decision: str = None,
+        count: int = None,
+        debug: bool = False,
+        job_id: str = None,
     ) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
@@ -623,6 +688,8 @@ class OpenShift(object):
             "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
             "THOTH_DEPENDENCY_MONKEY_DRY_RUN": int(bool(dry_run)),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
+            "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id
+            or self._generate_id("dependency-monkey"),
         }
 
         if decision is not None:
@@ -646,6 +713,25 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
+    def schedule_adviser(
+        self,
+        application_stack: dict,
+        output: str,
+        recommendation_type: str,
+        *,
+        count: int = None,
+        limit: int = None,
+        runtime_environment: dict = None,
+        debug: bool = False,
+        job_id: str = None,
+    ) -> str:
+        """Schedule an adviser run."""
+        job_id = job_id or self._generate_id("adviser")
+        parameters = locals()
+        return self._schedule_job(
+            self.run_adviser.__name__, parameters, job_id, self.backend_namespace
+        )
+
     def run_adviser(
         self,
         application_stack: dict,
@@ -655,6 +741,7 @@ class OpenShift(object):
         limit: int = None,
         runtime_environment: dict = None,
         debug: bool = False,
+        job_id: str = None,
     ) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -692,6 +779,7 @@ class OpenShift(object):
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": runtime_environment,
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
+            "THOTH_ADVISER_JOB_ID": job_id or self._generate_id("adviser"),
         }
 
         if count:
@@ -713,12 +801,33 @@ class OpenShift(object):
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
 
+    def schedule_provenance_checker(
+        self,
+        application_stack: dict,
+        output: str,
+        *,
+        whitelisted_sources: list = None,
+        debug: bool = False,
+        job_id: str = None,
+    ) -> str:
+        """Schedule an adviser run."""
+        job_id = job_id or self._generate_id("provenance-checker")
+        parameters = locals()
+        return self._schedule_job(
+            self.run_provenance_checker.__name__,
+            parameters,
+            job_id,
+            self.backend_namespace,
+        )
+
     def run_provenance_checker(
         self,
         application_stack: dict,
         output: str,
+        *,
         whitelisted_sources: list = None,
         debug: bool = False,
+        job_id: str = None,
     ) -> str:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
@@ -753,6 +862,8 @@ class OpenShift(object):
             THOTH_ADVISER_OUTPUT=output,
             THOTH_WHITELISTED_SOURCES=whitelisted_sources,
             THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
+            THOTH_PROVENANCE_CHECKER_JOB_ID=job_id
+            or self._generate_id("provenance-checker"),
         )
 
         template = self.oc_process(self.backend_namespace, template)
