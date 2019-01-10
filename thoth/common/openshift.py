@@ -635,6 +635,7 @@ class OpenShift(object):
         """Schedule a dependency monkey run."""
         job_id = job_id or self._generate_id("dependency-monkey")
         parameters = locals()
+        parameters.pop("self", None)
         return self._schedule_job(
             self.run_dependency_monkey.__name__,
             parameters,
@@ -728,6 +729,7 @@ class OpenShift(object):
         """Schedule an adviser run."""
         job_id = job_id or self._generate_id("adviser")
         parameters = locals()
+        parameters.pop("self", None)
         return self._schedule_job(
             self.run_adviser.__name__, parameters, job_id, self.backend_namespace
         )
@@ -813,6 +815,7 @@ class OpenShift(object):
         """Schedule an adviser run."""
         job_id = job_id or self._generate_id("provenance-checker")
         parameters = locals()
+        parameters.pop("self", None)
         return self._schedule_job(
             self.run_provenance_checker.__name__,
             parameters,
