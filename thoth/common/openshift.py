@@ -783,6 +783,11 @@ class OpenShift(object):
         job_id: str = None,
     ) -> str:
         """Schedule a dependency monkey run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule dependency monkey without middletier namespace being set"
+            )
+
         job_id = job_id or self._generate_id("dependency-monkey")
         parameters = locals()
         parameters.pop("self", None)
@@ -877,6 +882,11 @@ class OpenShift(object):
         job_id: str = None,
     ) -> str:
         """Schedule an adviser run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule adviser without backend namespace being set"
+            )
+
         job_id = job_id or self._generate_id("adviser")
         parameters = locals()
         parameters.pop("self", None)
@@ -962,7 +972,12 @@ class OpenShift(object):
         debug: bool = False,
         job_id: str = None,
     ) -> str:
-        """Schedule an adviser run."""
+        """Schedule a provenance checker run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule provenance checker without backend namespace being set"
+            )
+
         job_id = job_id or self._generate_id("provenance-checker")
         parameters = locals()
         parameters.pop("self", None)
