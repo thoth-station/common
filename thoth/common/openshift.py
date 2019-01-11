@@ -457,35 +457,36 @@ class OpenShift(object):
                 "Unable to create inspection image stream without Amun inspection namespace being set"
             )
 
-        response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
+        response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
             namespace=self.infra_namespace,
-            label_selector='template=amun-inspect-imagestream'
+            label_selector="template=amun-inspect-imagestream",
         )
 
         self._raise_on_invalid_response_size(response)
 
         response = response.to_dict()
-        _LOGGER.debug("OpenShift response for getting Amun inspect ImageStream template: %r", response)
-        template = response['items'][0]
+        _LOGGER.debug(
+            "OpenShift response for getting Amun inspect ImageStream template: %r",
+            response,
+        )
+        template = response["items"][0]
 
         self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
         template = self.oc_process(self.infra_namespace, template)
-        imagestream = template['objects'][0]
+        imagestream = template["objects"][0]
 
         response = self.ocp_client.resources.get(
-            api_version=imagestream['apiVersion'],
-            kind=imagestream['kind']
-        ).create(
-            body=imagestream,
-            namespace=self.amun_inspection_namespace
-        )
+            api_version=imagestream["apiVersion"], kind=imagestream["kind"]
+        ).create(body=imagestream, namespace=self.amun_inspection_namespace)
 
         response = response.to_dict()
         _LOGGER.debug("OpenShift response for creating Amun ImageStream: %r", response)
 
-        return response['metadata']['name']
+        return response["metadata"]["name"]
 
-    def create_inspection_buildconfig(self, parameters: dict, use_hw_template: bool) -> None:
+    def create_inspection_buildconfig(
+        self, parameters: dict, use_hw_template: bool
+    ) -> None:
         """Create a build config for Amun."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -498,40 +499,39 @@ class OpenShift(object):
             )
 
         if use_hw_template:
-            label_selector = 'template=amun-inspect-buildconfig-with-cpu'
+            label_selector = "template=amun-inspect-buildconfig-with-cpu"
         else:
-            label_selector = 'template=amun-inspect-buildconfig'
+            label_selector = "template=amun-inspect-buildconfig"
 
-        response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
-            namespace=self.infra_namespace,
-            label_selector=label_selector
+        response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
+            namespace=self.infra_namespace, label_selector=label_selector
         )
 
         self._raise_on_invalid_response_size(response)
         response = response.to_dict()
-        _LOGGER.debug("OpenShift response for getting Amun inspect BuildConfig template: %r", response)
-
-        template = response['items'][0]
-
-        self.set_template_parameters(
-            template,
-            **parameters,
+        _LOGGER.debug(
+            "OpenShift response for getting Amun inspect BuildConfig template: %r",
+            response,
         )
+
+        template = response["items"][0]
+
+        self.set_template_parameters(template, **parameters)
 
         template = self.oc_process(self.amun_inspection_namespace, template)
-        buildconfig = template['objects'][0]
+        buildconfig = template["objects"][0]
 
         response = self.ocp_client.resources.get(
-            api_version=buildconfig['apiVersion'],
-            kind=buildconfig['kind']
-        ).create(
-            body=buildconfig,
-            namespace=self.amun_inspection_namespace
+            api_version=buildconfig["apiVersion"], kind=buildconfig["kind"]
+        ).create(body=buildconfig, namespace=self.amun_inspection_namespace)
+
+        _LOGGER.debug(
+            "OpenShift response for creating Amun BuildConfig: %r", response.to_dict()
         )
 
-        _LOGGER.debug("OpenShift response for creating Amun BuildConfig: %r", response.to_dict())
-
-    def schedule_inspection_job(self, inspection_id, parameters: dict, use_hw_template: bool) -> str:
+    def schedule_inspection_job(
+        self, inspection_id, parameters: dict, use_hw_template: bool
+    ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
@@ -561,37 +561,33 @@ class OpenShift(object):
             )
 
         if use_hw_template:
-            label_selector = 'template=amun-inspect-job-with-cpu'
+            label_selector = "template=amun-inspect-job-with-cpu"
         else:
-            label_selector = 'template=amun-inspect-job'
+            label_selector = "template=amun-inspect-job"
 
-        response = self.ocp_client.resources.get(api_version='v1', kind='Template').get(
-            namespace=self.infra_namespace,
-            label_selector=label_selector
+        response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
+            namespace=self.infra_namespace, label_selector=label_selector
         )
 
         self._raise_on_invalid_response_size(response)
         response = response.to_dict()
-        _LOGGER.debug("OpenShift response for getting Amun inspect Job template: %r", response)
-
-        template = response['items'][0]
-        self.set_template_parameters(
-            template,
-            **parameters,
+        _LOGGER.debug(
+            "OpenShift response for getting Amun inspect Job template: %r", response
         )
+
+        template = response["items"][0]
+        self.set_template_parameters(template, **parameters)
 
         template = self.oc_process(self.amun_inspection_namespace, template)
-        job = template['objects'][0]
+        job = template["objects"][0]
 
         response = self.ocp_client.resources.get(
-            api_version=job['apiVersion'],
-            kind=job['kind']
-        ).create(
-            body=job,
-            namespace=self.amun_inspection_namespace
-        )
+            api_version=job["apiVersion"], kind=job["kind"]
+        ).create(body=job, namespace=self.amun_inspection_namespace)
 
-        _LOGGER.debug("OpenShift response for creating Amun Job: %r", response.to_dict())
+        _LOGGER.debug(
+            "OpenShift response for creating Amun Job: %r", response.to_dict()
+        )
 
     def get_solver_names(self) -> list:
         """Retrieve name of solvers available in installation."""
