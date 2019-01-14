@@ -8,6 +8,8 @@ name = "pypi"
 daiquiri = "*"
 requests = "*"
 sentry-sdk = "*"
+kubernetes = "*"
+openshift = "*"
 
 [dev-packages]
 pytest = "*"
@@ -18,3 +20,6 @@ coala = "*"
 pycodestylebear = "*"
 yamllintbear = "*"
 pydocstylebear = "*"
+
+[requires]
+python_version = "3.6"

@@ -58,6 +58,7 @@ class OpenShift(object):
             from kubernetes import client, config
             from openshift.dynamic import DynamicClient
             from kubernetes.config.incluster_config import InClusterConfigLoader
+            from kubernetes.client.rest import RESTClientObject
         except ImportError as exc:
             raise ImportError(
                 "Unable to import OpenShift and Kubernetes packages. Was thoth-common library "
@@ -68,18 +69,28 @@ class OpenShift(object):
             int(os.getenv("KUBERNETES_VERIFY_TLS", 1)) and kubernetes_verify_tls
         )
 
-        # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
-        InClusterConfigLoader(
-            token_filename=_get_incluster_token_file(token_file),
-            cert_filename=_get_incluster_ca_file(cert_file),
-            environ=environ,
-        ).load_and_set()
+        self.in_cluster = True
+        # Try to load configuration as used in cluster. If not possible, try to load it from local configuration.
+        try:
+            # Load in-cluster configuration that is exposed by OpenShift/k8s configuration.
+            InClusterConfigLoader(
+                token_filename=_get_incluster_token_file(token_file),
+                cert_filename=_get_incluster_ca_file(cert_file),
+                environ=environ,
+            ).load_and_set()
 
-        # We need to explicitly set whether we want to verify SSL/TLS connection to the master.
-        configuration = client.Configuration()
-        configuration.verify_ssl = self.kubernetes_verify_tls
+            # We need to explicitly set whether we want to verify SSL/TLS connection to the master.
+            configuration = client.Configuration()
+            configuration.verify_ssl = self.kubernetes_verify_tls
+            self.ocp_client = DynamicClient(client.ApiClient(configuration=configuration))
+        except Exception as exc:
+            _LOGGER.warning("Failed to load in cluster configuration, fallback to a local development setup: %s", str(exc))
+            k8s_client = config.new_client_from_config()
+            k8s_client.configuration.verify_ssl = self.kubernetes_verify_tls
+            k8s_client.rest_client = RESTClientObject(k8s_client.configuration)
+            self.ocp_client = DynamicClient(k8s_client)
+            self.in_cluster = False
 
-        self.ocp_client = DynamicClient(client.ApiClient(configuration=configuration))
         self.amun_inspection_namespace = frontend_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESAPCE"
         )
@@ -97,7 +108,7 @@ class OpenShift(object):
             "KUBERNETES_API_URL", "https://kubernetes.default.svc.cluster.local"
         )
         self.openshift_api_url = openshift_api_url or os.getenv(
-            "OPENSHIFT_API_URL", "https://openshift.default.svc.cluster.local"
+            "OPENSHIFT_API_URL", self.ocp_client.configuration.host
         )
         self._token = token
 
@@ -105,7 +116,11 @@ class OpenShift(object):
     def token(self):
         """Access service account token mounted to the pod."""
         if self._token is None:
-            self._token = get_service_account_token()
+            if self.in_cluster:
+                self._token = get_service_account_token()
+            else:
+                # Ugly, but k8s client does not expose a nice API for this.
+                self._token = self.ocp_client.configuration.auth_settings()['BearerToken']['value'].split(' ')[1]
 
         return self._token
 
