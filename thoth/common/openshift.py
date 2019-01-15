@@ -599,6 +599,33 @@ class OpenShift(object):
             for obj in response.to_dict()["items"][0]["objects"]
         ]
 
+    def schedule_all_solvers(
+        self,
+        packages: str,
+        output: str,
+        *,
+        indexes: list = None,
+        debug: bool = False,
+        subgraph_check_api: str = None,
+        transitive: bool = True,
+    ) -> typing.List[str]:
+        """Schedule all solvers for the given packages."""
+        solver_ids = []
+        for solver_name in self.get_solver_names():
+            solver_id = self.schedule_solver(
+                packages=packages,
+                output=output,
+                solver=solver_name,
+                indexes=indexes,
+                debug=debug,
+                subgraph_check_api=subgraph_check_api,
+                transitive=transitive
+            )
+
+            solver_ids.append(solver_id)
+
+        return solver_ids
+
     def run_solver(
         self,
         packages: str,
