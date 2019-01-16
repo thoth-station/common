@@ -451,7 +451,7 @@ class OpenShift(object):
             )
 
         response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
-            namespace=self.infra_namespace,
+            namespace=self.amun_infra_namespace,
             label_selector="template=amun-inspect-imagestream",
         )
 
