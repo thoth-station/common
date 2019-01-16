@@ -465,7 +465,7 @@ class OpenShift(object):
         template = response["items"][0]
 
         self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
-        template = self.oc_process(self.infra_namespace, template)
+        template = self.oc_process(self.amun_infra_namespace, template)
         imagestream = template["objects"][0]
 
         response = self.ocp_client.resources.get(
