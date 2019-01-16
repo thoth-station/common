@@ -481,7 +481,7 @@ class OpenShift(object):
         self, parameters: dict, use_hw_template: bool
     ) -> None:
         """Create a build config for Amun."""
-        if not self.infra_namespace:
+        if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required in order to create inspect imagestreams"
             )
@@ -497,7 +497,7 @@ class OpenShift(object):
             label_selector = "template=amun-inspect-buildconfig"
 
         response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
-            namespace=self.infra_namespace, label_selector=label_selector
+            namespace=self.amun_infra_namespace, label_selector=label_selector
         )
 
         self._raise_on_invalid_response_size(response)
@@ -547,9 +547,9 @@ class OpenShift(object):
         self, parameters: dict, template: dict = None, use_hw_template: bool = False
     ) -> str:
         """Create the actual inspect job."""
-        if not self.infra_namespace:
+        if not self.amun_infra_namespace:
             raise ConfigurationError(
-                "Infra namespace is required in order to create inspection job"
+                "Amun infra namespace is required in order to create inspection job"
             )
 
         template = template or self.get_inspection_job_template(
@@ -581,7 +581,7 @@ class OpenShift(object):
             label_selector = "template=amun-inspect-job"
 
         response = self.ocp_client.resources.get(api_version="v1", kind="Template").get(
-            namespace=self.infra_namespace, label_selector=label_selector
+            namespace=self.amun_infra_namespace, label_selector=label_selector
         )
 
         self._raise_on_invalid_response_size(response)
