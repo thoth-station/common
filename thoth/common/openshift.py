@@ -1416,7 +1416,9 @@ class OpenShift(object):
                     template_name,
                 )
             else:
-                pod_mem_requested += self.parse_memory_spec(container_mem_requested)
+                container_mem_requested = self.parse_memory_spec(container_mem_requested)
+                if container_mem_requested is not None:
+                    pod_mem_requested += container_mem_requested
 
             container_cpu_requested = container["resources"]["requests"]["cpu"]
             if not container_cpu_requested:
@@ -1426,7 +1428,9 @@ class OpenShift(object):
                     template_name,
                 )
             else:
-                pod_cpu_requested += self.parse_cpu_spec(container_cpu_requested)
+                container_cpu_requested = self.parse_cpu_spec(container_cpu_requested)
+                if container_cpu_requested is not None:
+                    pod_cpu_requested += container_cpu_requested
 
         if (
             quota_status["used"]["memory"] + pod_mem_requested
