@@ -523,7 +523,7 @@ class OpenShift(object):
         )
 
     def schedule_inspection_job(
-        self, inspection_id, parameters: dict, use_hw_template: bool
+        self, inspection_id, parameters: dict, use_hw_template: bool, cpu_requests: str, memory_requests: str
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.amun_inspection_namespace:
@@ -538,13 +538,23 @@ class OpenShift(object):
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_inspection_job_template.__name__,
-            template_method_parameters={"use_hw_template": use_hw_template},
+            template_method_parameters={
+                "use_hw_template": use_hw_template,
+                "cpu_requests": cpu_requests,
+                "memory_requests": memory_requests
+            },
             job_id=inspection_id,
             namespace=self.amun_inspection_namespace,
         )
 
     def run_inspection_job(
-        self, parameters: dict, template: dict = None, use_hw_template: bool = False
+        self,
+        parameters: dict,
+        template: dict = None,
+        *,
+        use_hw_template: bool = False,
+        cpu_requests: str = None,
+        memory_requests: str = None
     ) -> str:
         """Create the actual inspect job."""
         if not self.amun_infra_namespace:
@@ -553,7 +563,9 @@ class OpenShift(object):
             )
 
         template = template or self.get_inspection_job_template(
-            use_hw_template=use_hw_template
+            use_hw_template=use_hw_template,
+            cpu_requests=cpu_requests,
+            memory_requests=memory_requests
         )
         self.set_template_parameters(template, **parameters)
 
@@ -569,7 +581,13 @@ class OpenShift(object):
         )
         return response.metadata.name
 
-    def get_inspection_job_template(self, use_hw_template: bool) -> dict:
+    def get_inspection_job_template(
+        self,
+        *,
+        use_hw_template: bool,
+        cpu_requests: str = None,
+        memory_requests: str = None
+    ) -> dict:
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
                 "Unable to create inspection job without Amun inspection namespace being set"
@@ -591,6 +609,15 @@ class OpenShift(object):
         )
 
         template = response["items"][0]
+
+        # We explicitly set template CPU and memory parameters here so that we can schedule based
+        # on resources needed in the workload-operator.
+        if cpu_requests:
+            self.set_template_parameters(template, AMUN_CPU=cpu_requests)
+
+        if memory_requests:
+            self.set_template_parameters(template, AMUN_MEMORY=memory_requests)
+
         return template
 
     def get_solver_names(self) -> list:
