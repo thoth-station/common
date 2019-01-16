@@ -45,6 +45,8 @@ class OpenShift(object):
         middletier_namespace: str = None,
         backend_namespace: str = None,
         infra_namespace: str = None,
+        amun_infra_namespace: str = None,
+        amun_inspection_namespace: str = None,
         kubernetes_api_url: str = None,
         kubernetes_verify_tls: bool = True,
         openshift_api_url: str = None,
@@ -96,8 +98,11 @@ class OpenShift(object):
             self.ocp_client = DynamicClient(k8s_client)
             self.in_cluster = False
 
-        self.amun_inspection_namespace = frontend_namespace or os.getenv(
+        self.amun_inspection_namespace = amun_inspection_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESPACE"
+        )
+        self.amun_infra_namespace = amun_infra_namespace or os.getenv(
+            "THOTH_AMUN_INFRA_NAMESPACE"
         )
         self.frontend_namespace = frontend_namespace or os.getenv(
             "THOTH_FRONTEND_NAMESPACE"
@@ -435,9 +440,9 @@ class OpenShift(object):
 
     def create_inspection_imagestream(self, inspection_id: str) -> str:
         """Create imagestream for Amun."""
-        if not self.infra_namespace:
+        if not self.amun_infra_namespace:
             raise ConfigurationError(
-                "Infra namespace is required in order to create inspect imagestreams"
+                "Amun infra namespace is required in order to create Amun inspect imagestreams"
             )
 
         if not self.amun_inspection_namespace:
