@@ -1223,6 +1223,7 @@ class OpenShift(object):
         namespace: str,
         *,
         template: dict = None,
+        job_id: str = None,
         template_name: str = None,
     ):
         """Run the given graph sync."""
@@ -1237,7 +1238,11 @@ class OpenShift(object):
             )
 
         template = template or self.get_graph_sync_template(template_name)
-        self.set_template_parameters(template, THOTH_SYNC_DOCUMENT_ID=document_id)
+        self.set_template_parameters(
+            template,
+            THOTH_SYNC_DOCUMENT_ID=document_id,
+            THOTH_JOB_ID=job_id or self._generate_id(template_name)
+        )
         template = self.oc_process(namespace, template)
         graph_sync = template["objects"][0]
 
