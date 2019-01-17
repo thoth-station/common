@@ -610,13 +610,18 @@ class OpenShift(object):
 
         template = response["items"][0]
 
-        # We explicitly set template CPU and memory parameters here so that we can schedule based
-        # on resources needed in the workload-operator.
+        # We explicitly set template CPU and memory here so that we can schedule based
+        # on resources needed in the workload-operator. We cannot do this as a partial oc process,
+        # so we explictly modify template here (other parameters are about to be expanded later).
+        container_spec = template["objects"][0]["spec"]["template"]["spec"]["containers"][0]
+
         if cpu_requests:
-            self.set_template_parameters(template, AMUN_CPU=cpu_requests)
+            container_spec["resources"]["limits"]["cpu"] = cpu_requests
+            container_spec["resources"]["requests"]["cpu"] = cpu_requests
 
         if memory_requests:
-            self.set_template_parameters(template, AMUN_MEMORY=memory_requests)
+            container_spec["resources"]["limits"]["memory"] = memory_requests
+            container_spec["resources"]["requests"]["memory"] = memory_requests
 
         return template
 
