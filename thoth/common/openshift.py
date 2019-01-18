@@ -493,8 +493,8 @@ class OpenShift(object):
             template_method_name=self.get_inspection_build_template.__name__,
             template_method_parameters={"parameters": parameters, "use_hw_template": use_hw_template},
             namespace=self.amun_inspection_namespace,
-            job_id=inspection_id,
-            labels={"component": "amun-inspection-build"}
+            labels={"component": "amun-inspection-build", "inspection": inspection_id},
+            job_id=inspection_id + '-build'
         )
 
     def get_inspection_build_template(self, use_hw_template: bool, parameters: dict) -> dict:
@@ -635,7 +635,7 @@ class OpenShift(object):
 
         # We explicitly set template CPU and memory here so that we can schedule based
         # on resources needed in the workload-operator. We cannot do this as a partial oc process,
-        # so we explictly modify template here (other parameters are about to be expanded later).
+        # so we explicitly modify template here (other parameters are about to be expanded later).
         container_spec = template["objects"][0]["spec"]["template"]["spec"]["containers"][0]
 
         if cpu_requests:
@@ -1443,13 +1443,13 @@ class OpenShift(object):
 
         result = {
             "used": {
-                "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")),
-                "memory": self.parse_memory_spec(status["used"].get("limits.memory")),
+                "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")) or 0,
+                "memory": self.parse_memory_spec(status["used"].get("limits.memory")) or 0,
                 "pods": int(pods_used) if pods_used is not None else None,
             },
             "hard": {
-                "cpu": self.parse_cpu_spec(status["hard"].get("limits.cpu")),
-                "memory": self.parse_memory_spec(status["hard"].get("limits.memory")),
+                "cpu": self.parse_cpu_spec(status["hard"].get("limits.cpu")) or 0,
+                "memory": self.parse_memory_spec(status["hard"].get("limits.memory")) or 0,
                 "pods": int(pods_hard) if pods_hard is not None else None,
             },
         }
@@ -1458,8 +1458,6 @@ class OpenShift(object):
 
     def can_run_workload(self, template: dict, namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
-        pod_mem_requested = 0
-        pod_cpu_requested = 0
 
         quota_status = self.get_quota_status(namespace)
         if (
@@ -1470,16 +1468,49 @@ class OpenShift(object):
             return False
 
         template_name = template["metadata"]["name"]
+
+        if template["objects"][0]["kind"] == "Job":
+            cpu_requested, mem_requested = self._get_job_requests(template)
+        elif template["objects"][0]["kind"] == "BuildConfig":
+            cpu_requested, mem_requested = self._get_build_requests(template)
+        else:
+            raise ValueError(
+                f"Unable to handle template {template_name} - no requests gathering method defined for "
+                f"workload of type {template['objects'][0]['kind']}"
+            )
+
+        if (
+            quota_status["used"]["memory"] + mem_requested
+            > quota_status["hard"]["memory"]
+        ):
+            _LOGGER.debug("Cannot run workload %r, no memory available", template_name)
+            return False
+
+        if (
+            quota_status["used"]["cpu"] + cpu_requested
+            > quota_status["hard"]["cpu"]
+        ):
+            _LOGGER.debug("Cannot run workload %r, no CPU available", template_name)
+            return False
+
+        return True
+
+    def _get_job_requests(self, template) -> tuple:
+        """Get resources needed for running a workload of type Job."""
+        template_name = template["metadata"]["name"]
+
         if len(template["objects"]) > 1:
             _LOGGER.warning(
                 "Template %r has multiple pods defined, only the first will be considered in workload computation",
                 template_name,
             )
 
+        pod_mem_requested = 0
+        pod_cpu_requested = 0
         for container in template["objects"][0]["spec"]["template"]["spec"][
             "containers"
         ]:
-            container_mem_requested = container["resources"]["requests"]["memory"]
+            container_mem_requested = container.get("resources", {}).get("requests", {}).get("memory", 0)
             if not container_mem_requested:
                 _LOGGER.warning(
                     "No memory requests for container %r in template %r",
@@ -1491,7 +1522,7 @@ class OpenShift(object):
                 if container_mem_requested is not None:
                     pod_mem_requested += container_mem_requested
 
-            container_cpu_requested = container["resources"]["requests"]["cpu"]
+            container_cpu_requested = container.get("resources", {}).get("requests", {}).get("cpu", 0)
             if not container_cpu_requested:
                 _LOGGER.warning(
                     "No CPU requests for container %r in template %r",
@@ -1503,18 +1534,33 @@ class OpenShift(object):
                 if container_cpu_requested is not None:
                     pod_cpu_requested += container_cpu_requested
 
-        if (
-            quota_status["used"]["memory"] + pod_mem_requested
-            > quota_status["hard"]["memory"]
-        ):
-            _LOGGER.debug("Cannot run workload, no memory available")
-            return False
+        return pod_cpu_requested, pod_mem_requested
 
-        if (
-            quota_status["used"]["cpu"] + pod_cpu_requested
-            > quota_status["hard"]["cpu"]
-        ):
-            _LOGGER.debug("Cannot run workload, no CPU available")
-            return False
+    def _get_build_requests(self, template: dict) -> tuple:
+        """Get resources needed for running a workload of type BuildConfig (running the build)."""
+        template_name = template["metadata"]["name"]
+        if len(template["objects"]) != 1:
+            _LOGGER.warning(
+                "Template %r has multiple objects defined, only the first will be considered in workload computation",
+                template_name,
+            )
 
-        return True
+        build_memory = template["objects"][0]["spec"].get("resources", {}).get("requests", {}).get("memory", 0)
+        if not build_memory:
+            _LOGGER.warning(
+                "No memory requests for build in template %r",
+                template_name,
+            )
+        else:
+            build_memory = self.parse_memory_spec(build_memory)
+
+        build_cpu = template["objects"][0]["spec"].get("resources", {}).get("requests", {}).get("cpu", 0)
+        if not build_cpu:
+            _LOGGER.warning(
+                "No CPU requests for build in template %r",
+                template_name
+            )
+        else:
+            build_cpu = self.parse_cpu_spec(build_cpu)
+
+        return build_cpu, build_memory
