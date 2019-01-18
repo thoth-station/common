@@ -1251,6 +1251,24 @@ class OpenShift(object):
             labels={"component": "graph-sync"}
         )
 
+    def schedule_graph_sync_inspection(
+        self, document_id: str, namespace: str
+    ) -> str:
+        """Schedule a sync of inspection - a sugar for user."""
+        return self.schedule_graph_sync(document_id, namespace, template_name="graph-sync-job-inspection")
+
+    def schedule_graph_sync_solver(
+        self, document_id: str, namespace: str
+    ) -> str:
+        """Schedule a sync of solver result - a sugar for user."""
+        return self.schedule_graph_sync(document_id, namespace, template_name="graph-sync-job-solver")
+
+    def schedule_graph_sync_package_extract(
+        self, document_id: str, namespace: str
+    ) -> str:
+        """Schedule a sync of package-extract - a sugar for user."""
+        return self.schedule_graph_sync(document_id, namespace, template_name="graph-sync-job-package-extract")
+
     def run_graph_sync(
         self,
         document_id: str,
