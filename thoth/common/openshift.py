@@ -38,6 +38,8 @@ _LOGGER = logging.getLogger(__name__)
 class OpenShift(object):
     """Interaction with OpenShift Master."""
 
+    _DEFAULT_WORKLOAD_LABELS = {"app": "thoth", "operator": "workload"}
+
     def __init__(
         self,
         *,
@@ -491,7 +493,8 @@ class OpenShift(object):
             template_method_name=self.get_inspection_build_template.__name__,
             template_method_parameters={"parameters": parameters, "use_hw_template": use_hw_template},
             namespace=self.amun_inspection_namespace,
-            job_id=inspection_id
+            job_id=inspection_id,
+            labels={"component": "amun-inspection-build"}
         )
 
     def get_inspection_build_template(self, use_hw_template: bool, parameters: dict) -> dict:
@@ -564,6 +567,7 @@ class OpenShift(object):
             },
             job_id=inspection_id,
             namespace=self.amun_inspection_namespace,
+            labels={"component": "amun-inspection"}
         )
 
     def run_inspection_job(
@@ -758,6 +762,7 @@ class OpenShift(object):
             template_method_parameters={"solver": solver},
             job_id=job_id,
             namespace=self.middletier_namespace,
+            labels={"component": "solver"}
         )
 
     def get_solver_template(self, solver: str) -> dict:
@@ -804,6 +809,7 @@ class OpenShift(object):
             template_method_name=self.get_package_extract_template.__name__,
             job_id=job_id,
             namespace=self.backend_namespace,
+            labels={"component": "package-extract"}
         )
 
     def run_package_extract(
@@ -898,12 +904,17 @@ class OpenShift(object):
         namespace: str,
         template_method_name: str,
         template_method_parameters: dict = None,
+        labels: dict = None
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
+        if labels:
+            # Inject labels needed by default.
+            labels.update(self._DEFAULT_WORKLOAD_LABELS)
+
         self.create_config_map(
             job_id,
             namespace,
-            labels={"app": "thoth", "operator": "workload"},
+            labels=labels or self._DEFAULT_WORKLOAD_LABELS,
             data={
                 "run_method_name": run_method_name,
                 "run_method_parameters": json.dumps(run_method_parameters),
@@ -949,6 +960,7 @@ class OpenShift(object):
             template_method_name=self.get_dependency_monkey_template.__name__,
             job_id=job_id,
             namespace=self.middletier_namespace,
+            labels={"component": "dependency-monkey"}
         )
 
     def run_dependency_monkey(
@@ -1055,6 +1067,7 @@ class OpenShift(object):
             template_method_name=self.get_adviser_template.__name__,
             job_id=job_id,
             namespace=self.backend_namespace,
+            labels={"component": "adviser"}
         )
 
     def run_adviser(
@@ -1156,6 +1169,7 @@ class OpenShift(object):
             template_method_name=self.get_provenance_checker_template.__name__,
             job_id=job_id,
             namespace=self.backend_namespace,
+            labels={"component": "provenance-checker"}
         )
 
     def run_provenance_checker(
@@ -1234,6 +1248,7 @@ class OpenShift(object):
             template_method_parameters={"template_name": template_name},
             job_id=job_id,
             namespace=namespace,
+            labels={"component": "graph-sync"}
         )
 
     def run_graph_sync(
