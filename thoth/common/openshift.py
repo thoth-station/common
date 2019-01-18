@@ -488,7 +488,6 @@ class OpenShift(object):
 
         return self._schedule_workload(
             run_method_name=self.run_inspection_build.__name__,
-            run_method_parameters={},
             template_method_name=self.get_inspection_build_template.__name__,
             template_method_parameters={"parameters": parameters, "use_hw_template": use_hw_template},
             namespace=self.amun_inspection_namespace,
@@ -528,12 +527,11 @@ class OpenShift(object):
         self.set_template_parameters(template, **parameters)
 
         template = self.oc_process(self.amun_inspection_namespace, template)
-        buildconfig = template["objects"][0]
+        return template
 
-        return buildconfig
-
-    def run_inspection_build(self, buildconfig: dict):
+    def run_inspection_build(self, template: dict):
         """Run the inspection build."""
+        buildconfig = template["objects"][0]
         response = self.ocp_client.resources.get(
             api_version=buildconfig["apiVersion"], kind=buildconfig["kind"]
         ).create(body=buildconfig, namespace=self.amun_inspection_namespace)
