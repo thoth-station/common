@@ -893,10 +893,10 @@ class OpenShift(object):
         self,
         *,
         run_method_name: str,
-        run_method_parameters: dict,
         job_id: str,
         namespace: str,
         template_method_name: str,
+        run_method_parameters: dict = None,
         template_method_parameters: dict = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
@@ -906,7 +906,7 @@ class OpenShift(object):
             labels={"app": "thoth", "operator": "workload"},
             data={
                 "run_method_name": run_method_name,
-                "run_method_parameters": json.dumps(run_method_parameters),
+                "run_method_parameters": json.dumps(run_method_parameters or {}),
                 "template_method_name": template_method_name,
                 "template_method_parameters": json.dumps(
                     template_method_parameters or {}
