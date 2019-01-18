@@ -477,10 +477,27 @@ class OpenShift(object):
 
         return response["metadata"]["name"]
 
-    def create_inspection_buildconfig(
-        self, parameters: dict, use_hw_template: bool
-    ) -> None:
-        """Create a build config for Amun."""
+    def schedule_inspection_build(
+            self, parameters: dict, inspection_id: str, use_hw_template: bool
+    ) -> str:
+        """Schedule inspection build."""
+        if not self.amun_inspection_namespace:
+            raise ConfigurationError(
+                "Unable to schedule inspection build without Amun inspection namespace being set"
+            )
+
+        return self._schedule_workload(
+            run_method_name=self.run_inspection_build.__name__,
+            run_method_parameters={},
+            template_method_name=self.get_inspection_build_template.__name__,
+            template_method_parameters={"parameters": parameters, "use_hw_template": use_hw_template},
+            namespace=self.amun_inspection_namespace,
+            job_id=inspection_id
+        )
+
+    def get_inspection_build_template(self, use_hw_template: bool, parameters: dict) -> dict:
+        """Get inspection buildconfig that should be run. """
+        """Schedule inspection build."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required in order to create inspect imagestreams"
@@ -508,12 +525,15 @@ class OpenShift(object):
         )
 
         template = response["items"][0]
-
         self.set_template_parameters(template, **parameters)
 
         template = self.oc_process(self.amun_inspection_namespace, template)
         buildconfig = template["objects"][0]
 
+        return buildconfig
+
+    def run_inspection_build(self, buildconfig: dict):
+        """Run the inspection build."""
         response = self.ocp_client.resources.get(
             api_version=buildconfig["apiVersion"], kind=buildconfig["kind"]
         ).create(body=buildconfig, namespace=self.amun_inspection_namespace)
@@ -521,6 +541,7 @@ class OpenShift(object):
         _LOGGER.debug(
             "OpenShift response for creating Amun BuildConfig: %r", response.to_dict()
         )
+        return response.metadata.name
 
     def schedule_inspection_job(
         self, inspection_id, parameters: dict, use_hw_template: bool, cpu_requests: str, memory_requests: str
@@ -534,7 +555,7 @@ class OpenShift(object):
         parameters = locals()
         parameters.pop("self", None)
         parameters.pop("inspection_id", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_inspection_job_template.__name__,
@@ -732,7 +753,7 @@ class OpenShift(object):
         job_id = job_id or self._generate_id(solver)
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_solver.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_solver_template.__name__,
@@ -779,7 +800,7 @@ class OpenShift(object):
         job_id = job_id or self._generate_id("package-extract")
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_package_extract.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_package_extract_template.__name__,
@@ -870,7 +891,7 @@ class OpenShift(object):
         )
         return configmap_name
 
-    def _schedule_job(
+    def _schedule_workload(
         self,
         *,
         run_method_name: str,
@@ -924,7 +945,7 @@ class OpenShift(object):
         job_id = job_id or self._generate_id("dependency-monkey")
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_dependency_monkey.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_dependency_monkey_template.__name__,
@@ -1030,7 +1051,7 @@ class OpenShift(object):
         job_id = job_id or self._generate_id("adviser")
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_adviser.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_adviser_template.__name__,
@@ -1131,7 +1152,7 @@ class OpenShift(object):
         job_id = job_id or self._generate_id("provenance-checker")
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_provenance_checker.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_provenance_checker_template.__name__,
@@ -1208,7 +1229,7 @@ class OpenShift(object):
         job_id = self._generate_id(template_name)
         parameters = locals()
         parameters.pop("self", None)
-        return self._schedule_job(
+        return self._schedule_workload(
             run_method_name=self.run_graph_sync.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_graph_sync_template.__name__,
