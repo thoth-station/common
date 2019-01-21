@@ -23,6 +23,7 @@ import requests
 import typing
 import json
 import random
+import urllib3
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -32,8 +33,8 @@ from .helpers import (
     _get_incluster_ca_file,
 )
 
+urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
-
 
 class OpenShift(object):
     """Interaction with OpenShift Master."""
@@ -123,6 +124,9 @@ class OpenShift(object):
             "OPENSHIFT_API_URL", self.ocp_client.configuration.host
         )
         self._token = token
+
+        if not self.kubernetes_verify_tls:
+            _LOGGER.warning("TLS verification when communicating with k8s/okd master is disabled")
 
     @property
     def token(self):
