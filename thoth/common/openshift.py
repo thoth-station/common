@@ -1005,7 +1005,7 @@ class OpenShift(object):
             parameters["THOTH_DEPENDENCY_MONKEY_DECISION"] = decision
 
         if seed is not None:
-            parameters["THOTH_DEPENCENCY_MONKEY_SEED"] = seed
+            parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
 
         if count is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_COUNT"] = count
