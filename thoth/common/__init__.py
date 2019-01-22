@@ -30,4 +30,4 @@ from .logging import logger_setup
 from .openshift import OpenShift
 
 __name__ = "thoth-common"
-__version__ = "0.5.0"
+__version__ = "0.6.0"
