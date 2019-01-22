@@ -27,3 +27,11 @@ class NotFoundException(ThothCommonException):
 
 class ConfigurationError(ThothCommonException):
     """Raised on miss-configuration issues."""
+
+
+class OpenShiftRunNotReady(ThothCommonException):
+    """Exception raised when scheduling a workload cannot be done yet."""
+
+
+class OpenShiftDiscardRun(ThothCommonException):
+    """Exception raised the given workload should be discarded (will not be run)."""
