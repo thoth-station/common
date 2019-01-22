@@ -26,6 +26,8 @@ import random
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
+from .exceptions import OpenShiftRunNotReady
+from .exceptions import OpenShiftDiscardRun
 from .helpers import (
     get_service_account_token,
     _get_incluster_token_file,
@@ -584,6 +586,22 @@ class OpenShift(object):
             raise ConfigurationError(
                 "Amun infra namespace is required in order to create inspection job"
             )
+
+        inspection_id = parameters['AMUN_INSPECTION_ID']
+        try:
+            # We always use the first build for inspection.
+            build = self.get_build(inspection_id + '-1', self.amun_inspection_namespace)
+            if build['status']['phase'] == 'Failed':
+                raise OpenShiftDiscardRun(
+                    f"Inspection build for inspection {inspection_id} failed, discarding inspection run"
+                )
+
+            if build['status']['phase'] != 'Complete':
+                raise OpenShiftRunNotReady(
+                    f"Inspection build for inspection {inspection_id} has not completed yet"
+                )
+        except NotFoundException as exc:
+            raise OpenShiftRunNotReady(f"Inspection build for inspection {inspection_id} has not started yet") from exc
 
         template = template or self.get_inspection_job_template(
             use_hw_template=use_hw_template,
