@@ -1255,6 +1255,12 @@ class OpenShift(object):
             labels={"component": "graph-sync"}
         )
 
+    def schedule_graph_sync_adviser(
+        self, document_id: str, namespace: str
+    ) -> str:
+        """Schedule a sync of an adviser document - a sugar for user."""
+        return self.schedule_graph_sync(document_id, namespace, template_name="graph-sync-job-adviser")
+
     def schedule_graph_sync_inspection(
         self, document_id: str, namespace: str
     ) -> str:
