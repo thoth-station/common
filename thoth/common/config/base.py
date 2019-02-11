@@ -45,6 +45,10 @@ class ConfigEntryBase:
         instance = cls(**constructor_kwargs)
         return instance
 
-    def to_dict(self) -> dict:
+    def to_dict(self, without_none: bool = False) -> dict:
         """Convert runtime environment object representation to a dict."""
+        # We do not support nested items here.
+        if without_none:
+            return {k: v for k, v in attr.asdict(self).items() if v is not None}
+
         return attr.asdict(self)

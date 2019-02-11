@@ -79,6 +79,16 @@ class RuntimeEnvironment:
         )
         return instance
 
-    def to_dict(self):
-        """Convert configuration to a dict representation."""
-        return attr.asdict(self)
+    def to_dict(self, without_none: bool = False):
+        """Convert runtime environment configuration to a dict representation."""
+        result = attr.asdict(self)
+        if not without_none:
+            return result
+
+        for key, value in dict(result).items():
+            if not value and isinstance(value, dict):
+                result.pop(key)
+
+            if value is None:
+                result.pop(key)
+        return result
