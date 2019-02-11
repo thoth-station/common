@@ -48,6 +48,7 @@ setup(
     license='GPLv3+',
     packages=[
         'thoth.common',
+        'thoth.common.config',
     ],
     extras_require={
         'openshift': [
