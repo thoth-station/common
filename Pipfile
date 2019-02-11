@@ -10,6 +10,7 @@ requests = "*"
 sentry-sdk = "*"
 kubernetes = "*"
 openshift = "*"
+attrs = "*"
 
 [dev-packages]
 pytest = "*"

@@ -36,7 +36,8 @@ from .helpers import (
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
 
-class OpenShift(object):
+
+class OpenShift:
     """Interaction with OpenShift Master."""
 
     _DEFAULT_WORKLOAD_LABELS = {"app": "thoth", "operator": "workload"}

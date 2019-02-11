@@ -17,6 +17,9 @@
 
 """Shared code across Thoth analyzers."""
 
+from .config import HardwareInformation
+from .config import OperatingSystem
+from .config import RuntimeEnvironment
 from .helpers import cwd
 from .helpers import datetime2datetime_str
 from .helpers import datetime_str2timestamp

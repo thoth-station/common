@@ -2,3 +2,4 @@ daiquiri
 sentry-sdk
 requests
 rfc5424-logging-handler
+attrs
