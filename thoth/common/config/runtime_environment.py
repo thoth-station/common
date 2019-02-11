@@ -26,6 +26,8 @@ import yaml
 from .hardware_information import HardwareInformation
 from .operating_system import OperatingSystem
 
+from ..exceptions import ConfigurationError
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -77,6 +79,12 @@ class RuntimeEnvironment:
             cuda_version=cuda_version,
             name=name
         )
+
+        if instance.operating_system.version and not instance.operating_system.name:
+            raise ConfigurationError(
+                "Runtime environment stated operating system version but no operating system name provided"
+            )
+
         return instance
 
     def to_dict(self, without_none: bool = False):
