@@ -414,3 +414,43 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency sentry-sdk from 0.6.0 to 0.6.1
 * Solver now accepts subgraph check API parameter
 * Automatic update of dependency sentry-sdk from 0.5.5 to 0.6.0
+
+## Release 0.6.0 (2019-01-22T17:45:37)
+* Revert "A temporary workaround for workload management"
+* A temporary workaround for workload management
+* Automatic update of dependency sentry-sdk from 0.6.6 to 0.6.9
+* Disable urllib3 warnings
+* Fix seed environment name typo
+* Provide sugar methods for scheduling graph sync
+* Parse requests for build workload
+* Make run methods optional
+* Label workload to allow type specific queries
+* Fix in template gathering for inspection build
+* Treat builds as workload
+* Propagate graph-sync job id into template
+* Explicitly assign inspection requests
+* Assing memory and cpu requests when getting template
+* Fix issues when template does not request any resources
+* Fix how amun and thoth infra namespace is handled
+* Fix incorrect namespace usage one more time
+* Fix incorrect use of infra namespace
+* Amun does not use Thoth's infra namespace
+* Add routine for scheduling all registered solvers
+* Check running workload based on quota
+* Add routines for workload operator
+* Enable local development for OpenShift client
+* Reformat using black
+* Add missing guards for scheduling routines
+* Move Amun specific pieces to OpenShift class
+* Workload operator expects method, not method_name
+* Serialize parameters into JSON when adding to ConfigMap
+* Remove self from propagated parameters to configmap
+* Introduce schedule methods for workload operator
+* Reformant using black
+* Extend log messages with a line number
+* Report template parameters in debug mode
+* Make limit and count optional parameters for adviser template
+* Automatic update of dependency sentry-sdk from 0.6.4 to 0.6.5
+* Automatic update of dependency sentry-sdk from 0.6.3 to 0.6.4
+* Automatic update of dependency sentry-sdk from 0.6.2 to 0.6.3
+* Automatic update of dependency pytest from 4.0.1 to 4.0.2
