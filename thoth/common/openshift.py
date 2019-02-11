@@ -380,7 +380,7 @@ class OpenShift(object):
         for key, value in status[state].items():
             if key == "containerID":
                 value = (
-                    value[len("docker://") :]
+                    value[len("docker://"):]
                     if value.startswith("docker://")
                     else value
                 )
@@ -615,6 +615,7 @@ class OpenShift(object):
         cpu_requests: str = None,
         memory_requests: str = None
     ) -> dict:
+        """Get template for an inspection job."""
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
                 "Unable to create inspection job without Amun inspection namespace being set"
@@ -932,7 +933,7 @@ class OpenShift(object):
 
     @staticmethod
     def _generate_id(prefix: str):
-        """Generate an identifier"""
+        """Generate an identifier."""
         return prefix + "-%016x" % random.getrandbits(64)
 
     def schedule_dependency_monkey(
@@ -1134,6 +1135,7 @@ class OpenShift(object):
         return response.metadata.name
 
     def get_adviser_template(self):
+        """Get template for an adviser run."""
         if not self.infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required to gather adviser template when running it"
@@ -1222,6 +1224,7 @@ class OpenShift(object):
         return response.metadata.name
 
     def get_provenance_checker_template(self) -> dict:
+        """Get template for a provenance checker."""
         if not self.infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required to gather provenance template when running it"

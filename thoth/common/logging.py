@@ -43,7 +43,7 @@ def _init_log_levels(logging_env_var_start: str, logging_configuration: dict) ->
     }
 
     for logger, level in env_logging_conf.items():
-        logger = "thoth." + logger[len(logging_env_var_start) :].lower().replace(
+        logger = "thoth." + logger[len(logging_env_var_start):].lower().replace(
             "__", "."
         )
         level = getattr(logging, level)
@@ -90,7 +90,8 @@ def init_logging(
         outputs=(
             daiquiri.output.Stream(
                 formatter=daiquiri.formatter.ColorFormatter(
-                    fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:%(lineno)d: %(message)s%(color_stop)s"
+                    fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:"
+                        "%(lineno)d: %(message)s%(color_stop)s"
                 )
             ),
         ),
