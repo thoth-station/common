@@ -11,6 +11,7 @@ sentry-sdk = "*"
 kubernetes = "*"
 openshift = "*"
 attrs = "*"
+pyyaml = "*"
 
 [dev-packages]
 pytest = "*"
