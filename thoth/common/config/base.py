@@ -29,7 +29,6 @@ class ConfigEntryBase:
     """A base class for configuration entries."""
 
     _TYPE = None
-    _TERMINAL_WIDTH = 80
 
     @classmethod
     def from_dict(cls, dict_: dict):
