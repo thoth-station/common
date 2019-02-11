@@ -17,9 +17,11 @@
 
 """Representation of runtime environment entry collapsing hardware, runtime and other information."""
 
+import os
 import logging
 
 import attr
+import yaml
 
 from .hardware_information import HardwareInformation
 from .operating_system import OperatingSystem
@@ -36,6 +38,19 @@ class RuntimeEnvironment:
     python_version = attr.ib(type=str, default=None)
     cuda_version = attr.ib(type=str, default=None)
     name = attr.ib(type=str, default=None)
+
+    @classmethod
+    def load(cls, content: str = None):
+        """Load runtime environment information from file or from a JSON representation, transparently."""
+        if content is None:
+            return cls.from_dict({})
+
+        if os.path.isfile(content):
+            with open(content, "r") as input_file:
+                content = input_file.read()
+
+        content = yaml.load(content)
+        return cls.from_dict(content)
 
     @classmethod
     def from_dict(cls, dict_: dict):
