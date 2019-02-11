@@ -31,22 +31,24 @@ _LOGGER = logging.getLogger(__name__)
 class RuntimeEnvironment:
     """An entry collapsing configuration options in the user configuration file."""
 
-    hardware_information = attr.ib(type=HardwareInformation)
+    hardware = attr.ib(type=HardwareInformation)
     operating_system = attr.ib(type=OperatingSystem)
     python_version = attr.ib(type=str, default=None)
     cuda_version = attr.ib(type=str, default=None)
+    name = attr.ib(type=str, default=None)
 
     @classmethod
     def from_dict(cls, dict_: dict):
         """Parse one configuration entry from a dictionary."""
         dict_ = dict(dict_)
 
-        hardware_information = dict_.pop("hardware_information", {})
+        hardware = dict_.pop("hardware", {})
         operating_system = dict_.pop("operating_system", {})
         python_version = dict_.pop("python_version", None)
         cuda_version = dict_.pop("cuda_version", None)
+        name = dict_.pop("name", None)
 
-        for key, value in dict_.values():
+        for key, value in dict_.items():
             _LOGGER.warning(
                 "Unknown configuration entry in the configuration file %s with value %s",
                 key,
@@ -54,10 +56,11 @@ class RuntimeEnvironment:
             )
 
         instance = cls(
-            hardware_information=HardwareInformation.from_dict(hardware_information),
+            hardware=HardwareInformation.from_dict(hardware),
             operating_system=OperatingSystem.from_dict(operating_system),
             python_version=python_version,
-            cuda_version=cuda_version
+            cuda_version=cuda_version,
+            name=name
         )
         return instance
 
