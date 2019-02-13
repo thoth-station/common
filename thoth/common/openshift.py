@@ -529,8 +529,7 @@ class OpenShift:
         )
 
     def get_inspection_build_template(self, use_hw_template: bool, parameters: dict) -> dict:
-        """Get inspection buildconfig that should be run. """
-        """Schedule inspection build."""
+        """Get inspection buildconfig that should be run."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required in order to create inspect imagestreams"
@@ -1516,7 +1515,6 @@ class OpenShift:
 
     def can_run_workload(self, template: dict, namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
-
         quota_status = self.get_quota_status(namespace)
         if (
             quota_status["hard"]["pods"] is not None

@@ -159,7 +159,6 @@ def logger_setup(
     The wrapper could be extended on any function by specifying arguments
     like (Logger name, Logging level).
     """
-
     def wrapper(fn: typing.Callable):
         @wraps(fn)
         def wrapper_func(*args, **kwargs):
