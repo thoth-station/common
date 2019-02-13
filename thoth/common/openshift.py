@@ -1271,7 +1271,7 @@ class OpenShift:
         self, document_id: str, namespace: str, *, template_name: str = None
     ):
         """Schedule a graph sync."""
-        job_id = self._generate_id("graph-sync-" + document_id)
+        job_id = "graph-sync-" + document_id
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
