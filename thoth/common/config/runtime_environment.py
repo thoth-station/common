@@ -55,9 +55,9 @@ class RuntimeEnvironment:
         return cls.from_dict(content)
 
     @classmethod
-    def from_dict(cls, dict_: dict):
+    def from_dict(cls, dict_: dict = None):
         """Parse one configuration entry from a dictionary."""
-        dict_ = dict(dict_)
+        dict_ = dict(dict_ or {})
 
         hardware = dict_.pop("hardware", {})
         operating_system = dict_.pop("operating_system", {})
@@ -99,4 +99,5 @@ class RuntimeEnvironment:
 
             if value is None:
                 result.pop(key)
+
         return result
