@@ -417,10 +417,36 @@ class OpenShift:
 
         return response["items"][0]["metadata"]["name"]
 
+    def get_configmap(self, configmap_id: str, namespace: str):
+        """Get the given configmap in a namespace, return object representing config map."""
+        v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
+        return v1_configmap.get(name=configmap_id, namespace=namespace)
+
     def get_job_status_report(self, job_id: str, namespace: str) -> dict:
         """Get status of a pod running inside a job."""
-        pod_id = self._get_pod_id_from_job(job_id, namespace)
-        return self.get_pod_status_report(pod_id, namespace)
+        try:
+            job_id = self._get_pod_id_from_job(job_id, namespace)
+        except Exception:
+            try:
+                # Try to retrieve configmap - if we are successful it means we have registered the given
+                # job (workload), but it was queued due to resources not being available. This code will go away
+                # once we introduce a proper workflow management.
+                self.get_configmap(job_id, namespace)
+                return {
+                    "container": None,
+                    "exit_code": None,
+                    "finished_at": None,
+                    "reason": "WorkloadRegistered",
+                    "started_at": None,
+                    "state": "registered"
+                }
+            except Exception:
+                pass
+
+            # Raise the original exception as the given pod was not found based on job id.
+            raise
+
+        return self.get_pod_status_report(job_id, namespace)
 
     def get_job_log(self, job_id: str, namespace: str = None) -> str:
         """Get log of a pod running inside a job."""
