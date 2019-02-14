@@ -454,3 +454,25 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency sentry-sdk from 0.6.3 to 0.6.4
 * Automatic update of dependency sentry-sdk from 0.6.2 to 0.6.3
 * Automatic update of dependency pytest from 4.0.1 to 4.0.2
+
+## Release 0.7.0 (2019-02-13T17:10:50)
+* Graph syncs are unique per document id, no need to have long ids
+* Do not pin down openshift and kubernetes, let consumers do it if needed
+* Propagate document ID into graph-sync job name
+* Address coala complains
+* Check for ConfigMap presence to report registered workload to user
+* Automatic update of dependency pytest from 4.2.0 to 4.2.1
+* Runtime environment can be set to None
+* Add check for runtime environment name
+* Optionally provide dict representation without none values
+* Load runtime environment transparently from YAML/JSON file
+* Also install the missing config module
+* Remove unused entry
+* Introduce name and rename hardware_information to hardware
+* Automatic update of dependency pytest from 4.1.1 to 4.2.0
+* Automatic update of dependency sentry-sdk from 0.6.9 to 0.7.2
+* Automatic update of dependency rfc5424-logging-handler from 1.3.0 to 1.4.0
+* Introduce runtime environment abstractions
+* Introduce method for scheduling adviser graph syncs
+* Fix more coala issues
+* Fix coala errors
