@@ -476,3 +476,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Introduce method for scheduling adviser graph syncs
 * Fix more coala issues
 * Fix coala errors
+
+## Release 0.7.1 (2019-02-14T06:43:01)
+* Add missing MANIFEST.in
