@@ -27,6 +27,7 @@ import urllib3
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
+from .exceptions import DiscardError
 from .helpers import (
     get_service_account_token,
     _get_incluster_token_file,
@@ -510,6 +511,11 @@ class OpenShift:
 
         return response["metadata"]["name"]
 
+    @staticmethod
+    def _get_inspection_build_job_id(inspection_id: str) -> str:
+        """Get inspection build job identifier."""
+        return inspection_id + '-build'
+
     def schedule_inspection_build(
             self, parameters: dict, inspection_id: str, use_hw_template: bool
     ) -> str:
@@ -525,7 +531,7 @@ class OpenShift:
             template_method_parameters={"parameters": parameters, "use_hw_template": use_hw_template},
             namespace=self.amun_inspection_namespace,
             labels={"component": "amun-inspection-build", "inspection": inspection_id},
-            job_id=inspection_id + '-build'
+            job_id=self._get_inspection_build_job_id(inspection_id)
         )
 
     def get_inspection_build_template(self, use_hw_template: bool, parameters: dict) -> dict:
@@ -574,6 +580,22 @@ class OpenShift:
         )
         return response.metadata.name
 
+    def is_inspection_build_finished(self, inspection_id: str) -> bool:
+        """Check if the given inspection build has finished."""
+        build_id = self._get_inspection_build_job_id(inspection_id)
+        # We always refer to the first inspection build.
+        build = self.get_build(build_id + '-1', namespace=self.amun_inspection_namespace)
+        if build["status"]["phase"] == "Complete":
+            return True
+
+        if build["status"]["phase"] == "Failed":
+            # A temporary hack until we will have a proper workflow management.
+            _LOGGER.info("Inspection build %r failed, scheduling graph sync", build_id)
+            self.schedule_graph_sync_inspection(document_id=inspection_id, namespace=self.amun_inspection_namespace)
+            raise DiscardError("Inspection build %r failed", build_id)
+
+        return False
+
     def schedule_inspection_job(
         self, inspection_id, parameters: dict, use_hw_template: bool, cpu_requests: str, memory_requests: str
     ) -> str:
@@ -594,6 +616,10 @@ class OpenShift:
                 "use_hw_template": use_hw_template,
                 "cpu_requests": cpu_requests,
                 "memory_requests": memory_requests
+            },
+            predicate_method_name=self.is_inspection_build_finished.__name__,
+            predicate_method_parameters={
+                "inspection_id": inspection_id
             },
             job_id=inspection_id,
             namespace=self.amun_inspection_namespace,
@@ -935,6 +961,8 @@ class OpenShift:
         template_method_name: str,
         run_method_parameters: dict = None,
         template_method_parameters: dict = None,
+        predicate_method_name: str = None,
+        predicate_method_parameters: dict = None,
         labels: dict = None
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
@@ -953,6 +981,10 @@ class OpenShift:
                 "template_method_parameters": json.dumps(
                     template_method_parameters or {}
                 ),
+                "predicate_method_name": predicate_method_name,
+                "predicate_method_parameters": json.dumps(
+                    predicate_method_parameters or {}
+                )
             },
         )
         return job_id

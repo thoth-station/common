@@ -27,3 +27,11 @@ class NotFoundException(ThothCommonException):
 
 class ConfigurationError(ThothCommonException):
     """Raised on miss-configuration issues."""
+
+
+class DiscardError(ThothCommonException):
+    """Raised if the calle should discard the given resource.
+
+    Currently used to signalize failure of builds of Amun inspections - workload
+    operator should cancel workload scheduling.
+    """
