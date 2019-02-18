@@ -46,6 +46,12 @@ def parse_datetime(datetime_string: str) -> datetime.datetime:
     return parsed.replace(tzinfo=timezone.utc)
 
 
+def format_datetime(dt: datetime.datetime = None) -> str:
+    """Format datetime to default format."""
+    # We use strftime to make sure we do not propagate timezone information. We use UTC all over the places.
+    return dt.strftime(_DATETIME_FORMAT_STRING)
+
+
 def datetime_str2timestamp(datetime_string: str) -> int:
     """Parse datetime string represented in ISO format and return timestamp."""
     return int(parse_datetime(datetime_string).timestamp())
