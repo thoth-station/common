@@ -39,11 +39,22 @@ def cwd(target):
         os.chdir(curdir)
 
 
+def get_default_datetime_format():
+    """Return default datetime format string."""
+    return _DATETIME_FORMAT_STRING
+
+
 def parse_datetime(datetime_string: str) -> datetime.datetime:
     """Parse datetime string represented in ISO format."""
     parsed = datetime.datetime.strptime(datetime_string, _DATETIME_FORMAT_STRING)
     # Make all timezone unaware datetimes timezone aware.
     return parsed.replace(tzinfo=timezone.utc)
+
+
+def format_datetime(dt: datetime.datetime = None) -> str:
+    """Return datetime string in default format."""
+    # We use strftime to make sure we do not propagate timezone information. We use UTC all over the places.
+    return dt.strftime(_DATETIME_FORMAT_STRING)
 
 
 def datetime_str2timestamp(datetime_string: str) -> int:
