@@ -819,6 +819,8 @@ class OpenShift:
         self,
         image: str,
         output: str,
+        *,
+        origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
         verify_tls: bool = True,
@@ -847,6 +849,8 @@ class OpenShift:
         self,
         image: str,
         output: str,
+        *,
+        origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
         verify_tls: bool = True,
@@ -869,6 +873,7 @@ class OpenShift:
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self._generate_id("package-extract"),
+            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({"origin": origin}),
         )
 
         if registry_user and registry_password:
@@ -1080,6 +1085,7 @@ class OpenShift:
         count: int = None,
         limit: int = None,
         runtime_environment: dict = None,
+        origin: str = None,
         debug: bool = False,
         job_id: str = None,
     ) -> str:
@@ -1110,6 +1116,7 @@ class OpenShift:
         count: int = None,
         limit: int = None,
         runtime_environment: dict = None,
+        origin: str = None,
         debug: bool = False,
         job_id: str = None,
         template: dict = None,
@@ -1137,6 +1144,7 @@ class OpenShift:
             ),
             "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type,
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": runtime_environment,
+            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_JOB_ID": job_id or self._generate_id("adviser"),
@@ -1182,6 +1190,7 @@ class OpenShift:
         application_stack: dict,
         output: str,
         *,
+        origin: str = None,
         whitelisted_sources: list = None,
         debug: bool = False,
         job_id: str = None,
@@ -1209,6 +1218,7 @@ class OpenShift:
         application_stack: dict,
         output: str,
         *,
+        origin: str = None,
         whitelisted_sources: list = None,
         debug: bool = False,
         job_id: str = None,
@@ -1232,6 +1242,7 @@ class OpenShift:
             THOTH_ADVISER_REQUIREMENTS=requirements,
             THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
             THOTH_ADVISER_OUTPUT=output,
+            THOTH_ADVISER_METADATA=json.dumps({"origin": origin}),
             THOTH_WHITELISTED_SOURCES=whitelisted_sources,
             THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
             THOTH_PROVENANCE_CHECKER_JOB_ID=job_id
@@ -1540,6 +1551,7 @@ class OpenShift:
             > quota_status["hard"]["memory"]
         ):
             _LOGGER.debug("Cannot run workload %r, no memory available", template_name)
+
             return False
 
         if (
