@@ -94,10 +94,21 @@ class RuntimeEnvironment:
             return result
 
         for key, value in dict(result).items():
-            if not value and isinstance(value, dict):
+            # We support one nested configuration entries.
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    if v is not None:
+                        if key not in result:
+                            result[key] = {}
+                        result[key] = v
                 result.pop(key)
 
             if value is None:
                 result.pop(key)
 
         return result
+
+    def to_string(self):
+        """Convert runtime environment configuration to a string representation."""
+        dict_representation = self.to_dict(without_none=True)
+        return str(dict_representation)
