@@ -980,6 +980,7 @@ class OpenShift:
         count: int = None,
         debug: bool = False,
         job_id: str = None,
+        limit_latest_versions: int = None,
     ) -> str:
         """Schedule a dependency monkey run."""
         if not self.middletier_namespace:
@@ -1012,6 +1013,7 @@ class OpenShift:
         count: int = None,
         debug: bool = False,
         job_id: str = None,
+        limit_latest_versions: int = None,
         template: dict = None,
     ) -> str:
         """Run Dependency Monkey on the provided user input."""
@@ -1045,6 +1047,9 @@ class OpenShift:
 
         if count is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_COUNT"] = count
+
+        if limit_latest_versions is not None:
+            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
 
         self.set_template_parameters(template, **parameters)
 
@@ -1088,6 +1093,7 @@ class OpenShift:
         origin: str = None,
         debug: bool = False,
         job_id: str = None,
+        limit_latest_versions: int = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1119,6 +1125,7 @@ class OpenShift:
         origin: str = None,
         debug: bool = False,
         job_id: str = None,
+        limit_latest_versions: int = None,
         template: dict = None,
     ) -> str:
         """Run adviser on the provided user input."""
@@ -1155,6 +1162,9 @@ class OpenShift:
 
         if limit:
             parameters["THOTH_ADVISER_LIMIT"] = limit
+
+        if limit_latest_versions is not None:
+            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
 
         self.set_template_parameters(template, **parameters)
 
