@@ -51,7 +51,7 @@ class RuntimeEnvironment:
             with open(content, "r") as input_file:
                 content = input_file.read()
 
-        content = yaml.load(content)
+        content = yaml.safe_load(content)
         return cls.from_dict(content)
 
     @classmethod
