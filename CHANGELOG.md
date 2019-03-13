@@ -479,3 +479,18 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.7.1 (2019-02-14T06:43:01)
 * Add missing MANIFEST.in
+
+## Release 0.8.0 (2019-03-13T09:39:32)
+* Automatic update of dependency sentry-sdk from 0.7.4 to 0.7.6
+* Do not consider nested none values in output if with_none is false
+* Introduce limit latest versions parameter
+* Automatic update of dependency pylint from 2.2.2 to 2.3.0
+* Automatic update of dependency pytest from 4.2.1 to 4.3.0
+* Automatic update of dependency openshift from 0.8.5 to 0.8.6
+* Automatic update of dependency sentry-sdk from 0.7.2 to 0.7.4
+* Automatic update of dependency rfc5424-logging-handler from 1.4.0 to 1.4.1
+* Update .coafile
+* Propagate origin as metadata
+* Add getter to default datetime format
+* Add format_datetime method to convert datetimes
+* Automatic update of dependency openshift from 0.8.4 to 0.8.5
