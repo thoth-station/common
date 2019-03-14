@@ -57,9 +57,10 @@ class OpenShift:
         token: str = None,
         token_file: str = None,
         cert_file: str = None,
-        environ=os.environ,
+        environ: dict = None,
     ):
         """Initialize OpenShift class responsible for handling objects in deployment."""
+        environ = environ or os.environ
         try:
             from kubernetes import client, config
             from openshift.dynamic import DynamicClient

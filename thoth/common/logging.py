@@ -61,7 +61,7 @@ def init_logging(
     """Initialize Thoth's logging - respects all namespaces.
 
     This function allows you to control logging facilities in Thoth. Logging can be configured via env variables
-    so that deployment can respect your configuration. The structure of environment variables is THOTH_LOG_<MODULE>
+    so that deployment can respect your configuration. The structure of environment variables is THOTH_LOG_(MODULE)
     and the value of env variable states verbosity level as in the logging module (DEBUG, INFO, WARNING, ERROR).
 
     >>> import os
