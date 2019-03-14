@@ -1,4 +1,4 @@
-thoth-common
+Thoth Common
 ------------
 
 A library used in project `Thoth <https://thoth-station.ninja>`_. It's aim is to
