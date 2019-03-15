@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d2cb6ffa407ace5e6179b8817f1f18443cc8108dc9d2cfd747512e252d755a25"
+            "sha256": "0c3ee98a636142559281803cadd900c13132c92f214c59ee4aaa063cdc915338"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -154,11 +154,11 @@
         },
         "kubernetes": {
             "hashes": [
-                "sha256:5ee6e2e949ca800ad8a73da6f67c2a637c2c803945b006e6105beae83e43b273",
-                "sha256:84dfb4319afac189e8327b71b9332b5329d2a78074f58958c5f06a870edf32ba"
+                "sha256:0cc9ce02d838da660efa0a67270b4b7d47e6beb8889673cd45c86f897e2d6821",
+                "sha256:54f8e7bb1dd9a55cf416dff76a63c4ae441764280942d9913f2243676f29d02c"
             ],
             "index": "pypi",
-            "version": "==7.0.0"
+            "version": "==8.0.0"
         },
         "markupsafe": {
             "hashes": [
@@ -202,10 +202,10 @@
         },
         "openshift": {
             "hashes": [
-                "sha256:efdbac5d1a53ffb2aa4bc1ca8d8526a9f1d23dac22557af18e106be70d279725"
+                "sha256:8465c3ffafab9ac54fda32253cecc4645a181dd276426132caf45be1e85200dd"
             ],
             "index": "pypi",
-            "version": "==0.7.0"
+            "version": "==0.8.0"
         },
         "pyasn1": {
             "hashes": [
