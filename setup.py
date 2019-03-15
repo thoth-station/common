@@ -53,8 +53,8 @@ setup(
     ],
     extras_require={
         'openshift': [
-            'openshift',
-            'kubernetes'
+            'openshift==0.7.0',
+            'kubernetes==7.0.0'
         ]
     },
     zip_safe=False,
