@@ -494,3 +494,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add getter to default datetime format
 * Add format_datetime method to convert datetimes
 * Automatic update of dependency openshift from 0.8.4 to 0.8.5
+
+## Release 0.8.1 (2019-03-16T15:10:25)
+* Finding the right OpenShift version
+* Lock Kubernetes and OpenShift to specific version
+* Adjust heading
+* Use Sphinx for documentation
+* Automatic update of dependency pyyaml from 3.13 to 5.1
+* Automatic update of dependency pylint from 2.3.0 to 2.3.1
+* Automatic update of dependency pytest from 4.3.0 to 4.3.1
+* Automatic update of dependency attrs from 18.2.0 to 19.1.0
+* Use safe_load() instead of load()
