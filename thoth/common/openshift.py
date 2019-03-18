@@ -821,6 +821,7 @@ class OpenShift:
         image: str,
         output: str,
         *,
+        environment_type: str,
         origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
@@ -833,6 +834,9 @@ class OpenShift:
             raise ConfigurationError(
                 "Unable to schedule package extract job without backend namespace being set"
             )
+
+        if environment_type not in ('runtime', 'buildtime'):
+            raise ValueError("Unknown environment type %r, has to be runtime or buildtime")
 
         job_id = job_id or self._generate_id("package-extract")
         parameters = locals()
@@ -851,6 +855,7 @@ class OpenShift:
         image: str,
         output: str,
         *,
+        environment_type: str,
         origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
@@ -865,6 +870,9 @@ class OpenShift:
                 "Running package-extract requires middletier namespace to be specified"
             )
 
+        if environment_type not in ('runtime', 'buildtime'):
+            raise ValueError("Unknown environment type %r, has to be runtime or buildtime")
+
         template = template or self.get_package_extract_template()
 
         self.set_template_parameters(
@@ -874,7 +882,10 @@ class OpenShift:
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self._generate_id("package-extract"),
-            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({"origin": origin}),
+            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({
+                "origin": origin,
+                "environment_type": environment_type,
+            }),
         )
 
         if registry_user and registry_password:
