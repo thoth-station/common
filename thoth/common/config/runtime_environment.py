@@ -89,22 +89,25 @@ class RuntimeEnvironment:
 
     def to_dict(self, without_none: bool = False):
         """Convert runtime environment configuration to a dict representation."""
-        result = attr.asdict(self)
+        dict_ = attr.asdict(self)
         if not without_none:
-            return result
+            return dict_
 
-        for key, value in dict(result).items():
+        result = {}
+        for key, value in dict_.items():
             # We support one nested configuration entries.
             if isinstance(value, dict):
-                for k, v in value.items():
+                for k, v in dict_[key].items():
                     if v is not None:
                         if key not in result:
                             result[key] = {}
-                        result[key] = v
-                result.pop(key)
+                        if k not in result[key]:
+                            result[key][k] = {}
+                        result[key][k] = v
+                continue
 
-            if value is None:
-                result.pop(key)
+            if value is not None:
+                result[key] = value
 
         return result
 
