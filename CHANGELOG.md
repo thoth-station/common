@@ -505,3 +505,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency pytest from 4.3.0 to 4.3.1
 * Automatic update of dependency attrs from 18.2.0 to 19.1.0
 * Use safe_load() instead of load()
+
+## Release 0.8.2 (2019-04-03T10:05:52)
+* Automatic update of dependency pytest from 4.3.1 to 4.4.0
+* Automatic update of dependency sentry-sdk from 0.7.8 to 0.7.9
+* Automatic update of dependency sentry-sdk from 0.7.7 to 0.7.8
+* Automatic update of dependency sentry-sdk from 0.7.6 to 0.7.7
+* Add Thoth's configuration file
+* Fix serialization of runtime environment
+* Propagate metadata about runtime and buildtime environment
