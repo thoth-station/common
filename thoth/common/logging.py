@@ -91,7 +91,7 @@ def init_logging(
             daiquiri.output.Stream(
                 formatter=daiquiri.formatter.ColorFormatter(
                     fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:"
-                        "%(lineno)d: %(message)s%(color_stop)s"
+                    "%(lineno)d: %(message)s%(color_stop)s"
                 )
             ),
         ),
@@ -151,7 +151,7 @@ def init_logging(
 def logger_setup(
     logger_name: str, logging_level: int, disable: bool = True
 ) -> typing.Callable:
-    """The function defines a wrapper to set Verbosity level.
+    """Define a wrapper to set Verbosity level.
 
     The verbosity can be set for any module within levels DEBUG, INFO, WARNING, ERROR.
 
