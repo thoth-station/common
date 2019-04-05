@@ -514,3 +514,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add Thoth's configuration file
 * Fix serialization of runtime environment
 * Propagate metadata about runtime and buildtime environment
+
+## Release 0.8.3 (2019-04-05T10:53:55)
+* fixed the log message
+* fixed some coala errors
+* :recycle: refactored retrieval of template to OpenShift._get_template(label_selector)
