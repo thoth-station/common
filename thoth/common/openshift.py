@@ -384,7 +384,7 @@ class OpenShift:
         for key, value in status[state].items():
             if key == "containerID":
                 value = (
-                    value[len("docker://") :]
+                    value[len("docker://"):]
                     if value.startswith("docker://")
                     else value
                 )
@@ -1254,7 +1254,6 @@ class OpenShift:
 
         return self._get_template("template=provenance-checker")
 
-
     def schedule_graph_sync(
         self, document_id: str, namespace: str, *, template_name: str = None
     ):
@@ -1348,9 +1347,8 @@ class OpenShift:
 
         return self._get_template(f"component=graph-sync,template={template_name}")
 
-
     def _raise_on_invalid_response_size(self, response):
-        """It is expected that there is only one object type for the given item."""
+        """Expect that there is only one object type for the given item."""
         if len(response.items) != 1:
             raise RuntimeError(
                 f"Application misconfiguration - number of templates available in the infra namespace "
