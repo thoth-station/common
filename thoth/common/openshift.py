@@ -480,7 +480,7 @@ class OpenShift:
             api_version="template.openshift.io/v1", kind="Template"
         ).get(namespace=self.infra_namespace, label_selector=_label_selector)
         _LOGGER.debug(
-            "OpenShift response for getting provenance-checker template: %r",
+            "OpenShift response for getting template by label_selector '{_label_selector}': %r",
             response.to_dict(),
         )
         self._raise_on_invalid_response_size(response)
