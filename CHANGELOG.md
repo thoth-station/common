@@ -519,3 +519,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * fixed the log message
 * fixed some coala errors
 * :recycle: refactored retrieval of template to OpenShift._get_template(label_selector)
+
+## Release 0.8.4 (2019-04-08T10:14:11)
+* Obtain templates from Amun infra for Amun specific templates
+* Automatic update of dependency sentry-sdk from 0.7.9 to 0.7.10
