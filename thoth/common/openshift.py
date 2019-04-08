@@ -474,11 +474,11 @@ class OpenShift:
 
         return response
 
-    def _get_template(self, _label_selector: str) -> dict:
+    def _get_template(self, _label_selector: str, namespace: str = None) -> dict:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template"
-        ).get(namespace=self.infra_namespace, label_selector=_label_selector)
+        ).get(namespace=namespace or self.infra_namespace, label_selector=_label_selector)
         _LOGGER.debug(
             "OpenShift response for getting template by label_selector '{_label_selector}': %r",
             response.to_dict(),
@@ -499,7 +499,7 @@ class OpenShift:
                 "Unable to create inspection image stream without Amun inspection namespace being set"
             )
 
-        template = self._get_template("template=amun-inspect-imagestream")
+        template = self._get_template("template=amun-inspect-imagestream", self.amun_infra_namespace)
 
         self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
         template = self.oc_process(self.amun_infra_namespace, template)
@@ -554,7 +554,7 @@ class OpenShift:
         else:
             label_selector = "template=amun-inspect-buildconfig"
 
-        template = self._get_template(label_selector)
+        template = self._get_template(label_selector, self.amun_infra_namespace)
 
         self.set_template_parameters(template, **parameters)
 
@@ -656,7 +656,7 @@ class OpenShift:
         else:
             label_selector = "template=amun-inspect-job"
 
-        template = self._get_template(label_selector)
+        template = self._get_template(label_selector, self.amun_infra_namespace)
 
         # We explicitly set template CPU and memory here so that we can schedule based
         # on resources needed in the workload-operator. We cannot do this as a partial oc process,
