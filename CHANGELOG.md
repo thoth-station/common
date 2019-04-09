@@ -523,3 +523,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.8.4 (2019-04-08T10:14:11)
 * Obtain templates from Amun infra for Amun specific templates
 * Automatic update of dependency sentry-sdk from 0.7.9 to 0.7.10
+
+## Release 0.8.5 (2019-04-09T07:21:23)
+* Fix inspection and inspect bad interpretation
+* :pushpin: Automatic update of dependency rfc5424-logging-handler from 1.4.1 to 1.4.2
