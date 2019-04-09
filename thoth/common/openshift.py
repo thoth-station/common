@@ -491,7 +491,7 @@ class OpenShift:
         """Create imagestream for Amun."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
-                "Amun infra namespace is required in order to create Amun inspect imagestreams"
+                "Amun infra namespace is required in order to create Amun inspection imagestreams"
             )
 
         if not self.amun_inspection_namespace:
@@ -499,7 +499,7 @@ class OpenShift:
                 "Unable to create inspection image stream without Amun inspection namespace being set"
             )
 
-        template = self._get_template("template=amun-inspect-imagestream", self.amun_infra_namespace)
+        template = self._get_template("template=amun-inspection-imagestream", self.amun_infra_namespace)
 
         self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
         template = self.oc_process(self.amun_infra_namespace, template)
@@ -541,7 +541,7 @@ class OpenShift:
         """Get inspection buildconfig that should be run."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
-                "Infra namespace is required in order to create inspect imagestreams"
+                "Infra namespace is required in order to create inspection imagestreams"
             )
 
         if not self.amun_inspection_namespace:
@@ -550,9 +550,9 @@ class OpenShift:
             )
 
         if use_hw_template:
-            label_selector = "template=amun-inspect-buildconfig-with-cpu"
+            label_selector = "template=amun-inspection-buildconfig-with-cpu"
         else:
-            label_selector = "template=amun-inspect-buildconfig"
+            label_selector = "template=amun-inspection-buildconfig"
 
         template = self._get_template(label_selector, self.amun_infra_namespace)
 
@@ -613,7 +613,7 @@ class OpenShift:
         cpu_requests: str = None,
         memory_requests: str = None,
     ) -> str:
-        """Create the actual inspect job."""
+        """Create the actual inspection job."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Amun infra namespace is required in order to create inspection job"
@@ -652,9 +652,9 @@ class OpenShift:
             )
 
         if use_hw_template:
-            label_selector = "template=amun-inspect-job-with-cpu"
+            label_selector = "template=amun-inspection-job-with-cpu"
         else:
-            label_selector = "template=amun-inspect-job"
+            label_selector = "template=amun-inspection-job"
 
         template = self._get_template(label_selector, self.amun_infra_namespace)
 
