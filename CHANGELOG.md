@@ -527,3 +527,16 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.8.5 (2019-04-09T07:21:23)
 * Fix inspection and inspect bad interpretation
 * :pushpin: Automatic update of dependency rfc5424-logging-handler from 1.4.1 to 1.4.2
+
+## Release 0.8.6 (2019-05-08T17:42:08)
+* Ensure recommendation type is in upper case
+* Propagate library usage to adviser runs
+* Minor fix to display correct release in title of docs html
+* :pushpin: Automatic update of dependency pytest-cov from 2.7.0 to 2.7.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.6.1 to 2.7.0
+* :pushpin: Automatic update of dependency sentry-sdk from 0.7.13 to 0.7.14
+* :pushpin: Automatic update of dependency sentry-sdk from 0.7.12 to 0.7.13
+* :pushpin: Automatic update of dependency sentry-sdk from 0.7.11 to 0.7.12
+* :pushpin: Automatic update of dependency sentry-sdk from 0.7.10 to 0.7.11
+* :pushpin: Automatic update of dependency pytest from 4.4.0 to 4.4.1
+* Add missing requests library to requirements
