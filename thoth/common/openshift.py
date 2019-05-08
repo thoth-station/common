@@ -1134,7 +1134,7 @@ class OpenShift:
             "THOTH_ADVISER_REQUIREMENTS_FORMAT": application_stack.get(
                 "requirements_formant", "pipenv"
             ),
-            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type,
+            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.upper(),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": runtime_environment,
             "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
             "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
