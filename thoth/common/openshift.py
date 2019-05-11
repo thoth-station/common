@@ -1042,6 +1042,8 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+        else:
+            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
@@ -1151,6 +1153,8 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+        else:
+            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
