@@ -540,3 +540,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.7.10 to 0.7.11
 * :pushpin: Automatic update of dependency pytest from 4.4.0 to 4.4.1
 * Add missing requests library to requirements
+
+## Release 0.8.7 (2019-05-15T05:29:49)
+* :pushpin: Automatic update of dependency pytest from 4.4.2 to 4.5.0
+* Provide default for limit latest versions
+* :pushpin: Automatic update of dependency pytest from 4.4.1 to 4.4.2
