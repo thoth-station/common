@@ -580,6 +580,8 @@ class OpenShift:
         use_hw_template: bool,
         cpu_requests: str,
         memory_requests: str,
+        infra_namespace: str = None,
+        registry: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.amun_inspection_namespace:
@@ -590,6 +592,12 @@ class OpenShift:
         parameters = locals()
         parameters.pop("self", None)
         parameters.pop("inspection_id", None)
+
+        # Fill in required fields for image pulling.
+        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
+        if registry:
+            parameters["THOTH_REGISTRY"] = registry
+
         return self._schedule_workload(
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
