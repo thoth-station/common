@@ -824,9 +824,9 @@ class OpenShift:
         job_id: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
-        if not self.backend_namespace:
+        if not self.middletier_namespace:
             raise ConfigurationError(
-                "Unable to schedule package extract job without backend namespace being set"
+                "Unable to schedule package extract job without middletier namespace being set"
             )
 
         if environment_type not in ("runtime", "buildtime"):
@@ -842,7 +842,7 @@ class OpenShift:
             run_method_parameters=parameters,
             template_method_name=self.get_package_extract_template.__name__,
             job_id=job_id,
-            namespace=self.backend_namespace,
+            namespace=self.middletier_namespace,
             labels={"component": "package-extract"},
         )
 
