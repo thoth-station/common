@@ -97,6 +97,7 @@ def init_logging(
         ),
     )
     root_logger = logging.getLogger()
+    environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
 
     # Disable annoying unverified HTTPS request warnings.
     try:
@@ -113,10 +114,11 @@ def init_logging(
     if _SENTRY_DSN:
         try:
             root_logger.info(
-                "Setting up logging to a Sentry instance %r",
+                "Setting up logging to a Sentry instance %r, environment %r",
                 _SENTRY_DSN.rsplit("@", maxsplit=1)[1],
+                environment
             )
-            sentry_sdk.init(_SENTRY_DSN)
+            sentry_sdk.init(_SENTRY_DSN, environment=environment)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
