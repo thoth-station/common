@@ -690,7 +690,6 @@ class OpenShift:
                 "Infra namespace is required in order to list solvers"
             )
 
-        # TODO can we refactor this to use _get_template() ?
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template"
         ).get(namespace=self.infra_namespace, label_selector="template=solver")
@@ -808,7 +807,20 @@ class OpenShift:
                 "Infra namespace is required to gather solver template when running solver"
             )
 
-        return self._get_template(f"template=solver,component={solver}")
+        template = self._get_template("template=solver")
+
+        # Get only one solver - the solver that was requested.
+        solver_entry = None
+        for idx, obj in enumerate(template["objects"]):
+            if obj["metadata"]["labels"]["component"] == solver:
+                solver_entry = obj
+                break
+
+        if solver_entry is None:
+            raise ConfigurationError(f"No template for solver {solver!r} registered in {self.infra_namespace!r}")
+
+        template["objects"] = [solver_entry]
+        return template
 
     def schedule_package_extract(
         self,
