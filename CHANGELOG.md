@@ -1565,3 +1565,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.8.11 (2019-06-06T13:55:16)
+* Fix solver temlate handling
+* :pushpin: Automatic update of dependency pytest from 4.5.0 to 4.6.2
+* Implement Sentry environment
