@@ -208,7 +208,7 @@ class OpenShift:
 
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/api/v1/namespaces/{}/pods/{}/log".format(
-            self.kubernetes_api_url, namespace, pod_id
+            self.openshift_api_url, namespace, pod_id
         )
 
         response = requests.get(
