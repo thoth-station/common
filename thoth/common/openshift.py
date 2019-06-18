@@ -483,7 +483,9 @@ class OpenShift:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template"
-        ).get(namespace=namespace or self.infra_namespace, label_selector=_label_selector)
+        ).get(
+            namespace=namespace or self.infra_namespace, label_selector=_label_selector
+        )
         _LOGGER.debug(
             "OpenShift response for getting template by label_selector '{_label_selector}': %r",
             response.to_dict(),
@@ -504,7 +506,9 @@ class OpenShift:
                 "Unable to create inspection image stream without Amun inspection namespace being set"
             )
 
-        template = self._get_template("template=amun-inspection-imagestream", self.amun_infra_namespace)
+        template = self._get_template(
+            "template=amun-inspection-imagestream", self.amun_infra_namespace
+        )
 
         self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
         template = self.oc_process(self.amun_infra_namespace, template)
@@ -822,7 +826,9 @@ class OpenShift:
                 break
 
         if solver_entry is None:
-            raise ConfigurationError(f"No template for solver {solver!r} registered in {self.infra_namespace!r}")
+            raise ConfigurationError(
+                f"No template for solver {solver!r} registered in {self.infra_namespace!r}"
+            )
 
         template["objects"] = [solver_entry]
         return template
@@ -958,25 +964,42 @@ class OpenShift:
         run_method_parameters: dict = None,
         template_method_parameters: dict = None,
         labels: dict = None,
+        build_log: json = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if labels:
             # Inject labels needed by default.
             labels.update(self._DEFAULT_WORKLOAD_LABELS)
 
-        self.create_config_map(
-            job_id,
-            namespace,
-            labels=labels or self._DEFAULT_WORKLOAD_LABELS,
-            data={
-                "run_method_name": run_method_name,
-                "run_method_parameters": json.dumps(run_method_parameters or {}),
-                "template_method_name": template_method_name,
-                "template_method_parameters": json.dumps(
-                    template_method_parameters or {}
-                ),
-            },
-        )
+        if build_log:
+            self.create_config_map(
+                job_id,
+                namespace,
+                labels=labels or self._DEFAULT_WORKLOAD_LABELS,
+                data={
+                    "run_method_name": run_method_name,
+                    "run_method_parameters": json.dumps(run_method_parameters or {}),
+                    "build_log": json.dumps(build_log),
+                    "template_method_name": template_method_name,
+                    "template_method_parameters": json.dumps(
+                        template_method_parameters or {}
+                    ),
+                },
+            )
+        else:
+            self.create_config_map(
+                job_id,
+                namespace,
+                labels=labels or self._DEFAULT_WORKLOAD_LABELS,
+                data={
+                    "run_method_name": run_method_name,
+                    "run_method_parameters": json.dumps(run_method_parameters or {}),
+                    "template_method_name": template_method_name,
+                    "template_method_parameters": json.dumps(
+                        template_method_parameters or {}
+                    ),
+                },
+            )
         return job_id
 
     @staticmethod
@@ -1090,6 +1113,220 @@ class OpenShift:
             )
 
         return self._get_template("template=dependency-monkey")
+
+    def schedule_build_analyse(
+        self,
+        document_id: str,
+        output: str,
+        output_format: str = "json",
+        job_id: str = None,
+    ) -> str:
+        """Schedule an build analyse run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build analyse without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-analyse")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_analyse.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_analyse_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "build-analyse"},
+        )
+
+    def run_build_analyse(
+        self,
+        document_id: str,
+        output: str,
+        output_format: str = "json",
+        job_id: str = None,
+        template: dict = None,
+    ) -> str:
+        """Run build analyse on the provided user input."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Running build-analyse requires backend namespace configuration"
+            )
+
+        template = template or self.get_build_analyse_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_BUILD_ANALYSER_OUTPUT_FORMAT": output_format,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYSER_JOB_ID": job_id
+            or self._generate_id("build-analyse"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.backend_namespace, template)
+        build_analyse = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_analyse["apiVersion"], kind=build_analyse["kind"]
+        ).create(body=build_analyse, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_analyse_template(self):
+        """Get template for build analyser run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyser template when running it"
+            )
+
+        return self._get_template("template=build-analyse")
+
+    def schedule_build_report(
+        self,
+        document_id: str,
+        output: str,
+        handler: str,
+        limit: int,
+        job_id: str = None,
+    ) -> str:
+        """Schedule an build analyse run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build analyse without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-report")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_report.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_report_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "build-report"},
+        )
+
+    def run_build_report(
+        self,
+        document_id: str,
+        handler: str,
+        output: str,
+        limit: int,
+        job_id: str = None,
+        template: dict = None,
+    ) -> str:
+        """Run build analyse on the provided user input."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Running build-report requires backend namespace configuration"
+            )
+
+        template = template or self.get_build_report_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_BUILD_ANALYSER_HANDLER": handler,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYSER_LIMIT": limit,
+            "THOTH_BUILD_ANALYSER_OUTPUT_FORMAT": output_format,
+            "THOTH_BUILD_ANALYSER_JOB_ID": job_id
+            or self._generate_id("build-report"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.backend_namespace, template)
+        build_report = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_report["apiVersion"], kind=build_report["kind"]
+        ).create(body=build_report, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_report_template(self):
+        """Get template for build analyser run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyser template when running it"
+            )
+
+        return self._get_template("template=build-report")
+
+    def schedule_build_dependencies(
+        self,
+        document_id: str,
+        output: str,
+        output_format: str = "json",
+        job_id: str = None,
+    ) -> str:
+        """Schedule an build analyse run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build analyse without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-dependencies")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_dependencies.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_dependencies_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "build-dependencies"},
+        )
+
+    def run_build_dependencies(
+        self,
+        document_id: str,
+        output: str,
+        output_format: str = "json",
+        job_id: str = None,
+        template: dict = None,
+    ) -> str:
+        """Run build analyse on the provided user input."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Running build-dependencies requires backend namespace configuration"
+            )
+
+        template = template or self.get_build_dependencies_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYSER_OUTPUT_FORMAT": output_format,
+            "THOTH_BUILD_ANALYSER_JOB_ID": job_id
+            or self._generate_id("build-dependencies"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.backend_namespace, template)
+        build_dependencies = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_dependencies["apiVersion"], kind=build_dependencies["kind"]
+        ).create(body=build_dependencies, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_dependencies_template(self):
+        """Get template for build analyser run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyser template when running it"
+            )
+
+        return self._get_template("template=build-dependencies")
 
     def schedule_adviser(
         self,
