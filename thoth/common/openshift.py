@@ -585,6 +585,8 @@ class OpenShift:
         use_hw_template: bool,
         cpu_requests: str,
         memory_requests: str,
+        infra_namespace: str = None,
+        registry: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.amun_inspection_namespace:
@@ -595,6 +597,12 @@ class OpenShift:
         parameters = locals()
         parameters.pop("self", None)
         parameters.pop("inspection_id", None)
+
+        # Fill in required fields for image pulling.
+        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
+        if registry:
+            parameters["THOTH_REGISTRY"] = registry
+
         return self._schedule_workload(
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
@@ -687,7 +695,6 @@ class OpenShift:
                 "Infra namespace is required in order to list solvers"
             )
 
-        # TODO can we refactor this to use _get_template() ?
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template"
         ).get(namespace=self.infra_namespace, label_selector="template=solver")
@@ -805,7 +812,20 @@ class OpenShift:
                 "Infra namespace is required to gather solver template when running solver"
             )
 
-        return self._get_template(f"template=solver,component={solver}")
+        template = self._get_template("template=solver")
+
+        # Get only one solver - the solver that was requested.
+        solver_entry = None
+        for idx, obj in enumerate(template["objects"]):
+            if obj["metadata"]["labels"]["component"] == solver:
+                solver_entry = obj
+                break
+
+        if solver_entry is None:
+            raise ConfigurationError(f"No template for solver {solver!r} registered in {self.infra_namespace!r}")
+
+        template["objects"] = [solver_entry]
+        return template
 
     def schedule_package_extract(
         self,
@@ -821,9 +841,9 @@ class OpenShift:
         job_id: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
-        if not self.backend_namespace:
+        if not self.middletier_namespace:
             raise ConfigurationError(
-                "Unable to schedule package extract job without backend namespace being set"
+                "Unable to schedule package extract job without middletier namespace being set"
             )
 
         if environment_type not in ("runtime", "buildtime"):
@@ -839,7 +859,7 @@ class OpenShift:
             run_method_parameters=parameters,
             template_method_name=self.get_package_extract_template.__name__,
             job_id=job_id,
-            namespace=self.backend_namespace,
+            namespace=self.middletier_namespace,
             labels={"component": "package-extract"},
         )
 
