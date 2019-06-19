@@ -425,6 +425,11 @@ class OpenShift:
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
         return v1_configmap.get(name=configmap_id, namespace=namespace)
 
+    def get_configmaps(self, namespace: str, label_selector: str) -> dict:
+        """Get all configmaps in a namespace and select them by label."""
+        v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
+        return v1_configmap.get(label_selector=label_selector, namespace=namespace)
+
     def get_job_status_report(self, job_id: str, namespace: str) -> dict:
         """Get status of a pod running inside a job."""
         try:
