@@ -485,12 +485,57 @@ class OpenShift:
             api_version="template.openshift.io/v1", kind="Template"
         ).get(namespace=namespace or self.infra_namespace, label_selector=_label_selector)
         _LOGGER.debug(
-            "OpenShift response for getting template by label_selector '{_label_selector}': %r",
+            "OpenShift response for getting template by label_selector %r: %r",
+            _label_selector,
             response.to_dict(),
         )
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()["items"][0]
         return template
+
+    def _get_cronjob(self, _label_selector: str, namespace: str) -> dict:
+        """Get template from infra namespace, use label_selector to identify which template to get."""
+        response = self.ocp_client.resources.get(
+            api_version="batch/v1beta1", kind="CronJob"
+        ).get(namespace=namespace, label_selector=_label_selector)
+        _LOGGER.debug(
+            "OpenShift response for getting CronJob by label_selector %r: %r",
+            _label_selector,
+            response.to_dict(),
+        )
+        self._raise_on_invalid_response_size(response)
+        template = response.to_dict()["items"][0]
+        return template
+
+    @staticmethod
+    def _transform_cronjob_to_job(item: dict) -> dict:
+        """Turn a CronJob into a job so that it can be directly run."""
+        job_spec = item["spec"]["jobTemplate"]
+        job_spec["apiVersion"] = "batch/v1"
+        job_spec["kind"] = "Job"
+        job_spec["metadata"]["generateName"] = item["metadata"]["name"] + "-"
+        return job_spec
+
+    def schedule_graph_refresh(self, namespace: str = None):
+        """Schedule graph refresh job in frontend namespace by default."""
+        if namespace is None:
+            if not self.frontend_namespace:
+                raise ConfigurationError("No frontend namespace configured to run graph-refresh job")
+
+            namespace = self.frontend_namespace
+
+        template = self._get_cronjob("component=graph-refresh", namespace=namespace)
+        template = self._transform_cronjob_to_job(template)
+
+        # There are no template parameters as we are directly using a cronjob as a template, directly run the job.
+        response = self.ocp_client.resources.get(
+            api_version=template["apiVersion"], kind=template["kind"]
+        ).create(body=template, namespace=namespace)
+
+        response = response.to_dict()
+        _LOGGER.debug("OpenShift response for creating job: %r", response)
+
+        return response["metadata"]["name"]
 
     def create_inspection_imagestream(self, inspection_id: str) -> str:
         """Create imagestream for Amun."""
