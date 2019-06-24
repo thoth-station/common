@@ -1380,8 +1380,8 @@ class OpenShift:
         service: str,
         token: str,
         *,
-        verbose = False,
-        job_id = None
+        verbose=False,
+        job_id=None
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -1407,9 +1407,10 @@ class OpenShift:
         service: str,
         token: str,
         *,
-        verbose = False,
-        job_id = None
+        verbose=False,
+        job_id=None
     ) -> str:
+        """Create a kebechet job."""
         job_id = job_id or self._generate_id("kebechet")
         template = self.get_kebechet_template()
         self.set_template_parameters(
@@ -1418,9 +1419,8 @@ class OpenShift:
             GIT_ACCESS_TOKEN=token,
             REPO_URL=url,
             SERVICE_NAME=service,
-            KEBECHET_JOB_ID=job_id,            
+            KEBECHET_JOB_ID=job_id,
         )
-
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
 
@@ -1431,7 +1431,6 @@ class OpenShift:
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
         return response.metadata.name
-
 
     def get_kebechet_template(self) -> dict:
         """Get template for a provenance checker."""
