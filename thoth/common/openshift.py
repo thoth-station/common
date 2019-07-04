@@ -1331,6 +1331,37 @@ class OpenShift:
 
         return self._get_template("template=provenance-checker")
 
+    def schedule_graph_sync_multiple(
+        self,
+        *,
+        only_solver_documents: bool = False,
+        only_analysis_documents: bool = False,
+        only_inspection_documents: bool = False,
+        only_adviser_documents: bool = False,
+        only_provenance_checker_documents: bool = False,
+        only_dependency_monkey_documents: bool = False,
+        namespace: str = None,
+    ):
+        """Schedule a graph sync."""
+        if namespace is None:
+            if not self.middletier_namespace:
+                raise ConfigurationError("Middletier namespace is required to run graph syncs")
+
+            namespace = self.middletier_namespace
+
+        job_id = self._generate_id("graph-sync-multiple")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_graph_sync_multiple.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_graph_sync_template.__name__,
+            template_method_parameters={"template_name": "graph-sync-job-multiple"},
+            job_id=job_id,
+            namespace=namespace,
+            labels={"component": "graph-sync"},
+        )
+
     def schedule_graph_sync(
         self, document_id: str, namespace: str, *, template_name: str = None
     ):
@@ -1373,6 +1404,52 @@ class OpenShift:
         return self.schedule_graph_sync(
             document_id, namespace, template_name="graph-sync-job-package-extract"
         )
+
+    def run_graph_sync_multiple(
+        self,
+        *,
+        only_solver_documents: bool = False,
+        only_analysis_documents: bool = False,
+        only_inspection_documents: bool = False,
+        only_adviser_documents: bool = False,
+        only_provenance_checker_documents: bool = False,
+        only_dependency_monkey_documents: bool = False,
+        namespace: str = None,
+        template: dict = None,
+        job_id: str = None,
+        template_name: str = None,
+    ) -> str:
+        """Run the given graph sync to sync multiple documents into graph database."""
+        if not namespace:
+            raise ValueError(
+                "Unable to run graph sync without namespace being specified"
+            )
+
+        if not template and not template_name:
+            raise ValueError(
+                "At least one of `template` and `template_name` should be specified"
+            )
+
+        template = template or self.get_graph_sync_template(template_name)
+        self.set_template_parameters(
+            template,
+            THOTH_JOB_ID=job_id or self._generate_id(template_name),
+            THOTH_ONLY_SOLVER_DOCUMENTS=int(only_solver_documents),
+            THOTH_ONLY_ANALYSIS_DOCUMENTS=int(only_analysis_documents),
+            THOTH_ONLY_INSPECTION_DOCUMENTS=int(only_inspection_documents),
+            THOTH_ONLY_ADVISER_DOCUMENTS=int(only_adviser_documents),
+            THOTH_ONLY_PROVENANCE_CHECKER_DOCUMENTS=int(only_provenance_checker_documents),
+            THOTH_ONLY_DEPENDENCY_MONKEY_DOCUMENTS=int(only_dependency_monkey_documents),
+        )
+        template = self.oc_process(namespace, template)
+        graph_sync = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=graph_sync["apiVersion"], kind=graph_sync["kind"]
+        ).create(body=graph_sync, namespace=namespace)
+
+        _LOGGER.info("Scheduled new graph sync multiple with id %r", response.metadata.name)
+        return response.metadata.name
 
     def run_graph_sync(
         self,
