@@ -1570,3 +1570,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix solver temlate handling
 * :pushpin: Automatic update of dependency pytest from 4.5.0 to 4.6.2
 * Implement Sentry environment
+
+## Release 0.9.0 (2019-06-19T15:20:47)
+* New function for all ConfigMaps
+* Fix retrieving pod logs - use OpenShift API
+* :pushpin: Automatic update of dependency pytest from 4.6.2 to 4.6.3
+* :pushpin: Automatic update of dependency pyyaml from 5.1 to 5.1.1
+
+## Release 0.9.1 (2019-06-24T09:15:25)
+* Provide method for scheduling graph-refresh on demand
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.1 to 0.9.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.0 to 0.9.1

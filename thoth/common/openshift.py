@@ -208,7 +208,7 @@ class OpenShift:
 
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/api/v1/namespaces/{}/pods/{}/log".format(
-            self.kubernetes_api_url, namespace, pod_id
+            self.openshift_api_url, namespace, pod_id
         )
 
         response = requests.get(
@@ -425,6 +425,11 @@ class OpenShift:
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
         return v1_configmap.get(name=configmap_id, namespace=namespace)
 
+    def get_configmaps(self, namespace: str, label_selector: str) -> dict:
+        """Get all configmaps in a namespace and select them by label."""
+        v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
+        return v1_configmap.get(label_selector=label_selector, namespace=namespace)
+
     def get_job_status_report(self, job_id: str, namespace: str) -> dict:
         """Get status of a pod running inside a job."""
         try:
@@ -480,12 +485,57 @@ class OpenShift:
             api_version="template.openshift.io/v1", kind="Template"
         ).get(namespace=namespace or self.infra_namespace, label_selector=_label_selector)
         _LOGGER.debug(
-            "OpenShift response for getting template by label_selector '{_label_selector}': %r",
+            "OpenShift response for getting template by label_selector %r: %r",
+            _label_selector,
             response.to_dict(),
         )
         self._raise_on_invalid_response_size(response)
         template = response.to_dict()["items"][0]
         return template
+
+    def _get_cronjob(self, _label_selector: str, namespace: str) -> dict:
+        """Get template from infra namespace, use label_selector to identify which template to get."""
+        response = self.ocp_client.resources.get(
+            api_version="batch/v1beta1", kind="CronJob"
+        ).get(namespace=namespace, label_selector=_label_selector)
+        _LOGGER.debug(
+            "OpenShift response for getting CronJob by label_selector %r: %r",
+            _label_selector,
+            response.to_dict(),
+        )
+        self._raise_on_invalid_response_size(response)
+        template = response.to_dict()["items"][0]
+        return template
+
+    @staticmethod
+    def _transform_cronjob_to_job(item: dict) -> dict:
+        """Turn a CronJob into a job so that it can be directly run."""
+        job_spec = item["spec"]["jobTemplate"]
+        job_spec["apiVersion"] = "batch/v1"
+        job_spec["kind"] = "Job"
+        job_spec["metadata"]["generateName"] = item["metadata"]["name"] + "-"
+        return job_spec
+
+    def schedule_graph_refresh(self, namespace: str = None):
+        """Schedule graph refresh job in frontend namespace by default."""
+        if namespace is None:
+            if not self.frontend_namespace:
+                raise ConfigurationError("No frontend namespace configured to run graph-refresh job")
+
+            namespace = self.frontend_namespace
+
+        template = self._get_cronjob("component=graph-refresh", namespace=namespace)
+        template = self._transform_cronjob_to_job(template)
+
+        # There are no template parameters as we are directly using a cronjob as a template, directly run the job.
+        response = self.ocp_client.resources.get(
+            api_version=template["apiVersion"], kind=template["kind"]
+        ).create(body=template, namespace=namespace)
+
+        response = response.to_dict()
+        _LOGGER.debug("OpenShift response for creating job: %r", response)
+
+        return response["metadata"]["name"]
 
     def create_inspection_imagestream(self, inspection_id: str) -> str:
         """Create imagestream for Amun."""
@@ -1281,6 +1331,37 @@ class OpenShift:
 
         return self._get_template("template=provenance-checker")
 
+    def schedule_graph_sync_multiple(
+        self,
+        *,
+        only_solver_documents: bool = False,
+        only_analysis_documents: bool = False,
+        only_inspection_documents: bool = False,
+        only_adviser_documents: bool = False,
+        only_provenance_checker_documents: bool = False,
+        only_dependency_monkey_documents: bool = False,
+        namespace: str = None,
+    ):
+        """Schedule a graph sync."""
+        if namespace is None:
+            if not self.middletier_namespace:
+                raise ConfigurationError("Middletier namespace is required to run graph syncs")
+
+            namespace = self.middletier_namespace
+
+        job_id = self._generate_id("graph-sync-multiple")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_graph_sync_multiple.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_graph_sync_template.__name__,
+            template_method_parameters={"template_name": "graph-sync-job-multiple"},
+            job_id=job_id,
+            namespace=namespace,
+            labels={"component": "graph-sync"},
+        )
+
     def schedule_graph_sync(
         self, document_id: str, namespace: str, *, template_name: str = None
     ):
@@ -1323,6 +1404,52 @@ class OpenShift:
         return self.schedule_graph_sync(
             document_id, namespace, template_name="graph-sync-job-package-extract"
         )
+
+    def run_graph_sync_multiple(
+        self,
+        *,
+        only_solver_documents: bool = False,
+        only_analysis_documents: bool = False,
+        only_inspection_documents: bool = False,
+        only_adviser_documents: bool = False,
+        only_provenance_checker_documents: bool = False,
+        only_dependency_monkey_documents: bool = False,
+        namespace: str = None,
+        template: dict = None,
+        job_id: str = None,
+        template_name: str = None,
+    ) -> str:
+        """Run the given graph sync to sync multiple documents into graph database."""
+        if not namespace:
+            raise ValueError(
+                "Unable to run graph sync without namespace being specified"
+            )
+
+        if not template and not template_name:
+            raise ValueError(
+                "At least one of `template` and `template_name` should be specified"
+            )
+
+        template = template or self.get_graph_sync_template(template_name)
+        self.set_template_parameters(
+            template,
+            THOTH_JOB_ID=job_id or self._generate_id(template_name),
+            THOTH_ONLY_SOLVER_DOCUMENTS=int(only_solver_documents),
+            THOTH_ONLY_ANALYSIS_DOCUMENTS=int(only_analysis_documents),
+            THOTH_ONLY_INSPECTION_DOCUMENTS=int(only_inspection_documents),
+            THOTH_ONLY_ADVISER_DOCUMENTS=int(only_adviser_documents),
+            THOTH_ONLY_PROVENANCE_CHECKER_DOCUMENTS=int(only_provenance_checker_documents),
+            THOTH_ONLY_DEPENDENCY_MONKEY_DOCUMENTS=int(only_dependency_monkey_documents),
+        )
+        template = self.oc_process(namespace, template)
+        graph_sync = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=graph_sync["apiVersion"], kind=graph_sync["kind"]
+        ).create(body=graph_sync, namespace=namespace)
+
+        _LOGGER.info("Scheduled new graph sync multiple with id %r", response.metadata.name)
+        return response.metadata.name
 
     def run_graph_sync(
         self,
