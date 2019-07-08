@@ -1378,8 +1378,9 @@ class OpenShift:
         self,
         url: str,
         service: str,
-        token: str,
+        subcommand: str,
         *,
+        analysis_id: str,
         verbose=False,
         job_id=None
     ) -> str:
@@ -1405,21 +1406,27 @@ class OpenShift:
         self,
         url: str,
         service: str,
-        token: str,
+        subcommand: str,
         *,
+        analysis_id: str,
         verbose=False,
         job_id=None
     ) -> str:
         """Create a kebechet job."""
+        if subcommand == "run-analysis" and analysis_id == None:
+            _LOGGER.warning("No analysis_id found for run-analysis")
+            return
+
         job_id = job_id or self._generate_id("kebechet")
         template = self.get_kebechet_template()
         self.set_template_parameters(
             template,
+            KEBECHET_SUBCOMMAND=subcommand,
             KEBECHET_VERBOSE=verbose,
-            GIT_ACCESS_TOKEN=token,
             REPO_URL=url,
             SERVICE_NAME=service,
             KEBECHET_JOB_ID=job_id,
+            ANALYSIS_ID=analysis_id
         )
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
