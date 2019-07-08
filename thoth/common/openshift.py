@@ -1540,7 +1540,7 @@ class OpenShift:
         job_id=None
     ) -> str:
         """Create a kebechet job."""
-        if subcommand == "run-analysis" and analysis_id == None:
+        if subcommand == "run-analysis" and analysis_id is None:
             _LOGGER.warning("No analysis_id found for run-analysis")
             return
 
