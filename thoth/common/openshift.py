@@ -1514,7 +1514,7 @@ class OpenShift:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
             raise ConfigurationError(
-                "Unable to schedule provenance checker without backend namespace being set"
+                "Unable to schedule Kebechet without backend namespace being set"
             )
 
         job_id = job_id or self._generate_id("kebechet")
@@ -1567,7 +1567,7 @@ class OpenShift:
         return response.metadata.name
 
     def get_kebechet_template(self) -> dict:
-        """Get template for a provenance checker."""
+        """Get template for a Kebechet job."""
         if not self.infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required to gather kebechet template when running it"
