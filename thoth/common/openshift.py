@@ -1501,13 +1501,11 @@ class OpenShift:
 
         return self._get_template(f"component=graph-sync,template={template_name}")
 
-    def schedule_kebechet(
+    def schedule_kebechet_run_url(
         self,
         url: str,
         service: str,
-        subcommand: str,
         *,
-        analysis_id: str,
         verbose=False,
         job_id=None
     ) -> str:
@@ -1517,11 +1515,11 @@ class OpenShift:
                 "Unable to schedule Kebechet without backend namespace being set"
             )
 
-        job_id = job_id or self._generate_id("kebechet")
+        job_id = job_id or self._generate_id("kebechet-run-url")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
-            run_method_name=self.run_kebechet.__name__,
+            run_method_name=self.run_kebechet_run_url.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_kebechet_template.__name__,
             job_id=job_id,
@@ -1529,26 +1527,80 @@ class OpenShift:
             labels={"component": "kebechet"},
         )
 
-    def run_kebechet(
+    def schedule_kebechet_run_results(
         self,
         url: str,
         service: str,
-        subcommand: str,
+        analysis_id: str,
+        *,
+        verbose=False,
+        job_id=None
+    ) -> str:
+        """Schedule a kebechet run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule Kebechet without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("kebechet-run-results")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_kebechet_run_results.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_kebechet_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "kebechet"},
+        )
+
+    def run_kebechet_run_url(
+        self,
+        url: str,
+        service: str,
         *,
         analysis_id: str,
         verbose=False,
         job_id=None
     ) -> str:
-        """Create a kebechet job."""
-        if subcommand == "run-analysis" and analysis_id is None:
-            _LOGGER.warning("No analysis_id found for run-analysis")
-            return
-
-        job_id = job_id or self._generate_id("kebechet")
+        """Create a kebechet run-url job."""
+        job_id = job_id or self._generate_id("kebechet-run-url")
         template = self.get_kebechet_template()
         self.set_template_parameters(
             template,
-            KEBECHET_SUBCOMMAND=subcommand,
+            KEBECHET_SUBCOMMAND="run-url",
+            KEBECHET_VERBOSE=verbose,
+            REPO_URL=url,
+            SERVICE_NAME=service,
+            KEBECHET_JOB_ID=job_id,
+            ANALYSIS_ID=analysis_id
+        )
+        template = self.oc_process(self.backend_namespace, template)
+        kebechet = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=kebechet["apiVersion"],
+            kind=kebechet["kind"],
+        ).create(body=kebechet, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def run_kebechet_run_results(
+        self,
+        url: str,
+        service: str,
+        analysis_id: str,
+        *,
+        verbose=False,
+        job_id=None
+    ) -> str:
+        """Create a kebechet run-results job."""
+        job_id = job_id or self._generate_id("kebechet-run-results")
+        template = self.get_kebechet_template()
+        self.set_template_parameters(
+            template,
+            KEBECHET_SUBCOMMAND="run-results",
             KEBECHET_VERBOSE=verbose,
             REPO_URL=url,
             SERVICE_NAME=service,
