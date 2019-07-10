@@ -643,11 +643,6 @@ class OpenShift:
         parameters.pop("self", None)
         parameters.pop("inspection_id", None)
 
-        # Fill in required fields for image pulling.
-        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
-        if registry:
-            parameters["THOTH_REGISTRY"] = registry
-
         return self._schedule_workload(
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
@@ -670,12 +665,19 @@ class OpenShift:
         use_hw_template: bool = False,
         cpu_requests: str = None,
         memory_requests: str = None,
+        infra_namespace: str = None,
+        registry: str = None,
     ) -> str:
         """Create the actual inspection job."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Amun infra namespace is required in order to create inspection job"
             )
+
+        # Fill in required fields for image pulling.
+        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
+        if registry:
+            parameters["THOTH_REGISTRY"] = registry
 
         template = template or self.get_inspection_job_template(
             use_hw_template=use_hw_template,
