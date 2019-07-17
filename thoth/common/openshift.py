@@ -1572,10 +1572,10 @@ class OpenShift:
             template,
             KEBECHET_SUBCOMMAND="run-url",
             KEBECHET_VERBOSE=verbose,
-            REPO_URL=url,
-            SERVICE_NAME=service,
+            KEBECHET_REPO_URL=url,
+            KEBECHET_SERVICE_NAME=service,
             KEBECHET_JOB_ID=job_id,
-            ANALYSIS_ID=analysis_id
+            KEBECHET_ANALYSIS_ID=analysis_id
         )
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
@@ -1604,10 +1604,10 @@ class OpenShift:
             template,
             KEBECHET_SUBCOMMAND="run-results",
             KEBECHET_VERBOSE=verbose,
-            REPO_URL=url,
-            SERVICE_NAME=service,
+            KEBECHET_REPO_URL=url,
+            KEBECHET_SERVICE_NAME=service,
             KEBECHET_JOB_ID=job_id,
-            ANALYSIS_ID=analysis_id
+            KEBECHET_ANALYSIS_ID=analysis_id
         )
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
