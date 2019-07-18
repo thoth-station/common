@@ -1581,3 +1581,26 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Provide method for scheduling graph-refresh on demand
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.1 to 0.9.2
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.0 to 0.9.1
+
+## Release 0.9.2 (2019-07-10T15:08:23)
+* Fix wrong argument handling
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.0 to 0.10.1
+* :arrow_double_up: Increase the limit for file line size
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.5 to 0.10.0
+* :pushpin: Automatic update of dependency pytest from 5.0.0 to 5.0.1
+* Introduce graph sync multiple
+* :pushpin: Automatic update of dependency pytest from 4.6.3 to 5.0.0
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.4 to 0.9.5
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.3 to 0.9.4
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.2 to 0.9.3
+
+## Release 0.9.3 (2019-07-12T11:47:28)
+* Increase maximum lines per file
+* :sunglasses: Support for build analysers scheduling
+* Broke up run and schedule for stable api
+* Copy paste remnants
+* Increase maximum lines
+* Conditional statement
+* Subcommand env
+* Coala fixes
+* Logic to run and schedule kebechet builds
