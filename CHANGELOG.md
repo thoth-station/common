@@ -1604,3 +1604,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Subcommand env
 * Coala fixes
 * Logic to run and schedule kebechet builds
+
+## Release 0.9.4 (2019-07-18T21:00:09)
+* openshift scheduler job for package analyzer
+* Changed env variable names
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.1 to 0.10.2
