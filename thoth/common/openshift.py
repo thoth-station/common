@@ -980,6 +980,82 @@ class OpenShift:
 
         return self._get_template("template=package-extract")
 
+    def schedule_package_analyzer(
+        self,
+        package_name: str,
+        package_version: str,
+        index_url: str,
+        *,
+        output: str,
+        debug: bool = False,
+        job_id: str = None,
+    ) -> str:
+        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule package analyzer job without middletier namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("package-analyzer")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_package_analyzer.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_package_analyzer_template.__name__,
+            job_id=job_id,
+            namespace=self.middletier_namespace,
+            labels={"component": "package-analyzer"},
+        )
+
+    def run_package_analyzer(
+        self,
+        package_name: str,
+        package_version: str,
+        index_url: str,
+        *,
+        output: str,
+        debug: bool = False,
+        job_id: str = None,
+        template: dict = None,
+    ) -> str:
+        """Run package-analyzer to gather digests of packages and files present inside packages."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Running package-analyzer requires middletier namespace to be specified"
+            )
+
+        template = template or self.get_package_analyzer_template()
+
+        self.set_template_parameters(
+            template,
+            THOTH_PACKAGE_ANALYZER_PACKAGE_NAME=package_name,
+            THOTH_PACKAGE_ANALYZER_PACKAGE_VERSION=package_version,
+            THOTH_PACKAGE_ANALYZER_INDEX_URL=index_url,
+            THOTH_PACKAGE_ANALYZER_DEBUG=debug,
+            THOTH_PACKAGE_ANALYZER_OUTPUT=output,
+            THOTH_PACKAGE_ANALYZER_JOB_ID=job_id or self._generate_id("package-analyzer"),
+        )
+
+        template = self.oc_process(self.middletier_namespace, template)
+        analyzer = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=analyzer["apiVersion"], kind=analyzer["kind"]
+        ).create(body=analyzer, namespace=self.middletier_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_package_analyzer_template(self):
+        """Get template for package-analyzer."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather package-analyzer template when running it"
+            )
+
+        return self._get_template("template=package-analyzer")
+
     def create_config_map(
         self, configmap_name: str, namespace: str, labels: dict, data: dict
     ) -> str:
