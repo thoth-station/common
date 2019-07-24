@@ -1609,3 +1609,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * openshift scheduler job for package analyzer
 * Changed env variable names
 * :pushpin: Automatic update of dependency sentry-sdk from 0.10.1 to 0.10.2
+
+## Release 0.9.5 (2019-07-24T18:39:51)
+* :sunrise: Modified the names to standard convention
