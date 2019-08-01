@@ -2145,3 +2145,46 @@ class OpenShift:
             build_cpu = self.parse_cpu_spec(build_cpu)
 
         return build_cpu, build_memory
+
+    def get_job_status_count(self, label_selector: str, namespace: str) -> dict:
+        """Count the number of Jobs per status in a specific namespace."""
+        response = self.get_jobs(label_selector=label_selector, namespace=namespace)
+        status = [
+            "created",
+            "active",
+            "failed",
+            "succeeded",
+            "pending",
+            "retry",
+            "waiting",
+            "started",
+        ]
+
+        # Initialize
+        jobs_status_count = dict.fromkeys(status, 0)
+
+        # Count jobs per status
+        for item in response["items"]:
+            jobs_status_count["created"] += 1
+
+            if "succeeded" in item["status"].keys():
+                jobs_status_count["succeeded"] += 1
+            elif "failed" in item["status"].keys():
+                jobs_status_count["failed"] += 1
+            elif "active" in item["status"].keys():
+                jobs_status_count["active"] += 1
+            elif "pending" in item["status"].keys():
+                jobs_status_count["pending"] += 1
+            elif not item["status"].keys():
+                jobs_status_count["waiting"] += 1
+            elif "startTime" in item["status"].keys() and len(item["status"].keys()) == 1:
+                jobs_status_count["started"] += 1
+            else:
+                try:
+                    if "BackoffLimitExceeded" in item["status"]["conditions"][0]["reason"]:
+                        jobs_status_count["retry"] += 1
+                except Exception as excptn:
+                    _LOGGER.error("Unknown job status %r", item)
+                    _LOGGER.exception(excptn)
+
+        return jobs_status_count
