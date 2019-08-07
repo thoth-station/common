@@ -1509,7 +1509,7 @@ class OpenShift:
         service: str,
         *,
         verbose=False,
-        job_id=None
+        job_id=None,    
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -1563,11 +1563,12 @@ class OpenShift:
         *,
         analysis_id: str,
         verbose=False,
-        job_id=None
+        job_id=None,
+        template: dict = None,
     ) -> str:
         """Create a kebechet run-url job."""
         job_id = job_id or self._generate_id("kebechet-run-url")
-        template = self.get_kebechet_template()
+        template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
             KEBECHET_SUBCOMMAND="run-url",
@@ -1595,11 +1596,12 @@ class OpenShift:
         analysis_id: str,
         *,
         verbose=False,
-        job_id=None
+        job_id=None,
+        template: dict = None,
     ) -> str:
         """Create a kebechet run-results job."""
         job_id = job_id or self._generate_id("kebechet-run-results")
-        template = self.get_kebechet_template()
+        template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
             KEBECHET_SUBCOMMAND="run-results",
