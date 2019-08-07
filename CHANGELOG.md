@@ -1612,3 +1612,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.5 (2019-07-24T18:39:51)
 * :sunrise: Modified the names to standard convention
+
+## Release 0.9.6 (2019-08-07T20:40:29)
+* Add template as optional param
+* :pushpin: Automatic update of dependency daiquiri from 1.5.0 to 1.6.0
+* New function to count jobs per status per label
+* :pushpin: Automatic update of dependency pyyaml from 5.1.1 to 5.1.2
