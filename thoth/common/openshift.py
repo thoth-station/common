@@ -1818,11 +1818,18 @@ class OpenShift:
         )
 
     def run_kebechet_run_url(
-        self, url: str, service: str, *, analysis_id: str, verbose=False, job_id=None
+        self,
+        url: str,
+        service: str,
+        *,
+        analysis_id: str,
+        verbose=False,
+        job_id=None,
+        template: dict = None,
     ) -> str:
         """Create a kebechet run-url job."""
         job_id = job_id or self._generate_id("kebechet-run-url")
-        template = self.get_kebechet_template()
+        template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
             KEBECHET_SUBCOMMAND="run-url",
@@ -1843,11 +1850,18 @@ class OpenShift:
         return response.metadata.name
 
     def run_kebechet_run_results(
-        self, url: str, service: str, analysis_id: str, *, verbose=False, job_id=None
+        self,
+        url: str,
+        service: str,
+        analysis_id: str,
+        *,
+        verbose=False,
+        job_id=None,
+        template: dict = None,
     ) -> str:
         """Create a kebechet run-results job."""
         job_id = job_id or self._generate_id("kebechet-run-results")
-        template = self.get_kebechet_template()
+        template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
             KEBECHET_SUBCOMMAND="run-results",
