@@ -1593,3 +1593,22 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.4 to 0.9.5
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.3 to 0.9.4
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.2 to 0.9.3
+
+## Release 0.9.3 (2019-07-12T11:47:28)
+* Increase maximum lines per file
+* :sunglasses: Support for build analysers scheduling
+* Broke up run and schedule for stable api
+* Copy paste remnants
+* Increase maximum lines
+* Conditional statement
+* Subcommand env
+* Coala fixes
+* Logic to run and schedule kebechet builds
+
+## Release 0.9.4 (2019-07-18T21:00:09)
+* openshift scheduler job for package analyzer
+* Changed env variable names
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.1 to 0.10.2
+
+## Release 0.9.5 (2019-07-24T18:39:51)
+* :sunrise: Modified the names to standard convention
