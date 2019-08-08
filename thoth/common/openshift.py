@@ -1822,7 +1822,6 @@ class OpenShift:
         url: str,
         service: str,
         *,
-        analysis_id: str,
         verbose=False,
         job_id=None,
         template: dict = None,
@@ -1837,7 +1836,6 @@ class OpenShift:
             KEBECHET_REPO_URL=url,
             KEBECHET_SERVICE_NAME=service,
             KEBECHET_JOB_ID=job_id,
-            KEBECHET_ANALYSIS_ID=analysis_id,
         )
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
