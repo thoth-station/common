@@ -1618,3 +1618,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency daiquiri from 1.5.0 to 1.6.0
 * New function to count jobs per status per label
 * :pushpin: Automatic update of dependency pyyaml from 5.1.1 to 5.1.2
+
+## Release 0.9.7 (2019-08-13T07:44:10)
+* As we use Thoth to resolve dependencies, stop using extras
+* Leftover parameter from copy paste
