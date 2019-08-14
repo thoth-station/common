@@ -1622,3 +1622,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.9.7 (2019-08-13T07:44:10)
 * As we use Thoth to resolve dependencies, stop using extras
 * Leftover parameter from copy paste
+
+## Release 0.9.8 (2019-08-14T13:19:13)
+* Do not pin to a specific Kubernetes release
