@@ -756,7 +756,7 @@ class OpenShift:
         )
         self._raise_on_invalid_response_size(response)
         return [
-            obj["metadata"]["labels"]["component"]
+            obj["metadata"]["labels"]["solver-type"]
             for obj in response.to_dict()["items"][0]["objects"]
         ]
 
