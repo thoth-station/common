@@ -3,14 +3,17 @@
       queue: "thoth-station/core"
       jobs:
         - "thoth-coala"
+        - "thoth-mypy"
     gate:
       queue: "thoth-station/core"
       jobs:
         - "thoth-coala"
+        - "thoth-mypy"
     kebechet-auto-gate:
       queue: "thoth-station/core"
       jobs:
         - "thoth-coala"
+        - "thoth-mypy"
     release:
       jobs:
         - "upload-pypi-sesheta"
