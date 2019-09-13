@@ -990,6 +990,7 @@ class OpenShift:
         *,
         output: str,
         debug: bool = False,
+        dry_run: bool = False,
         job_id: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
@@ -1018,6 +1019,7 @@ class OpenShift:
         *,
         output: str,
         debug: bool = False,
+        dry_run: bool = False,
         job_id: str = None,
         template: dict = None,
     ) -> str:
@@ -1036,6 +1038,7 @@ class OpenShift:
             THOTH_PACKAGE_ANALYZER_INDEX_URL=index_url,
             THOTH_PACKAGE_ANALYZER_DEBUG=debug,
             THOTH_PACKAGE_ANALYZER_OUTPUT=output,
+            THOTH_PACKAGE_ANALYZER_DRY_RUN=dry_run,
             THOTH_PACKAGE_ANALYZER_JOB_ID=job_id
             or self._generate_id("package-analyzer"),
         )
