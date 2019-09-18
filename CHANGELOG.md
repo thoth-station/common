@@ -1625,3 +1625,15 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.8 (2019-08-14T13:19:13)
 * Do not pin to a specific Kubernetes release
+
+## Release 0.9.9 (2019-09-18T16:05:04)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.2 to 0.12.0
+* Schedule solvers without transitive flag being set
+* Add dry-run to package-analyzer
+* :pushpin: Automatic update of dependency pytest from 5.1.1 to 5.1.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.1 to 0.11.2
+* :pushpin: Automatic update of dependency pytest from 5.1.0 to 5.1.1
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.0 to 0.11.1
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.2 to 0.11.0
+* :pushpin: Automatic update of dependency pytest from 5.0.1 to 5.1.0
+* Be consistent with solver type labels
