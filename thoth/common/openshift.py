@@ -870,7 +870,7 @@ class OpenShift:
         # Get only one solver - the solver that was requested.
         solver_entry = None
         for idx, obj in enumerate(template["objects"]):
-            if obj["metadata"]["labels"]["component"] == solver:
+            if obj["metadata"]["labels"]["solver-type"] == solver:
                 solver_entry = obj
                 break
 
