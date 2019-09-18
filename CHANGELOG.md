@@ -1637,3 +1637,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.10.2 to 0.11.0
 * :pushpin: Automatic update of dependency pytest from 5.0.1 to 5.1.0
 * Be consistent with solver type labels
+
+## Release 0.9.10 (2019-09-18T19:34:42)
+* Hotfix for errors when getting solver templates
