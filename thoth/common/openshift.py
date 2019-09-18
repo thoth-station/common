@@ -768,7 +768,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
         solver_ids = []
@@ -836,7 +836,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
         job_id: str = None,
     ) -> str:
         """Schedule the given solver."""
