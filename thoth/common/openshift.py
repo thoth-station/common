@@ -2021,6 +2021,9 @@ class OpenShift:
             _LOGGER.error("Failed to obtain quota: %s", response.text)
             raise
 
+        if len(response.json()["items"]) != 1:
+            raise ValueError(f"No or multiple cluster resources configured in namespace {namespace!r}")
+
         # We get a very first item for now.
         status = response.json()["items"][0]["status"]
         pods_used = status["used"].get("pods")
