@@ -51,12 +51,6 @@ setup(
         'thoth.common',
         'thoth.common.config',
     ],
-    extras_require={
-        'openshift': [
-            'openshift==0.8.0',
-            'kubernetes==8.0.0'
-        ]
-    },
     zip_safe=False,
     install_requires=get_install_requires(),
     command_options={
