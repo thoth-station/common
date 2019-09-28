@@ -768,7 +768,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
         solver_ids = []
@@ -836,7 +836,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
         job_id: str = None,
     ) -> str:
         """Schedule the given solver."""
@@ -870,7 +870,7 @@ class OpenShift:
         # Get only one solver - the solver that was requested.
         solver_entry = None
         for idx, obj in enumerate(template["objects"]):
-            if obj["metadata"]["labels"]["component"] == solver:
+            if obj["metadata"]["labels"]["solver-type"] == solver:
                 solver_entry = obj
                 break
 
@@ -990,6 +990,7 @@ class OpenShift:
         *,
         output: str,
         debug: bool = False,
+        dry_run: bool = False,
         job_id: str = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
@@ -1018,6 +1019,7 @@ class OpenShift:
         *,
         output: str,
         debug: bool = False,
+        dry_run: bool = False,
         job_id: str = None,
         template: dict = None,
     ) -> str:
@@ -1036,6 +1038,7 @@ class OpenShift:
             THOTH_PACKAGE_ANALYZER_INDEX_URL=index_url,
             THOTH_PACKAGE_ANALYZER_DEBUG=debug,
             THOTH_PACKAGE_ANALYZER_OUTPUT=output,
+            THOTH_PACKAGE_ANALYZER_DRY_RUN=dry_run,
             THOTH_PACKAGE_ANALYZER_JOB_ID=job_id
             or self._generate_id("package-analyzer"),
         )
@@ -2017,6 +2020,9 @@ class OpenShift:
         except Exception:
             _LOGGER.error("Failed to obtain quota: %s", response.text)
             raise
+
+        if len(response.json()["items"]) != 1:
+            raise ValueError(f"No or multiple cluster resources configured in namespace {namespace!r}")
 
         # We get a very first item for now.
         status = response.json()["items"][0]["status"]
