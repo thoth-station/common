@@ -1595,142 +1595,164 @@ class OpenShift:
 
         return self._get_template("template=provenance-checker")
 
-    def schedule_graph_sync_multiple(
+    def _schedule_graph_sync(
         self,
+        document_id: str,
         *,
-        only_solver_documents: bool = False,
-        only_analysis_documents: bool = False,
-        only_inspection_documents: bool = False,
-        only_adviser_documents: bool = False,
-        only_provenance_checker_documents: bool = False,
-        only_dependency_monkey_documents: bool = False,
-        namespace: str = None,
-    ):
-        """Schedule a graph sync."""
-        if namespace is None:
-            if not self.middletier_namespace:
-                raise ConfigurationError(
-                    "Middletier namespace is required to run graph syncs"
-                )
-
-            namespace = self.middletier_namespace
-
-        job_id = self._generate_id("graph-sync-multiple")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_graph_sync_multiple.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_graph_sync_template.__name__,
-            template_method_parameters={"template_name": "graph-sync-job-multiple"},
-            job_id=job_id,
-            namespace=namespace,
-            labels={"component": "graph-sync"},
-        )
-
-    def schedule_graph_sync(
-        self, document_id: str, namespace: str, *, template_name: str = None
+        force_sync: bool,
+        namespace: str,
+        graph_sync_type: str,
     ):
         """Schedule a graph sync."""
         job_id = "graph-sync-" + document_id
         parameters = locals()
         parameters.pop("self", None)
+
+        if namespace is None:
+            raise ConfigurationError(
+                "No namespace provided - in the environment nor explcitly on graph sync "
+                f"scheduling for {document_id} (graph sync type: {graph_sync_type!r})"
+            )
+
         return self._schedule_workload(
             run_method_name=self.run_graph_sync.__name__,
             run_method_parameters=parameters,
             template_method_name=self.get_graph_sync_template.__name__,
-            template_method_parameters={"template_name": template_name},
+            template_method_parameters={},
             job_id=job_id,
             namespace=namespace,
-            labels={"component": "graph-sync"},
+            labels={
+                "component": "graph-sync",
+                "graph-sync-type": graph_sync_type,
+                "graph-sync-document-id": document_id,
+            },
         )
 
-    def schedule_graph_sync_adviser(self, document_id: str, namespace: str) -> str:
-        """Schedule a sync of an adviser document - a sugar for user."""
-        return self.schedule_graph_sync(
-            document_id, namespace, template_name="graph-sync-job-adviser"
+    def schedule_graph_sync_adviser(
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+    ) -> str:
+        """Schedule a sync of an adviser document."""
+        if not document_id.startswith("adviser"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as adviser document - document is not adviser result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.backend_namespace,
+            graph_sync_type="adviser",
+            force_sync=force_sync,
         )
 
-    def schedule_graph_sync_inspection(self, document_id: str, namespace: str) -> str:
-        """Schedule a sync of inspection - a sugar for user."""
-        return self.schedule_graph_sync(
-            document_id, namespace, template_name="graph-sync-job-inspection"
+    def schedule_graph_sync_package_analyzer(
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+    ) -> str:
+        """Schedule a sync of an package-analysis document."""
+        if not document_id.startswith("package-analyzer"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as package-analyzer document - document "
+                "is not package-analyzer result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.middletier_namespace,
+            graph_sync_type="package-analyzer",
+            force_sync=force_sync,
         )
 
-    def schedule_graph_sync_solver(self, document_id: str, namespace: str) -> str:
-        """Schedule a sync of solver result - a sugar for user."""
-        return self.schedule_graph_sync(
-            document_id, namespace, template_name="graph-sync-job-solver"
+    def schedule_graph_sync_inspection(
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+    ) -> str:
+        """Schedule a sync of inspection."""
+        if not document_id.startswith("inspection"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as inspection document - document is not inspection result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.amun_inspection_namespace,
+            graph_sync_type="inspection",
+            force_sync=force_sync,
+        )
+
+    def schedule_graph_sync_provenance_checker(
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+    ) -> str:
+        """Schedule a sync of a provenance checker result."""
+        if not document_id.startswith("provenance-checker"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as provenance checker document - document is not"
+                "provenance checker result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.backend_namespace,
+            graph_sync_type="provenance-checker",
+            force_sync=force_sync,
+        )
+
+    def schedule_graph_sync_solver(
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+    ) -> str:
+        """Schedule a sync of solver result."""
+        if not document_id.startswith("solver"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as solver document - document is not solver result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.middletier_namespace,
+            graph_sync_type="solver",
+            force_sync=force_sync,
+        )
+
+    def schedule_graph_dependency_monkey(
+        self, document_id: str, *, force_sync: bool = False, namespace: str
+    ) -> str:
+        """Schedule a sync of a dependency monkey result."""
+        if not document_id.startswith("dependency-monkey"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as dependency monkey "
+                "document - document is not solver result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.middletier_namespace,
+            graph_sync_type="dependency-monkey",
+            force_sync=force_sync,
         )
 
     def schedule_graph_sync_package_extract(
-        self, document_id: str, namespace: str
+        self, document_id: str, *, force_sync: bool = False, namespace: str = None
     ) -> str:
-        """Schedule a sync of package-extract - a sugar for user."""
-        return self.schedule_graph_sync(
-            document_id, namespace, template_name="graph-sync-job-package-extract"
-        )
-
-    def run_graph_sync_multiple(
-        self,
-        *,
-        only_solver_documents: bool = False,
-        only_analysis_documents: bool = False,
-        only_inspection_documents: bool = False,
-        only_adviser_documents: bool = False,
-        only_provenance_checker_documents: bool = False,
-        only_dependency_monkey_documents: bool = False,
-        namespace: str = None,
-        template: dict = None,
-        job_id: str = None,
-        template_name: str = None,
-    ) -> str:
-        """Run the given graph sync to sync multiple documents into graph database."""
-        if not namespace:
+        """Schedule a sync of package-extract."""
+        if not document_id.startswith("package-extract"):
             raise ValueError(
-                "Unable to run graph sync without namespace being specified"
+                f"Cannot sync document {document_id!r} as package-extract document - document "
+                f"is not package-extract result"
             )
 
-        if not template and not template_name:
-            raise ValueError(
-                "At least one of `template` and `template_name` should be specified"
-            )
-
-        template = template or self.get_graph_sync_template(template_name)
-        self.set_template_parameters(
-            template,
-            THOTH_JOB_ID=job_id or self._generate_id(template_name),
-            THOTH_ONLY_SOLVER_DOCUMENTS=int(only_solver_documents),
-            THOTH_ONLY_ANALYSIS_DOCUMENTS=int(only_analysis_documents),
-            THOTH_ONLY_INSPECTION_DOCUMENTS=int(only_inspection_documents),
-            THOTH_ONLY_ADVISER_DOCUMENTS=int(only_adviser_documents),
-            THOTH_ONLY_PROVENANCE_CHECKER_DOCUMENTS=int(
-                only_provenance_checker_documents
-            ),
-            THOTH_ONLY_DEPENDENCY_MONKEY_DOCUMENTS=int(
-                only_dependency_monkey_documents
-            ),
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.middletier_namespace,
+            graph_sync_type="package-extract",
+            force_sync=force_sync,
         )
-        template = self.oc_process(namespace, template)
-        graph_sync = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=graph_sync["apiVersion"], kind=graph_sync["kind"]
-        ).create(body=graph_sync, namespace=namespace)
-
-        _LOGGER.info(
-            "Scheduled new graph sync multiple with id %r", response.metadata.name
-        )
-        return response.metadata.name
 
     def run_graph_sync(
         self,
         document_id: str,
         namespace: str,
+        graph_sync_type: str,
+        force_sync: str,
         *,
         template: dict = None,
         job_id: str = None,
-        template_name: str = None,
     ):
         """Run the given graph sync."""
         if not namespace:
@@ -1738,16 +1760,13 @@ class OpenShift:
                 "Unable to run graph sync without namespace being specified"
             )
 
-        if not template and not template_name:
-            raise ValueError(
-                "At least one of `template` and `template_name` should be specified"
-            )
-
-        template = template or self.get_graph_sync_template(template_name)
+        template = template or self.get_graph_sync_template()
         self.set_template_parameters(
             template,
             THOTH_SYNC_DOCUMENT_ID=document_id,
-            THOTH_JOB_ID=job_id or self._generate_id(template_name),
+            THOTH_JOB_ID=job_id or self._generate_id(graph_sync_type),
+            THOTH_FORCE_SYNC=force_sync,
+            THOTH_GRAPH_SYNC_TYPE=graph_sync_type,
         )
         template = self.oc_process(namespace, template)
         graph_sync = template["objects"][0]
@@ -1759,19 +1778,14 @@ class OpenShift:
         _LOGGER.info("Scheduled new sync with id %r", response.metadata.name)
         return response.metadata.name
 
-    def get_graph_sync_template(self, template_name: str) -> dict:
+    def get_graph_sync_template(self) -> dict:
         """Get graph sync template."""
         if not self.infra_namespace:
             raise ConfigurationError(
                 "Infra namespace is required in order to gather graph sync template"
             )
 
-        if not template_name:
-            raise ValueError(
-                "Unable to get graph sync template without template name being specified"
-            )
-
-        return self._get_template(f"component=graph-sync,template={template_name}")
+        return self._get_template("template=graph-sync-job")
 
     def schedule_kebechet_run_url(
         self, url: str, service: str, *, verbose=False, job_id=None
