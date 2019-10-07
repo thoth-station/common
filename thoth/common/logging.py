@@ -128,8 +128,14 @@ def init_logging(
                 "Failed to initialize logging to Sentry instance, check configuration"
             )
             raise
+
+        if environment is None:
+            root_logger.warning(
+                "No Sentry environment configured: it is recommended to provide Sentry environment "
+                "to split reported exceptions based on different deployments when running in a cluster"
+            )
     else:
-        root_logger.info("Logging to a Sentry instance is turned off")
+        root_logger.warning("Logging to a Sentry instance is turned off")
 
     if _RSYSLOG_HOST and _RSYSLOG_PORT:
         root_logger.info(
