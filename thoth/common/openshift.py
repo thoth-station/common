@@ -649,11 +649,6 @@ class OpenShift:
         parameters.pop("self", None)
         parameters.pop("inspection_id", None)
 
-        # Fill in required fields for image pulling.
-        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
-        if registry:
-            parameters["THOTH_REGISTRY"] = registry
-
         return self._schedule_workload(
             run_method_name=self.run_inspection_job.__name__,
             run_method_parameters=parameters,
@@ -676,12 +671,19 @@ class OpenShift:
         use_hw_template: bool = False,
         cpu_requests: str = None,
         memory_requests: str = None,
+        infra_namespace: str = None,
+        registry: str = None,
     ) -> str:
         """Create the actual inspection job."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
                 "Amun infra namespace is required in order to create inspection job"
             )
+
+        # Fill in required fields for image pulling.
+        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
+        if registry:
+            parameters["THOTH_REGISTRY"] = registry
 
         template = template or self.get_inspection_job_template(
             use_hw_template=use_hw_template,
@@ -754,7 +756,7 @@ class OpenShift:
         )
         self._raise_on_invalid_response_size(response)
         return [
-            obj["metadata"]["labels"]["component"]
+            obj["metadata"]["labels"]["solver-type"]
             for obj in response.to_dict()["items"][0]["objects"]
         ]
 
@@ -766,7 +768,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
         solver_ids = []
@@ -834,7 +836,7 @@ class OpenShift:
         indexes: list = None,
         debug: bool = False,
         subgraph_check_api: str = None,
-        transitive: bool = True,
+        transitive: bool = False,
         job_id: str = None,
     ) -> str:
         """Schedule the given solver."""
@@ -868,7 +870,7 @@ class OpenShift:
         # Get only one solver - the solver that was requested.
         solver_entry = None
         for idx, obj in enumerate(template["objects"]):
-            if obj["metadata"]["labels"]["component"] == solver:
+            if obj["metadata"]["labels"]["solver-type"] == solver:
                 solver_entry = obj
                 break
 
@@ -979,6 +981,86 @@ class OpenShift:
             )
 
         return self._get_template("template=package-extract")
+
+    def schedule_package_analyzer(
+        self,
+        package_name: str,
+        package_version: str,
+        index_url: str,
+        *,
+        output: str,
+        debug: bool = False,
+        dry_run: bool = False,
+        job_id: str = None,
+    ) -> str:
+        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule package analyzer job without middletier namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("package-analyzer")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_package_analyzer.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_package_analyzer_template.__name__,
+            job_id=job_id,
+            namespace=self.middletier_namespace,
+            labels={"component": "package-analyzer"},
+        )
+
+    def run_package_analyzer(
+        self,
+        package_name: str,
+        package_version: str,
+        index_url: str,
+        *,
+        output: str,
+        debug: bool = False,
+        dry_run: bool = False,
+        job_id: str = None,
+        template: dict = None,
+    ) -> str:
+        """Run package-analyzer to gather digests of packages and files present inside packages."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Running package-analyzer requires middletier namespace to be specified"
+            )
+
+        template = template or self.get_package_analyzer_template()
+
+        self.set_template_parameters(
+            template,
+            THOTH_PACKAGE_ANALYZER_PACKAGE_NAME=package_name,
+            THOTH_PACKAGE_ANALYZER_PACKAGE_VERSION=package_version,
+            THOTH_PACKAGE_ANALYZER_INDEX_URL=index_url,
+            THOTH_PACKAGE_ANALYZER_DEBUG=debug,
+            THOTH_PACKAGE_ANALYZER_OUTPUT=output,
+            THOTH_PACKAGE_ANALYZER_DRY_RUN=dry_run,
+            THOTH_PACKAGE_ANALYZER_JOB_ID=job_id
+            or self._generate_id("package-analyzer"),
+        )
+
+        template = self.oc_process(self.middletier_namespace, template)
+        analyzer = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=analyzer["apiVersion"], kind=analyzer["kind"]
+        ).create(body=analyzer, namespace=self.middletier_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_package_analyzer_template(self):
+        """Get template for package-analyzer."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather package-analyzer template when running it"
+            )
+
+        return self._get_template("template=package-analyzer")
 
     def create_config_map(
         self, configmap_name: str, namespace: str, labels: dict, data: dict
@@ -1143,6 +1225,185 @@ class OpenShift:
             )
 
         return self._get_template("template=dependency-monkey")
+
+    def schedule_build_analyze(
+        self, document_id: str, output: str, job_id: str = None
+    ) -> str:
+        """Schedule an build analyze run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build analyze without middletier namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-analyze")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_analyze.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_analyze_template.__name__,
+            job_id=job_id,
+            namespace=self.middletier_namespace,
+            labels={"component": "build-analyze"},
+        )
+
+    def run_build_analyze(
+        self, document_id: str, output: str, job_id: str = None, template: dict = None
+    ) -> str:
+        """Run build analyze on the provided user input."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Running build-analyze requires middletier namespace configuration"
+            )
+
+        template = template or self.get_build_analyze_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self._generate_id("build-analyze"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.middletier_namespace, template)
+        build_analyze = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_analyze["apiVersion"], kind=build_analyze["kind"]
+        ).create(body=build_analyze, namespace=self.middletier_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_analyze_template(self):
+        """Get template for build analyze run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyzer template when running it"
+            )
+
+        return self._get_template("template=build-analyze")
+
+    def schedule_build_report(
+        self, document_id: str, output: str, job_id: str = None
+    ) -> str:
+        """Schedule an build report run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build report without middletier namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-report")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_report.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_report_template.__name__,
+            job_id=job_id,
+            namespace=self.middletier_namespace,
+            labels={"component": "build-report"},
+        )
+
+    def run_build_report(
+        self, document_id: str, output: str, job_id: str = None, template: dict = None
+    ) -> str:
+        """Run build report on the provided user input."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Running build-report requires middletier namespace configuration"
+            )
+
+        template = template or self.get_build_report_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self._generate_id("build-report"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.middletier_namespace, template)
+        build_report = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_report["apiVersion"], kind=build_report["kind"]
+        ).create(body=build_report, namespace=self.middletier_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_report_template(self):
+        """Get template for build report run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyzer template when running it"
+            )
+
+        return self._get_template("template=build-report")
+
+    def schedule_build_dependencies(
+        self, document_id: str, output: str, job_id: str = None
+    ) -> str:
+        """Schedule an build analyze run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule build dependencies without middletier namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("build-dependencies")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_build_dependencies.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_build_dependencies_template.__name__,
+            job_id=job_id,
+            namespace=self.middletier_namespace,
+            labels={"component": "build-dependencies"},
+        )
+
+    def run_build_dependencies(
+        self, document_id: str, output: str, job_id: str = None, template: dict = None
+    ) -> str:
+        """Run build dependencies on the provided user input."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Running build-dependencies requires middletier namespace configuration"
+            )
+
+        template = template or self.get_build_dependencies_template()
+
+        parameters = {
+            "THOTH_BUILD_LOG_DOC_ID": document_id,
+            "THOTH_REPORT_OUTPUT": output,
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id
+            or self._generate_id("build-dependencies"),
+        }
+
+        self.set_template_parameters(template, **parameters)
+
+        template = self.oc_process(self.middletier_namespace, template)
+        build_dependencies = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=build_dependencies["apiVersion"],
+            kind=build_dependencies["kind"],
+        ).create(body=build_dependencies, namespace=self.middletier_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_build_dependencies_template(self):
+        """Get template for build dependencies run."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather build analyzer template when running it"
+            )
+
+        return self._get_template("template=build-dependencies")
 
     def schedule_adviser(
         self,
@@ -1468,7 +1729,6 @@ class OpenShift:
             namespace=namespace or self.middletier_namespace,
             graph_sync_type="dependency-monkey",
             force_sync=force_sync,
-        )
 
     def schedule_graph_sync_package_extract(
         self, document_id: str, *, force_sync: bool = False, namespace: str = None
@@ -1486,6 +1746,7 @@ class OpenShift:
             graph_sync_type="package-extract",
             force_sync=force_sync,
         )
+
 
     def run_graph_sync(
         self,
@@ -1529,6 +1790,119 @@ class OpenShift:
             )
 
         return self._get_template("template=graph-sync-job")
+
+    def schedule_kebechet_run_url(
+        self, url: str, service: str, *, verbose=False, job_id=None
+    ) -> str:
+        """Schedule a kebechet run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule Kebechet without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("kebechet-run-url")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_kebechet_run_url.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_kebechet_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "kebechet"},
+        )
+
+    def schedule_kebechet_run_results(
+        self, url: str, service: str, analysis_id: str, *, verbose=False, job_id=None
+    ) -> str:
+        """Schedule a kebechet run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule Kebechet without backend namespace being set"
+            )
+
+        job_id = job_id or self._generate_id("kebechet-run-results")
+        parameters = locals()
+        parameters.pop("self", None)
+        return self._schedule_workload(
+            run_method_name=self.run_kebechet_run_results.__name__,
+            run_method_parameters=parameters,
+            template_method_name=self.get_kebechet_template.__name__,
+            job_id=job_id,
+            namespace=self.backend_namespace,
+            labels={"component": "kebechet"},
+        )
+
+    def run_kebechet_run_url(
+        self,
+        url: str,
+        service: str,
+        *,
+        verbose=False,
+        job_id=None,
+        template: dict = None,
+    ) -> str:
+        """Create a kebechet run-url job."""
+        job_id = job_id or self._generate_id("kebechet-run-url")
+        template = template or self.get_kebechet_template()
+        self.set_template_parameters(
+            template,
+            KEBECHET_SUBCOMMAND="run-url",
+            KEBECHET_VERBOSE=verbose,
+            KEBECHET_REPO_URL=url,
+            KEBECHET_SERVICE_NAME=service,
+            KEBECHET_JOB_ID=job_id,
+        )
+        template = self.oc_process(self.backend_namespace, template)
+        kebechet = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=kebechet["apiVersion"], kind=kebechet["kind"]
+        ).create(body=kebechet, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def run_kebechet_run_results(
+        self,
+        url: str,
+        service: str,
+        analysis_id: str,
+        *,
+        verbose=False,
+        job_id=None,
+        template: dict = None,
+    ) -> str:
+        """Create a kebechet run-results job."""
+        job_id = job_id or self._generate_id("kebechet-run-results")
+        template = template or self.get_kebechet_template()
+        self.set_template_parameters(
+            template,
+            KEBECHET_SUBCOMMAND="run-results",
+            KEBECHET_VERBOSE=verbose,
+            KEBECHET_REPO_URL=url,
+            KEBECHET_SERVICE_NAME=service,
+            KEBECHET_JOB_ID=job_id,
+            KEBECHET_ANALYSIS_ID=analysis_id,
+        )
+        template = self.oc_process(self.backend_namespace, template)
+        kebechet = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=kebechet["apiVersion"], kind=kebechet["kind"]
+        ).create(body=kebechet, namespace=self.backend_namespace)
+
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+        return response.metadata.name
+
+    def get_kebechet_template(self) -> dict:
+        """Get template for a Kebechet job."""
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required to gather kebechet template when running it"
+            )
+
+        return self._get_template("template=kebechet")
 
     def _raise_on_invalid_response_size(self, response):
         """Expect that there is only one object type for the given item."""
@@ -1659,6 +2033,9 @@ class OpenShift:
         except Exception:
             _LOGGER.error("Failed to obtain quota: %s", response.text)
             raise
+
+        if len(response.json()["items"]) != 1:
+            raise ValueError(f"No or multiple cluster resources configured in namespace {namespace!r}")
 
         # We get a very first item for now.
         status = response.json()["items"][0]["status"]
@@ -1799,3 +2176,46 @@ class OpenShift:
             build_cpu = self.parse_cpu_spec(build_cpu)
 
         return build_cpu, build_memory
+
+    def get_job_status_count(self, label_selector: str, namespace: str) -> dict:
+        """Count the number of Jobs per status in a specific namespace."""
+        response = self.get_jobs(label_selector=label_selector, namespace=namespace)
+        status = [
+            "created",
+            "active",
+            "failed",
+            "succeeded",
+            "pending",
+            "retry",
+            "waiting",
+            "started",
+        ]
+
+        # Initialize
+        jobs_status_count = dict.fromkeys(status, 0)
+
+        # Count jobs per status
+        for item in response["items"]:
+            jobs_status_count["created"] += 1
+
+            if "succeeded" in item["status"].keys():
+                jobs_status_count["succeeded"] += 1
+            elif "failed" in item["status"].keys():
+                jobs_status_count["failed"] += 1
+            elif "active" in item["status"].keys():
+                jobs_status_count["active"] += 1
+            elif "pending" in item["status"].keys():
+                jobs_status_count["pending"] += 1
+            elif not item["status"].keys():
+                jobs_status_count["waiting"] += 1
+            elif "startTime" in item["status"].keys() and len(item["status"].keys()) == 1:
+                jobs_status_count["started"] += 1
+            else:
+                try:
+                    if "BackoffLimitExceeded" in item["status"]["conditions"][0]["reason"]:
+                        jobs_status_count["retry"] += 1
+                except Exception as excptn:
+                    _LOGGER.error("Unknown job status %r", item)
+                    _LOGGER.exception(excptn)
+
+        return jobs_status_count

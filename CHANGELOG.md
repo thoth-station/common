@@ -1581,3 +1581,73 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Provide method for scheduling graph-refresh on demand
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.1 to 0.9.2
 * :pushpin: Automatic update of dependency sentry-sdk from 0.9.0 to 0.9.1
+
+## Release 0.9.2 (2019-07-10T15:08:23)
+* Fix wrong argument handling
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.0 to 0.10.1
+* :arrow_double_up: Increase the limit for file line size
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.5 to 0.10.0
+* :pushpin: Automatic update of dependency pytest from 5.0.0 to 5.0.1
+* Introduce graph sync multiple
+* :pushpin: Automatic update of dependency pytest from 4.6.3 to 5.0.0
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.4 to 0.9.5
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.3 to 0.9.4
+* :pushpin: Automatic update of dependency sentry-sdk from 0.9.2 to 0.9.3
+
+## Release 0.9.3 (2019-07-12T11:47:28)
+* Increase maximum lines per file
+* :sunglasses: Support for build analysers scheduling
+* Broke up run and schedule for stable api
+* Copy paste remnants
+* Increase maximum lines
+* Conditional statement
+* Subcommand env
+* Coala fixes
+* Logic to run and schedule kebechet builds
+
+## Release 0.9.4 (2019-07-18T21:00:09)
+* openshift scheduler job for package analyzer
+* Changed env variable names
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.1 to 0.10.2
+
+## Release 0.9.5 (2019-07-24T18:39:51)
+* :sunrise: Modified the names to standard convention
+
+## Release 0.9.6 (2019-08-07T20:40:29)
+* Add template as optional param
+* :pushpin: Automatic update of dependency daiquiri from 1.5.0 to 1.6.0
+* New function to count jobs per status per label
+* :pushpin: Automatic update of dependency pyyaml from 5.1.1 to 5.1.2
+
+## Release 0.9.7 (2019-08-13T07:44:10)
+* As we use Thoth to resolve dependencies, stop using extras
+* Leftover parameter from copy paste
+
+## Release 0.9.8 (2019-08-14T13:19:13)
+* Do not pin to a specific Kubernetes release
+
+## Release 0.9.9 (2019-09-18T16:05:04)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.2 to 0.12.0
+* Schedule solvers without transitive flag being set
+* Add dry-run to package-analyzer
+* :pushpin: Automatic update of dependency pytest from 5.1.1 to 5.1.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.1 to 0.11.2
+* :pushpin: Automatic update of dependency pytest from 5.1.0 to 5.1.1
+* :pushpin: Automatic update of dependency sentry-sdk from 0.11.0 to 0.11.1
+* :pushpin: Automatic update of dependency sentry-sdk from 0.10.2 to 0.11.0
+* :pushpin: Automatic update of dependency pytest from 5.0.1 to 5.1.0
+* Be consistent with solver type labels
+
+## Release 0.9.10 (2019-09-18T19:34:42)
+* Hotfix for errors when getting solver templates
+
+## Release 0.9.11 (2019-10-02T14:10:00)
+* :pushpin: Automatic update of dependency attrs from 19.1.0 to 19.2.0
+* :pushpin: Automatic update of dependency pylint from 2.4.1 to 2.4.2
+* :pushpin: Automatic update of dependency pytest from 5.1.3 to 5.2.0
+* :pushpin: Automatic update of dependency pylint from 2.4.0 to 2.4.1
+* Improve error message shown when getting cluster resources
+* :pushpin: Automatic update of dependency pylint from 2.3.1 to 2.4.0
+* :pushpin: Automatic update of dependency pytest from 5.1.2 to 5.1.3
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.1 to 0.12.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.0 to 0.12.1
