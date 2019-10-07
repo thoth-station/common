@@ -767,7 +767,6 @@ class OpenShift:
         *,
         indexes: list = None,
         debug: bool = False,
-        subgraph_check_api: str = None,
         transitive: bool = False,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
@@ -779,7 +778,6 @@ class OpenShift:
                 solver=solver_name,
                 indexes=indexes,
                 debug=debug,
-                subgraph_check_api=subgraph_check_api,
                 transitive=transitive,
             )
 
@@ -795,7 +793,6 @@ class OpenShift:
         *,
         indexes: list = None,
         debug: bool = False,
-        subgraph_check_api: str = None,
         transitive: bool = True,
         job_id: str = None,
         template: dict = None,
@@ -814,7 +811,6 @@ class OpenShift:
             THOTH_LOG_SOLVER="DEBUG" if debug else "INFO",
             THOTH_SOLVER_OUTPUT=output,
             THOTH_SOLVER_JOB_ID=job_id or self._generate_id(solver),
-            THOTH_SOLVER_SUBGRAPH_CHECK_API=subgraph_check_api,
         )
 
         template = self.oc_process(self.middletier_namespace, template)
@@ -835,8 +831,7 @@ class OpenShift:
         *,
         indexes: list = None,
         debug: bool = False,
-        subgraph_check_api: str = None,
-        transitive: bool = False,
+        transitive: bool = True,
         job_id: str = None,
     ) -> str:
         """Schedule the given solver."""
