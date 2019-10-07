@@ -1640,3 +1640,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.10 (2019-09-18T19:34:42)
 * Hotfix for errors when getting solver templates
+
+## Release 0.9.11 (2019-10-02T14:10:00)
+* :pushpin: Automatic update of dependency attrs from 19.1.0 to 19.2.0
+* :pushpin: Automatic update of dependency pylint from 2.4.1 to 2.4.2
+* :pushpin: Automatic update of dependency pytest from 5.1.3 to 5.2.0
+* :pushpin: Automatic update of dependency pylint from 2.4.0 to 2.4.1
+* Improve error message shown when getting cluster resources
+* :pushpin: Automatic update of dependency pylint from 2.3.1 to 2.4.0
+* :pushpin: Automatic update of dependency pytest from 5.1.2 to 5.1.3
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.1 to 0.12.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.0 to 0.12.1
