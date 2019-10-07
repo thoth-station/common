@@ -1615,7 +1615,8 @@ class OpenShift:
 
         if namespace is None:
             raise ConfigurationError(
-                f"No namespace provided - in the environment nor explcitly on graph sync scheduling for {document_id} (graph sync type: {graph_sync_type!r})"
+                "No namespace provided - in the environment nor explcitly on graph sync "
+                f"scheduling for {document_id} (graph sync type: {graph_sync_type!r})"
             )
 
         return self._schedule_workload(
@@ -1729,6 +1730,7 @@ class OpenShift:
             namespace=namespace or self.middletier_namespace,
             graph_sync_type="dependency-monkey",
             force_sync=force_sync,
+        )
 
     def schedule_graph_sync_package_extract(
         self, document_id: str, *, force_sync: bool = False, namespace: str = None
@@ -1746,7 +1748,6 @@ class OpenShift:
             graph_sync_type="package-extract",
             force_sync=force_sync,
         )
-
 
     def run_graph_sync(
         self,
