@@ -1651,3 +1651,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pytest from 5.1.2 to 5.1.3
 * :pushpin: Automatic update of dependency sentry-sdk from 0.12.1 to 0.12.2
 * :pushpin: Automatic update of dependency sentry-sdk from 0.12.0 to 0.12.1
+
+## Release 0.9.12 (2019-10-07T13:47:41)
+* Add warnings when there is something fishy in environment configuration for logging
+* Fix missing bracket
+* Refactor out scheduling graph syncs
+* :pushpin: Automatic update of dependency pytest from 5.2.0 to 5.2.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.8.0 to 2.8.1
+* :pushpin: Automatic update of dependency pytest-cov from 2.7.1 to 2.8.0
+* Drop subgraph check
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.2 to 0.12.3
