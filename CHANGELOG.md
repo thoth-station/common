@@ -1661,3 +1661,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pytest-cov from 2.7.1 to 2.8.0
 * Drop subgraph check
 * :pushpin: Automatic update of dependency sentry-sdk from 0.12.2 to 0.12.3
+
+## Release 0.9.13 (2019-10-08T09:58:53)
+
