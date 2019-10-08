@@ -21,6 +21,7 @@ import os
 import logging
 import typing
 import socket
+import time
 from functools import wraps
 
 import sentry_sdk
@@ -85,15 +86,18 @@ def init_logging(
     # TODO: JSON in deployments?
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
+    formatter = daiquiri.formatter.ColorFormatter(
+        fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:"
+        "%(lineno)d: %(message)s%(color_stop)s"
+    )
+
+    # Always log in UTC to be consistent with team members all over the world.
+    formatter.converter = time.gmtime
+
     daiquiri.setup(
         level=logging.INFO,
         outputs=(
-            daiquiri.output.Stream(
-                formatter=daiquiri.formatter.ColorFormatter(
-                    fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:"
-                    "%(lineno)d: %(message)s%(color_stop)s"
-                )
-            ),
+            daiquiri.output.Stream(formatter=formatter),
         ),
     )
     root_logger = logging.getLogger()
