@@ -1710,7 +1710,7 @@ class OpenShift:
             force_sync=force_sync,
         )
 
-    def schedule_graph_dependency_monkey(
+    def schedule_graph_sync_dependency_monkey(
         self, document_id: str, *, force_sync: bool = False, namespace: str
     ) -> str:
         """Schedule a sync of a dependency monkey result."""
