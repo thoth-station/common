@@ -883,6 +883,7 @@ class OpenShift:
         output: str,
         *,
         environment_type: str,
+        is_external: bool = True,
         origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
@@ -919,6 +920,7 @@ class OpenShift:
         output: str,
         *,
         environment_type: str,
+        is_external: bool = True,
         origin: str = None,
         registry_user: str = None,
         registry_password: str = None,
@@ -947,9 +949,11 @@ class OpenShift:
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self._generate_id("package-extract"),
-            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps(
-                {"origin": origin, "environment_type": environment_type}
-            ),
+            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({
+                "origin": origin,
+                "environment_type": environment_type,
+                "is_external": is_external,
+            }),
         )
 
         if registry_user and registry_password:
