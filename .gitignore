@@ -3,3 +3,4 @@ thoth_common.egg-info/
 __pycache__
 docs/source/thoth.*.rst
 build/
+.mypy_cache/

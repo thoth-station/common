@@ -20,11 +20,13 @@
 import json
 import datetime
 
+from typing import Any
+
 
 class SafeJSONEncoder(json.JSONEncoder):
     """Convert objects to JSON, safely."""
 
-    def default(self, o):
+    def default(self, o: Any) -> Any:
         """Convert an object to JSON, safely."""
         if isinstance(o, datetime.datetime):
             return o.isoformat()

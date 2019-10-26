@@ -20,6 +20,8 @@
 import datetime
 import os
 from datetime import timezone
+from typing import Generator
+from typing import Optional
 
 from contextlib import contextmanager
 
@@ -29,7 +31,7 @@ _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 @contextmanager
-def cwd(target):
+def cwd(target: str) -> Generator[str, None, None]:
     """Manage cwd in a pushd/popd fashion."""
     curdir = os.getcwd()
     os.chdir(target)
@@ -39,7 +41,7 @@ def cwd(target):
         os.chdir(curdir)
 
 
-def get_default_datetime_format():
+def get_default_datetime_format() -> str:
     """Return default datetime format string."""
     return _DATETIME_FORMAT_STRING
 
@@ -51,7 +53,7 @@ def parse_datetime(datetime_string: str) -> datetime.datetime:
     return parsed.replace(tzinfo=timezone.utc)
 
 
-def format_datetime(dt: datetime.datetime = None) -> str:
+def format_datetime(dt: datetime.datetime) -> str:
     """Return datetime string in default format."""
     # We use strftime to make sure we do not propagate timezone information. We use UTC all over the places.
     return dt.strftime(_DATETIME_FORMAT_STRING)
@@ -62,10 +64,10 @@ def datetime_str2timestamp(datetime_string: str) -> int:
     return int(parse_datetime(datetime_string).timestamp())
 
 
-def datetime2datetime_str(dt: datetime.datetime = None) -> str:
+def datetime2datetime_str(dt: Optional[datetime.datetime] = None) -> str:
     """Create a string representation of a datetime."""
     # We use strftime to make sure we do not propagate timezone information. We use UTC all over the places.
-    if not dt:
+    if dt is None:
         return datetime.datetime.utcnow().strftime(_DATETIME_FORMAT_STRING)
 
     return dt.strftime(_DATETIME_FORMAT_STRING)
@@ -81,15 +83,15 @@ def timestamp2datetime(timestamp: int) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.utc)
 
 
-def _get_incluster_token_file(token_file=None):
-    return token_file if token_file else SERVICE_TOKEN_FILENAME
+def _get_incluster_token_file(token_file: Optional[str] = None) -> str:
+    return token_file if token_file is not None else SERVICE_TOKEN_FILENAME
 
 
-def _get_incluster_ca_file(ca_file=None):
-    return ca_file if ca_file else SERVICE_CERT_FILENAME
+def _get_incluster_ca_file(ca_file: Optional[str] = None) -> str:
+    return ca_file if ca_file is not None else SERVICE_CERT_FILENAME
 
 
-def get_service_account_token():
+def get_service_account_token() -> str:
     """Get token from service account token file."""
     try:
         with open(_get_incluster_token_file(), "r") as token_file:

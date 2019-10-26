@@ -19,6 +19,9 @@
 
 import os
 import logging
+from typing import Optional
+from typing import Any
+from typing import Dict
 
 import attr
 import yaml
@@ -42,7 +45,7 @@ class RuntimeEnvironment:
     name = attr.ib(type=str, default=None)
 
     @classmethod
-    def load(cls, content: str = None):
+    def load(cls, content: Optional[str] = None) -> "RuntimeEnvironment":
         """Load runtime environment information from file or from a JSON representation, transparently."""
         if content is None:
             return cls.from_dict({})
@@ -51,11 +54,11 @@ class RuntimeEnvironment:
             with open(content, "r") as input_file:
                 content = input_file.read()
 
-        content = yaml.safe_load(content)
-        return cls.from_dict(content)
+        file_content = yaml.safe_load(content)
+        return cls.from_dict(file_content)
 
     @classmethod
-    def from_dict(cls, dict_: dict = None):
+    def from_dict(cls, dict_: Optional[Dict[Any, Any]] = None) -> "RuntimeEnvironment":
         """Parse one configuration entry from a dictionary."""
         dict_ = dict(dict_ or {})
 
@@ -73,11 +76,11 @@ class RuntimeEnvironment:
             )
 
         instance = cls(
-            hardware=HardwareInformation.from_dict(hardware),
-            operating_system=OperatingSystem.from_dict(operating_system),
+            hardware=HardwareInformation.from_dict(hardware),  # type: ignore
+            operating_system=OperatingSystem.from_dict(operating_system),  # type: ignore
             python_version=python_version,
             cuda_version=cuda_version,
-            name=name
+            name=name,
         )
 
         if instance.operating_system.version and not instance.operating_system.name:
@@ -87,13 +90,13 @@ class RuntimeEnvironment:
 
         return instance
 
-    def to_dict(self, without_none: bool = False):
+    def to_dict(self, without_none: bool = False) -> Dict[str, Any]:
         """Convert runtime environment configuration to a dict representation."""
         dict_ = attr.asdict(self)
         if not without_none:
             return dict_
 
-        result = {}
+        result: Dict[str, Any] = {}
         for key, value in dict_.items():
             # We support one nested configuration entries.
             if isinstance(value, dict):
@@ -111,7 +114,7 @@ class RuntimeEnvironment:
 
         return result
 
-    def to_string(self):
+    def to_string(self) -> str:
         """Convert runtime environment configuration to a string representation."""
         dict_representation = self.to_dict(without_none=True)
         return str(dict_representation)
