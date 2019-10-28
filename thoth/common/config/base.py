@@ -18,6 +18,9 @@
 """A base class for configuration entries."""
 
 import logging
+from typing import Dict
+from typing import Union
+from typing import Optional
 
 import attr
 
@@ -28,24 +31,24 @@ _LOGGER = logging.getLogger(__name__)
 class ConfigEntryBase:
     """A base class for configuration entries."""
 
-    _TYPE = None
+    _TYPE = "UNKNOWN"
 
     @classmethod
-    def from_dict(cls, dict_: dict):
+    def from_dict(cls, dict_: Dict[str, str]) -> "ConfigEntryBase":
         """Instantiate hardware related information from its dictionary representation."""
         dict_ = dict(dict_)
 
         constructor_kwargs = {}
-        for attribute in cls.__attrs_attrs__:
+        for attribute in cls.__attrs_attrs__:  # type: ignore
             constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)
 
         for key, value in dict_.items():
             _LOGGER.warning("Unsupported %s configuration option %r with value %r", cls._TYPE, key, value)
 
-        instance = cls(**constructor_kwargs)
+        instance = cls(**constructor_kwargs)  # type: ignore
         return instance
 
-    def to_dict(self, without_none: bool = False) -> dict:
+    def to_dict(self, without_none: bool = False) -> Dict[str, Optional[Union[str, int]]]:
         """Convert runtime environment object representation to a dict."""
         # We do not support nested items here.
         if without_none:

@@ -25,6 +25,12 @@ import json
 import random
 import urllib3
 
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .helpers import (
@@ -45,22 +51,21 @@ class OpenShift:
     def __init__(
         self,
         *,
-        frontend_namespace: str = None,
-        middletier_namespace: str = None,
-        backend_namespace: str = None,
-        infra_namespace: str = None,
-        amun_infra_namespace: str = None,
-        amun_inspection_namespace: str = None,
-        kubernetes_api_url: str = None,
+        frontend_namespace: Optional[str] = None,
+        middletier_namespace: Optional[str] = None,
+        backend_namespace: Optional[str] = None,
+        infra_namespace: Optional[str] = None,
+        amun_infra_namespace: Optional[str] = None,
+        amun_inspection_namespace: Optional[str] = None,
+        kubernetes_api_url: Optional[str] = None,
         kubernetes_verify_tls: bool = True,
-        openshift_api_url: str = None,
-        token: str = None,
-        token_file: str = None,
-        cert_file: str = None,
-        environ: dict = None,
+        openshift_api_url: Optional[str] = None,
+        token: Optional[str] = None,
+        token_file: Optional[str] = None,
+        cert_file: Optional[str] = None,
+        environ: Optional[Dict[str, str]] = None,
     ):
         """Initialize OpenShift class responsible for handling objects in deployment."""
-        environ = environ or os.environ
         try:
             from kubernetes import client, config
             from openshift.dynamic import DynamicClient
@@ -83,7 +88,7 @@ class OpenShift:
             InClusterConfigLoader(
                 token_filename=_get_incluster_token_file(token_file),
                 cert_filename=_get_incluster_ca_file(cert_file),
-                environ=environ,
+                environ=environ or os.environ,
             ).load_and_set()
 
             # We need to explicitly set whether we want to verify SSL/TLS connection to the master.
@@ -133,7 +138,7 @@ class OpenShift:
             )
 
     @property
-    def token(self):
+    def token(self) -> str:
         """Access service account token mounted to the pod."""
         if self._token is None:
             if self.in_cluster:
@@ -147,7 +152,7 @@ class OpenShift:
         return self._token
 
     @staticmethod
-    def _set_env_var(template: dict, **env_var):
+    def _set_env_var(template: Dict[str, Any], **env_var: str) -> None:
         """Set environment in the given template."""
         for env_var_name, env_var_value in env_var.items():
             for entry in template["spec"]["containers"][0]["env"]:
@@ -160,7 +165,7 @@ class OpenShift:
                 )
 
     @staticmethod
-    def set_template_parameters(template: dict, **parameters: object) -> None:
+    def set_template_parameters(template: Dict[str, Any], **parameters: Any) -> None:
         """Set parameters in the template - replace existing ones or append to parameter list if not exist.
 
         >>> set_template_parameters(template, THOTH_LOG_ADVISER='DEBUG')
@@ -197,7 +202,7 @@ class OpenShift:
                     }
                 )
 
-    def get_pod_log(self, pod_id: str, namespace: str = None) -> typing.Optional[str]:
+    def get_pod_log(self, pod_id: str, namespace: Optional[str] = None) -> Optional[str]:
         """Get log of a pod based on assigned pod ID."""
         if not namespace:
             if not self.middletier_namespace:
@@ -237,7 +242,7 @@ class OpenShift:
         response.raise_for_status()
         return response.text
 
-    def get_build(self, build_id: str, namespace: str) -> dict:
+    def get_build(self, build_id: str, namespace: str) -> Dict[str, Any]:
         """Get a build in the given namespace."""
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/apis/build.openshift.io/v1/namespaces/{}/builds/{}".format(
@@ -265,9 +270,10 @@ class OpenShift:
         )
         response.raise_for_status()
 
-        return response.json()
+        result: Dict[str, Any] = response.json()
+        return result
 
-    def get_buildconfig(self, buildconfig_id: str, namespace: str) -> dict:
+    def get_buildconfig(self, buildconfig_id: str, namespace: str) -> Dict[str, Any]:
         """Get a buildconfig in the given namespace."""
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/apis/build.openshift.io/v1/namespaces/{}/buildconfigs/{}".format(
@@ -295,7 +301,8 @@ class OpenShift:
         )
         response.raise_for_status()
 
-        return response.json()
+        result: Dict[str, Any] = response.json()
+        return result
 
     def get_build_log(self, build_id: str, namespace: str) -> str:
         """Get log of a build in the given namespace."""
@@ -327,7 +334,7 @@ class OpenShift:
 
         return response.text
 
-    def get_pod_status(self, pod_id: str, namespace: str) -> dict:
+    def get_pod_status(self, pod_id: str, namespace: str) -> Dict[str, Any]:
         """Get status entry for a pod - low level routine."""
         import openshift
 
@@ -347,7 +354,7 @@ class OpenShift:
             # No status - pod is being scheduled.
             return {}
 
-        state = response["status"]["containerStatuses"][0]["state"]
+        state: Dict[str, Any] = response["status"]["containerStatuses"][0]["state"]
         # Translate kills of liveness probes to our messages reported to user.
         if (
             state.get("terminated", {}).get("exitCode") == 137
@@ -360,7 +367,7 @@ class OpenShift:
         return state
 
     @staticmethod
-    def _status_report(status):
+    def _status_report(status: Dict[str, Dict[str, str]]) -> Dict[str, Optional[str]]:
         """Construct status response for API response from master API response."""
         _TRANSLATION_TABLE = {
             "exitCode": "exit_code",
@@ -394,7 +401,7 @@ class OpenShift:
 
         return reported_status
 
-    def get_pod_status_report(self, pod_id: str, namespace: str) -> dict:
+    def get_pod_status_report(self, pod_id: str, namespace: str) -> Dict[str, Optional[str]]:
         """Get pod state and convert it to a user-friendly response."""
         state = self.get_pod_status(pod_id, namespace)
         return self._status_report(state)
@@ -418,19 +425,22 @@ class OpenShift:
 
             raise NotFoundException(f"Job with the given id {job_id} was not found")
 
-        return response["items"][0]["metadata"]["name"]
+        result: str = response["items"][0]["metadata"]["name"]
+        return result
 
-    def get_configmap(self, configmap_id: str, namespace: str):
+    def get_configmap(self, configmap_id: str, namespace: str) -> Dict[str, Any]:
         """Get the given configmap in a namespace, return object representing config map."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
-        return v1_configmap.get(name=configmap_id, namespace=namespace)
+        result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
+        return result
 
-    def get_configmaps(self, namespace: str, label_selector: str) -> dict:
+    def get_configmaps(self, namespace: str, label_selector: str) -> Dict[str, Any]:
         """Get all configmaps in a namespace and select them by label."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
-        return v1_configmap.get(label_selector=label_selector, namespace=namespace)
+        result: Dict[str, Any] = v1_configmap.get(label_selector=label_selector, namespace=namespace)
+        return result
 
-    def get_job_status_report(self, job_id: str, namespace: str) -> dict:
+    def get_job_status_report(self, job_id: str, namespace: str) -> Dict[str, Optional[str]]:
         """Get status of a pod running inside a job."""
         try:
             job_id = self._get_pod_id_from_job(job_id, namespace)
@@ -456,18 +466,17 @@ class OpenShift:
 
         return self.get_pod_status_report(job_id, namespace)
 
-    def get_job_log(self, job_id: str, namespace: str = None) -> str:
+    def get_job_log(self, job_id: str, namespace: str) -> Optional[str]:
         """Get log of a pod running inside a job."""
         pod_id = self._get_pod_id_from_job(job_id, namespace)
         return self.get_pod_log(pod_id, namespace)
 
-    def get_jobs(self, label_selector: str, namespace: str = None) -> dict:
+    def get_jobs(self, label_selector: str, namespace: Optional[str] = None) -> Dict[str, Any]:
         """Get all Jobs, select them by the provided label."""
         import openshift
 
-        response = None
         try:
-            response = self.ocp_client.resources.get(
+            response: Dict[str, Any] = self.ocp_client.resources.get(
                 api_version="batch/v1", kind="JobList"
             ).get(namespace=namespace, label_selector=label_selector)
         except openshift.dynamic.exceptions.NotFoundError as exc:
@@ -476,10 +485,9 @@ class OpenShift:
             ) from exc
 
         _LOGGER.debug("OpenShift response: %r", response)
-
         return response
 
-    def _get_template(self, _label_selector: str, namespace: str = None) -> dict:
+    def _get_template(self, _label_selector: str, namespace: Optional[str] = None) -> Dict[str, Any]:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template"
@@ -492,10 +500,10 @@ class OpenShift:
             response.to_dict(),
         )
         self._raise_on_invalid_response_size(response)
-        template = response.to_dict()["items"][0]
+        template: Dict[str, Any] = response.to_dict()["items"][0]
         return template
 
-    def _get_cronjob(self, _label_selector: str, namespace: str) -> dict:
+    def _get_cronjob(self, _label_selector: str, namespace: str) -> Dict[str, Any]:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
             api_version="batch/v1beta1", kind="CronJob"
@@ -506,19 +514,19 @@ class OpenShift:
             response.to_dict(),
         )
         self._raise_on_invalid_response_size(response)
-        template = response.to_dict()["items"][0]
+        template: Dict[str, Any] = response.to_dict()["items"][0]
         return template
 
     @staticmethod
-    def _transform_cronjob_to_job(item: dict) -> dict:
+    def _transform_cronjob_to_job(item: Dict[str, Any]) -> Dict[str, Any]:
         """Turn a CronJob into a job so that it can be directly run."""
-        job_spec = item["spec"]["jobTemplate"]
+        job_spec: Dict[str, Any] = item["spec"]["jobTemplate"]
         job_spec["apiVersion"] = "batch/v1"
         job_spec["kind"] = "Job"
         job_spec["metadata"]["generateName"] = item["metadata"]["name"] + "-"
         return job_spec
 
-    def schedule_graph_refresh(self, namespace: str = None):
+    def schedule_graph_refresh(self, namespace: Optional[str] = None) -> str:
         """Schedule graph refresh job in frontend namespace by default."""
         if namespace is None:
             if not self.frontend_namespace:
@@ -539,7 +547,8 @@ class OpenShift:
         response = response.to_dict()
         _LOGGER.debug("OpenShift response for creating job: %r", response)
 
-        return response["metadata"]["name"]
+        result: str = response["metadata"]["name"]
+        return result
 
     def create_inspection_imagestream(self, inspection_id: str) -> str:
         """Create imagestream for Amun."""
@@ -568,10 +577,11 @@ class OpenShift:
         response = response.to_dict()
         _LOGGER.debug("OpenShift response for creating Amun ImageStream: %r", response)
 
-        return response["metadata"]["name"]
+        result: str = response["metadata"]["name"]
+        return result
 
     def schedule_inspection_build(
-        self, parameters: dict, inspection_id: str, use_hw_template: bool
+        self, parameters: Dict[str, Any], inspection_id: str, use_hw_template: bool
     ) -> str:
         """Schedule inspection build."""
         if not self.amun_inspection_namespace:
@@ -592,8 +602,8 @@ class OpenShift:
         )
 
     def get_inspection_build_template(
-        self, use_hw_template: bool, parameters: dict
-    ) -> dict:
+        self, use_hw_template: bool, parameters: Dict[str, str]
+    ) -> Dict[str, Any]:
         """Get inspection buildconfig that should be run."""
         if not self.amun_infra_namespace:
             raise ConfigurationError(
@@ -617,7 +627,7 @@ class OpenShift:
         template = self.oc_process(self.amun_inspection_namespace, template)
         return template
 
-    def run_inspection_build(self, template: dict):
+    def run_inspection_build(self, template: Dict[str, Any]) -> str:
         """Run the inspection build."""
         buildconfig = template["objects"][0]
         response = self.ocp_client.resources.get(
@@ -627,17 +637,18 @@ class OpenShift:
         _LOGGER.debug(
             "OpenShift response for creating Amun BuildConfig: %r", response.to_dict()
         )
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
     def schedule_inspection_job(
         self,
-        inspection_id,
-        parameters: dict,
+        inspection_id: str,
+        parameters: Dict[str, str],
         use_hw_template: bool,
         cpu_requests: str,
         memory_requests: str,
-        infra_namespace: str = None,
-        registry: str = None,
+        infra_namespace: Optional[str] = None,
+        registry: Optional[str] = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.amun_inspection_namespace:
@@ -665,23 +676,28 @@ class OpenShift:
 
     def run_inspection_job(
         self,
-        parameters: dict,
-        template: dict = None,
+        parameters: Dict[str, str],
+        template: Optional[Dict[str, Any]] = None,
         *,
         use_hw_template: bool = False,
-        cpu_requests: str = None,
-        memory_requests: str = None,
-        infra_namespace: str = None,
-        registry: str = None,
+        cpu_requests: Optional[str] = None,
+        memory_requests: Optional[str] = None,
+        infra_namespace: Optional[str] = None,
+        registry: Optional[str] = None,
     ) -> str:
         """Create the actual inspection job."""
-        if not self.amun_infra_namespace:
+        if self.amun_infra_namespace is None:
             raise ConfigurationError(
                 "Amun infra namespace is required in order to create inspection job"
             )
 
+        if self.amun_inspection_namespace is None:
+            raise ConfigurationError(
+                "Amun inspection namespace is required in order to create inspection job"
+            )
+
         # Fill in required fields for image pulling.
-        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.infra_namespace
+        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.amun_infra_namespace
         if registry:
             parameters["THOTH_REGISTRY"] = registry
 
@@ -702,15 +718,16 @@ class OpenShift:
         _LOGGER.debug(
             "OpenShift response for creating Amun Job: %r", response.to_dict()
         )
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
     def get_inspection_job_template(
         self,
         *,
         use_hw_template: bool,
-        cpu_requests: str = None,
-        memory_requests: str = None,
-    ) -> dict:
+        cpu_requests: Optional[str] = None,
+        memory_requests: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Get template for an inspection job."""
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
@@ -741,7 +758,7 @@ class OpenShift:
 
         return template
 
-    def get_solver_names(self) -> list:
+    def get_solver_names(self) -> List[str]:
         """Retrieve name of solvers available in installation."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -765,7 +782,7 @@ class OpenShift:
         packages: str,
         output: str,
         *,
-        indexes: list = None,
+        indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = False,
     ) -> typing.List[str]:
@@ -791,15 +808,15 @@ class OpenShift:
         output: str,
         solver: str,
         *,
-        indexes: list = None,
+        indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = True,
-        job_id: str = None,
-        template: dict = None,
-    ) -> dict:
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
+    ) -> str:
         """Run solver or all solver to solve the given requirements."""
-        if not self.middletier_namespace:
-            ConfigurationError("Solver requires middletier namespace to be specified")
+        if self.middletier_namespace is None:
+            raise ConfigurationError("Solver requires middletier namespace to be specified")
 
         template = template or self.get_solver_template(solver)
 
@@ -821,7 +838,8 @@ class OpenShift:
 
         _LOGGER.debug("Starting solver %r", solver)
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
     def schedule_solver(
         self,
@@ -829,10 +847,10 @@ class OpenShift:
         output: str,
         solver: str,
         *,
-        indexes: list = None,
+        indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = True,
-        job_id: str = None,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule the given solver."""
         if not self.middletier_namespace:
@@ -853,7 +871,7 @@ class OpenShift:
             labels={"component": "solver"},
         )
 
-    def get_solver_template(self, solver: str) -> dict:
+    def get_solver_template(self, solver: str) -> Dict[str, Any]:
         """Retrieve a solver template."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -884,12 +902,12 @@ class OpenShift:
         *,
         environment_type: str,
         is_external: bool = True,
-        origin: str = None,
-        registry_user: str = None,
-        registry_password: str = None,
+        origin: Optional[str] = None,
+        registry_user: Optional[str] = None,
+        registry_password: Optional[str] = None,
         verify_tls: bool = True,
         debug: bool = False,
-        job_id: str = None,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.middletier_namespace:
@@ -921,13 +939,13 @@ class OpenShift:
         *,
         environment_type: str,
         is_external: bool = True,
-        origin: str = None,
-        registry_user: str = None,
-        registry_password: str = None,
+        origin: Optional[str] = None,
+        registry_user: Optional[str] = None,
+        registry_password: Optional[str] = None,
         verify_tls: bool = True,
         debug: bool = False,
-        job_id: str = None,
-        template: dict = None,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run package-extract analyzer to extract information from the provided image."""
         if not self.middletier_namespace:
@@ -970,9 +988,10 @@ class OpenShift:
         ).create(body=analyzer, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_package_extract_template(self):
+    def get_package_extract_template(self) -> Dict[str, Any]:
         """Get template for package-extract."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -990,7 +1009,7 @@ class OpenShift:
         output: str,
         debug: bool = False,
         dry_run: bool = False,
-        job_id: str = None,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if not self.middletier_namespace:
@@ -1019,8 +1038,8 @@ class OpenShift:
         output: str,
         debug: bool = False,
         dry_run: bool = False,
-        job_id: str = None,
-        template: dict = None,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run package-analyzer to gather digests of packages and files present inside packages."""
         if not self.middletier_namespace:
@@ -1050,9 +1069,10 @@ class OpenShift:
         ).create(body=analyzer, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_package_analyzer_template(self):
+    def get_package_analyzer_template(self) -> Dict[str, Any]:
         """Get template for package-analyzer."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1062,7 +1082,7 @@ class OpenShift:
         return self._get_template("template=package-analyzer")
 
     def create_config_map(
-        self, configmap_name: str, namespace: str, labels: dict, data: dict
+        self, configmap_name: str, namespace: str, labels: Dict[str, str], data: Dict[str, str],
     ) -> str:
         """Create a ConfigMap in the given namespace."""
         v1_configmaps = self.ocp_client.resources.get(
@@ -1089,9 +1109,9 @@ class OpenShift:
         job_id: str,
         namespace: str,
         template_method_name: str,
-        run_method_parameters: dict = None,
-        template_method_parameters: dict = None,
-        labels: dict = None,
+        run_method_parameters: Optional[Dict[str, str]] = None,
+        template_method_parameters: Optional[Dict[str, Any]] = None,
+        labels: Optional[Dict[str, str]] = None,
     ) -> str:
         """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
         if labels:
@@ -1114,24 +1134,24 @@ class OpenShift:
         return job_id
 
     @staticmethod
-    def _generate_id(prefix: str):
+    def _generate_id(prefix: str) -> str:
         """Generate an identifier."""
         return prefix + "-%016x" % random.getrandbits(64)
 
     def schedule_dependency_monkey(
         self,
-        requirements: typing.Union[str, dict],
-        context: dict,
+        requirements: typing.Union[str, Dict[str, Any]],
+        context: Dict[str, Any],
         *,
-        stack_output: str = None,
-        report_output: str = None,
-        seed: int = None,
+        stack_output: Optional[str] = None,
+        report_output: Optional[str] = None,
+        seed: Optional[int] = None,
         dry_run: bool = False,
-        decision: str = None,
-        count: int = None,
+        decision: Optional[str] = None,
+        count: Optional[int] = None,
         debug: bool = False,
-        job_id: str = None,
-        limit_latest_versions: int = None,
+        job_id: Optional[str] = None,
+        limit_latest_versions: Optional[int] = None,
     ) -> str:
         """Schedule a dependency monkey run."""
         if not self.middletier_namespace:
@@ -1153,19 +1173,19 @@ class OpenShift:
 
     def run_dependency_monkey(
         self,
-        requirements: typing.Union[str, dict],
-        context: dict,
+        requirements: typing.Union[str, Dict[str, Any]],
+        context: Dict[str, Any],
         *,
-        stack_output: str = None,
-        report_output: str = None,
-        seed: int = None,
+        stack_output: Optional[str] = None,
+        report_output: Optional[str] = None,
+        seed: Optional[int] = None,
         dry_run: bool = False,
-        decision: str = None,
-        count: int = None,
+        decision: Optional[str] = None,
+        count: Optional[int] = None,
         debug: bool = False,
-        job_id: str = None,
-        limit_latest_versions: int = None,
-        template: dict = None,
+        job_id: Optional[str] = None,
+        limit_latest_versions: Optional[int] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run Dependency Monkey on the provided user input."""
         if not self.middletier_namespace:
@@ -1214,9 +1234,10 @@ class OpenShift:
         ).create(body=dependency_monkey, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_dependency_monkey_template(self):
+    def get_dependency_monkey_template(self) -> Dict[str, Any]:
         """Get template for a dependency monkey."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1226,7 +1247,7 @@ class OpenShift:
         return self._get_template("template=dependency-monkey")
 
     def schedule_build_analyze(
-        self, document_id: str, output: str, job_id: str = None
+        self, document_id: str, output: str, job_id: Optional[str] = None
     ) -> str:
         """Schedule an build analyze run."""
         if not self.middletier_namespace:
@@ -1247,7 +1268,7 @@ class OpenShift:
         )
 
     def run_build_analyze(
-        self, document_id: str, output: str, job_id: str = None, template: dict = None
+        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
     ) -> str:
         """Run build analyze on the provided user input."""
         if not self.middletier_namespace:
@@ -1273,9 +1294,10 @@ class OpenShift:
         ).create(body=build_analyze, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_build_analyze_template(self):
+    def get_build_analyze_template(self) -> Dict[str, Any]:
         """Get template for build analyze run."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1285,7 +1307,7 @@ class OpenShift:
         return self._get_template("template=build-analyze")
 
     def schedule_build_report(
-        self, document_id: str, output: str, job_id: str = None
+        self, document_id: str, output: str, job_id: Optional[str] = None
     ) -> str:
         """Schedule an build report run."""
         if not self.middletier_namespace:
@@ -1306,7 +1328,7 @@ class OpenShift:
         )
 
     def run_build_report(
-        self, document_id: str, output: str, job_id: str = None, template: dict = None
+        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
     ) -> str:
         """Run build report on the provided user input."""
         if not self.middletier_namespace:
@@ -1332,9 +1354,10 @@ class OpenShift:
         ).create(body=build_report, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_build_report_template(self):
+    def get_build_report_template(self) -> Dict[str, Any]:
         """Get template for build report run."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1344,7 +1367,7 @@ class OpenShift:
         return self._get_template("template=build-report")
 
     def schedule_build_dependencies(
-        self, document_id: str, output: str, job_id: str = None
+        self, document_id: str, output: str, job_id: Optional[str] = None
     ) -> str:
         """Schedule an build analyze run."""
         if not self.middletier_namespace:
@@ -1365,7 +1388,7 @@ class OpenShift:
         )
 
     def run_build_dependencies(
-        self, document_id: str, output: str, job_id: str = None, template: dict = None
+        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
     ) -> str:
         """Run build dependencies on the provided user input."""
         if not self.middletier_namespace:
@@ -1393,9 +1416,10 @@ class OpenShift:
         ).create(body=build_dependencies, namespace=self.middletier_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_build_dependencies_template(self):
+    def get_build_dependencies_template(self) -> Dict[str, Any]:
         """Get template for build dependencies run."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1406,18 +1430,18 @@ class OpenShift:
 
     def schedule_adviser(
         self,
-        application_stack: dict,
+        application_stack: Dict[Any, Any],
         output: str,
         recommendation_type: str,
         *,
-        count: int = None,
-        limit: int = None,
-        runtime_environment: dict = None,
-        library_usage: dict = None,
-        origin: str = None,
+        count: Optional[int] = None,
+        limit: Optional[int] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
+        library_usage: Optional[Dict[Any, Any]] = None,
+        origin: Optional[str] = None,
         debug: bool = False,
-        job_id: str = None,
-        limit_latest_versions: int = None,
+        job_id: Optional[str] = None,
+        limit_latest_versions: Optional[int] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1439,19 +1463,19 @@ class OpenShift:
 
     def run_adviser(
         self,
-        application_stack: dict,
+        application_stack: Dict[Any, Any],
         output: str,
         recommendation_type: str,
         *,
-        count: int = None,
-        limit: int = None,
-        runtime_environment: dict = None,
-        library_usage: dict = None,
-        origin: str = None,
+        count: Optional[int] = None,
+        limit: Optional[int] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
+        library_usage: Optional[Dict[Any, Any]] = None,
+        origin: Optional[str] = None,
         debug: bool = False,
-        job_id: str = None,
-        limit_latest_versions: int = None,
-        template: dict = None,
+        job_id: Optional[str] = None,
+        limit_latest_versions: Optional[int] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -1460,9 +1484,6 @@ class OpenShift:
             )
 
         template = template or self.get_adviser_template()
-
-        if runtime_environment:
-            runtime_environment = json.dumps(runtime_environment)
 
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": application_stack.pop("requirements").replace(
@@ -1475,7 +1496,9 @@ class OpenShift:
                 "requirements_formant", "pipenv"
             ),
             "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.upper(),
-            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": runtime_environment,
+            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
+                runtime_environment
+            ),
             "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
             "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
             "THOTH_ADVISER_OUTPUT": output,
@@ -1504,9 +1527,10 @@ class OpenShift:
         ).create(body=adviser, namespace=self.backend_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_adviser_template(self):
+    def get_adviser_template(self) -> Dict[str, Any]:
         """Get template for an adviser run."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1517,13 +1541,13 @@ class OpenShift:
 
     def schedule_provenance_checker(
         self,
-        application_stack: dict,
+        application_stack: Dict[Any, Any],
         output: str,
         *,
-        origin: str = None,
-        whitelisted_sources: list = None,
+        origin: Optional[str] = None,
+        whitelisted_sources: Optional[List[str]] = None,
         debug: bool = False,
-        job_id: str = None,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule a provenance checker run."""
         if not self.backend_namespace:
@@ -1545,14 +1569,14 @@ class OpenShift:
 
     def run_provenance_checker(
         self,
-        application_stack: dict,
+        application_stack: Dict[Any, Any],
         output: str,
         *,
-        origin: str = None,
-        whitelisted_sources: list = None,
+        origin: Optional[str] = None,
+        whitelisted_sources: Optional[List[str]] = None,
         debug: bool = False,
-        job_id: str = None,
-        template: dict = None,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
@@ -1566,14 +1590,13 @@ class OpenShift:
         requirements_locked = application_stack.pop("requirements_lock").replace(
             "\n", "\\n"
         )
-        whitelisted_sources = ",".join(whitelisted_sources or [])
         self.set_template_parameters(
             template,
             THOTH_ADVISER_REQUIREMENTS=requirements,
             THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
             THOTH_ADVISER_OUTPUT=output,
             THOTH_ADVISER_METADATA=json.dumps({"origin": origin}),
-            THOTH_WHITELISTED_SOURCES=whitelisted_sources,
+            THOTH_WHITELISTED_SOURCES=",".join(whitelisted_sources or []),
             THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
             THOTH_PROVENANCE_CHECKER_JOB_ID=job_id
             or self._generate_id("provenance-checker"),
@@ -1588,9 +1611,10 @@ class OpenShift:
         ).create(body=provenance_checker, namespace=self.backend_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_provenance_checker_template(self) -> dict:
+    def get_provenance_checker_template(self) -> Dict[str, Any]:
         """Get template for a provenance checker."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1606,7 +1630,7 @@ class OpenShift:
         force_sync: bool,
         namespace: str,
         graph_sync_type: str,
-    ):
+    ) -> str:
         """Schedule a graph sync."""
         job_id = "graph-sync-" + document_id
         parameters = locals()
@@ -1633,7 +1657,7 @@ class OpenShift:
         )
 
     def schedule_graph_sync_adviser(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of an adviser document."""
         if not document_id.startswith("adviser"):
@@ -1643,13 +1667,13 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.backend_namespace,
+            namespace=namespace or self.backend_namespace,  # type: ignore
             graph_sync_type="adviser",
             force_sync=force_sync,
         )
 
     def schedule_graph_sync_package_analyzer(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of an package-analysis document."""
         if not document_id.startswith("package-analyzer"):
@@ -1660,13 +1684,13 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.middletier_namespace,
+            namespace=namespace or self.middletier_namespace,  # type: ignore
             graph_sync_type="package-analyzer",
             force_sync=force_sync,
         )
 
     def schedule_graph_sync_inspection(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of inspection."""
         if not document_id.startswith("inspection"):
@@ -1676,13 +1700,13 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.amun_inspection_namespace,
+            namespace=namespace or self.amun_inspection_namespace,  # type: ignore
             graph_sync_type="inspection",
             force_sync=force_sync,
         )
 
     def schedule_graph_sync_provenance_checker(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of a provenance checker result."""
         if not document_id.startswith("provenance-checker"):
@@ -1693,13 +1717,13 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.backend_namespace,
+            namespace=namespace or self.backend_namespace,  # type: ignore
             graph_sync_type="provenance-checker",
             force_sync=force_sync,
         )
 
     def schedule_graph_sync_solver(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of solver result."""
         if not document_id.startswith("solver"):
@@ -1709,7 +1733,7 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.middletier_namespace,
+            namespace=namespace or self.middletier_namespace,  # type: ignore
             graph_sync_type="solver",
             force_sync=force_sync,
         )
@@ -1726,13 +1750,13 @@ class OpenShift:
 
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.middletier_namespace,
+            namespace=namespace or self.middletier_namespace,  # type: ignore
             graph_sync_type="dependency-monkey",
             force_sync=force_sync,
         )
 
     def schedule_graph_sync_package_extract(
-        self, document_id: str, *, force_sync: bool = False, namespace: str = None
+        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
     ) -> str:
         """Schedule a sync of package-extract."""
         if not document_id.startswith("package-extract"):
@@ -1740,10 +1764,9 @@ class OpenShift:
                 f"Cannot sync document {document_id!r} as package-extract document - document "
                 f"is not package-extract result"
             )
-
         return self._schedule_graph_sync(
             document_id,
-            namespace=namespace or self.middletier_namespace,
+            namespace=namespace or self.middletier_namespace,  # type: ignore
             graph_sync_type="package-extract",
             force_sync=force_sync,
         )
@@ -1755,12 +1778,12 @@ class OpenShift:
         graph_sync_type: str,
         force_sync: str,
         *,
-        template: dict = None,
-        job_id: str = None,
-    ):
+        template: Optional[Dict[str, Any]] = None,
+        job_id: Optional[str] = None,
+    ) -> str:
         """Run the given graph sync."""
-        if not namespace:
-            raise ValueError(
+        if namespace is None:
+            raise ConfigurationError(
                 "Unable to run graph sync without namespace being specified"
             )
 
@@ -1780,9 +1803,10 @@ class OpenShift:
         ).create(body=graph_sync, namespace=namespace)
 
         _LOGGER.info("Scheduled new sync with id %r", response.metadata.name)
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_graph_sync_template(self) -> dict:
+    def get_graph_sync_template(self) -> Dict[str, Any]:
         """Get graph sync template."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1792,7 +1816,7 @@ class OpenShift:
         return self._get_template("template=graph-sync-job")
 
     def schedule_kebechet_run_url(
-        self, url: str, service: str, *, verbose=False, job_id=None
+        self, url: str, service: str, *, verbose: bool = False, job_id: Optional[str] = None
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -1813,7 +1837,7 @@ class OpenShift:
         )
 
     def schedule_kebechet_run_results(
-        self, url: str, service: str, analysis_id: str, *, verbose=False, job_id=None
+        self, url: str, service: str, analysis_id: str, *, verbose: bool = False, job_id: Optional[str] = None
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -1838,9 +1862,9 @@ class OpenShift:
         url: str,
         service: str,
         *,
-        verbose=False,
-        job_id=None,
-        template: dict = None,
+        verbose: bool = False,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Create a kebechet run-url job."""
         job_id = job_id or self._generate_id("kebechet-run-url")
@@ -1853,6 +1877,10 @@ class OpenShift:
             KEBECHET_SERVICE_NAME=service,
             KEBECHET_JOB_ID=job_id,
         )
+
+        if self.backend_namespace is None:
+            raise ConfigurationError("Backend namespace not configured to run Kebechet")
+
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
 
@@ -1861,7 +1889,8 @@ class OpenShift:
         ).create(body=kebechet, namespace=self.backend_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
     def run_kebechet_run_results(
         self,
@@ -1869,9 +1898,9 @@ class OpenShift:
         service: str,
         analysis_id: str,
         *,
-        verbose=False,
-        job_id=None,
-        template: dict = None,
+        verbose: bool = False,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Create a kebechet run-results job."""
         job_id = job_id or self._generate_id("kebechet-run-results")
@@ -1885,6 +1914,10 @@ class OpenShift:
             KEBECHET_JOB_ID=job_id,
             KEBECHET_ANALYSIS_ID=analysis_id,
         )
+
+        if self.backend_namespace is None:
+            raise ConfigurationError("Backend namespace not configured to run Kebechet")
+
         template = self.oc_process(self.backend_namespace, template)
         kebechet = template["objects"][0]
 
@@ -1893,9 +1926,10 @@ class OpenShift:
         ).create(body=kebechet, namespace=self.backend_namespace)
 
         _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        return response.metadata.name
+        result: str = response.metadata.name
+        return result
 
-    def get_kebechet_template(self) -> dict:
+    def get_kebechet_template(self) -> Dict[str, Any]:
         """Get template for a Kebechet job."""
         if not self.infra_namespace:
             raise ConfigurationError(
@@ -1904,7 +1938,7 @@ class OpenShift:
 
         return self._get_template("template=kebechet")
 
-    def _raise_on_invalid_response_size(self, response):
+    def _raise_on_invalid_response_size(self, response: Any) -> None:
         """Expect that there is only one object type for the given item."""
         if len(response.items) != 1:
             raise RuntimeError(
@@ -1914,7 +1948,7 @@ class OpenShift:
 
             # TODO add name of template we were looking for...
 
-    def oc_process(self, namespace: str, template: dict) -> dict:
+    def oc_process(self, namespace: str, template: Dict[str, Any]) -> Dict[str, Any]:
         """Process the given template in OpenShift."""
         # TODO: This does not work - see issue reported upstream:
         #   https://github.com/openshift/openshift-restclient-python/issues/190
@@ -1943,7 +1977,8 @@ class OpenShift:
             _LOGGER.error("Failed to process template: %s", response.text)
             raise
 
-        return response.json()
+        result: Dict[str, Any] = response.json()
+        return result
 
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
@@ -1968,43 +2003,45 @@ class OpenShift:
             return None
 
         if memory_spec.endswith("E"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000 ** 6
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000 ** 6
         elif memory_spec.endswith("P"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000 ** 5
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000 ** 5
         elif memory_spec.endswith("T"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000 ** 4
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000 ** 4
         elif memory_spec.endswith("G"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000 ** 3
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000 ** 3
         elif memory_spec.endswith("M"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000 ** 2
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000 ** 2
         elif memory_spec.endswith("K"):
-            memory_spec = float(memory_spec[:-1])
-            return memory_spec * 1000
+            parsed = float(memory_spec[:-1])
+            return parsed * 1000
         elif memory_spec.endswith("Ei"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024 ** 6
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024 ** 6
         elif memory_spec.endswith("Pi"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024 ** 5
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024 ** 5
         elif memory_spec.endswith("Ti"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024 ** 4
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024 ** 4
         elif memory_spec.endswith("Gi"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024 ** 3
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024 ** 3
         elif memory_spec.endswith("Mi"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024 ** 2
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024 ** 2
         elif memory_spec.endswith("Ki"):
-            memory_spec = float(memory_spec[:-2])
-            return memory_spec * 1024
+            parsed = float(memory_spec[:-2])
+            return parsed * 1024
 
-    def get_quota_status(self, namespace: str):
+        raise ValueError(f"Cannot parse memory specification from {memory_spec!r}")
+
+    def get_quota_status(self, namespace: str) -> Dict[str, Dict[str, Any]]:
         """Get quota status.
 
         For now, there is retrieved a very first quota specification and its status from resource quota list, we
@@ -2059,7 +2096,7 @@ class OpenShift:
 
         return result
 
-    def can_run_workload(self, template: dict, namespace: str) -> bool:
+    def can_run_workload(self, template: Dict[str, Any], namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
         quota_status = self.get_quota_status(namespace)
         if (
@@ -2095,7 +2132,7 @@ class OpenShift:
 
         return True
 
-    def _get_job_requests(self, template) -> tuple:
+    def _get_job_requests(self, template: Dict[str, Any]) -> Tuple[int, int]:
         """Get resources needed for running a workload of type Job."""
         template_name = template["metadata"]["name"]
 
@@ -2142,7 +2179,7 @@ class OpenShift:
 
         return pod_cpu_requested, pod_mem_requested
 
-    def _get_build_requests(self, template: dict) -> tuple:
+    def _get_build_requests(self, template: Dict[str, Any]) -> Tuple[int, int]:
         """Get resources needed for running a workload of type BuildConfig (running the build)."""
         template_name = template["metadata"]["name"]
         if len(template["objects"]) != 1:
@@ -2177,7 +2214,7 @@ class OpenShift:
 
         return build_cpu, build_memory
 
-    def get_job_status_count(self, label_selector: str, namespace: str) -> dict:
+    def get_job_status_count(self, label_selector: str, namespace: str) -> Dict[str, int]:
         """Count the number of Jobs per status in a specific namespace."""
         response = self.get_jobs(label_selector=label_selector, namespace=namespace)
         status = [

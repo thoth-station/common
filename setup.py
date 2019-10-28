@@ -16,7 +16,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
 from pathlib import Path
 
 
@@ -38,6 +40,38 @@ def get_version():
     raise ValueError("No version identifier found")
 
 
+class Test(TestCommand):
+    """Introduce test command to run testsuite using pytest."""
+
+    _IMPLICIT_PYTEST_ARGS = [
+        '--mypy',
+        'thoth',
+    ]
+
+    user_options = [
+        ('pytest-args=', 'a', "Arguments to pass into py.test")
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.pytest_args = None
+
+    def finalize_options(self):
+        super().finalize_options()
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        passed_args = list(self._IMPLICIT_PYTEST_ARGS)
+
+        if self.pytest_args:
+            self.pytest_args = [arg for arg in self.pytest_args.split() if arg]
+            passed_args.extend(self.pytest_args)
+
+        sys.exit(pytest.main(passed_args))
+
+
 VERSION = get_version()
 setup(
     name='thoth-common',
@@ -51,7 +85,9 @@ setup(
         'thoth.common',
         'thoth.common.config',
     ],
+    package_data={'thoth.common':  ['py.typed']},
     zip_safe=False,
+    cmdclass={'test': Test},
     install_requires=get_install_requires(),
     command_options={
         'build_sphinx': {

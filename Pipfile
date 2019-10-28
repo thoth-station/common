@@ -19,6 +19,9 @@ pytest-cov = "*"
 pylint = "*"
 coala = "*"
 coala-bears = "*"
+pytest-mypy = "*"
+typeshed = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.6"

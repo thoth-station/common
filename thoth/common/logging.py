@@ -19,12 +19,12 @@
 
 import os
 import logging
-import typing
 import socket
 import time
-from functools import wraps
+from typing import Optional
+from typing import Dict
 
-import sentry_sdk
+from sentry_sdk import init as sentry_sdk_init  # type: ignore
 import daiquiri
 import daiquiri.formatter
 from rfc5424logging import Rfc5424SysLogHandler
@@ -35,7 +35,7 @@ _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
 
 
-def _init_log_levels(logging_env_var_start: str, logging_configuration: dict) -> None:
+def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]) -> None:
     """Initialize log level based on configuration or env variables."""
     env_logging_conf = {
         key: val
@@ -57,7 +57,7 @@ def _init_log_levels(logging_env_var_start: str, logging_configuration: dict) ->
 
 
 def init_logging(
-    logging_configuration: dict = None, logging_env_var_start: str = None
+    logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
 ) -> None:
     """Initialize Thoth's logging - respects all namespaces.
 
@@ -122,7 +122,7 @@ def init_logging(
                 _SENTRY_DSN.rsplit("@", maxsplit=1)[1],
                 environment
             )
-            sentry_sdk.init(_SENTRY_DSN, environment=environment)
+            sentry_sdk_init(_SENTRY_DSN, environment=environment)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
@@ -158,32 +158,3 @@ def init_logging(
         )
     else:
         root_logger.info("Logging to rsyslog endpoint is turned off")
-
-
-def logger_setup(
-    logger_name: str, logging_level: int, disable: bool = True
-) -> typing.Callable:
-    """Define a wrapper to set Verbosity level.
-
-    The verbosity can be set for any module within levels DEBUG, INFO, WARNING, ERROR.
-
-    It helps to customise logger outputs for every function/module.
-    The wrapper could be extended on any function by specifying arguments
-    like (Logger name, Logging level).
-    """
-    def wrapper(fn: typing.Callable):
-        @wraps(fn)
-        def wrapper_func(*args, **kwargs):
-            logger = logging.getLogger(logger_name)
-            logger.setLevel(level=logging_level)
-            old_disabled = logger.disabled
-            logger.disabled = disable
-
-            result = fn(*args, **kwargs)
-
-            logger.disabled = old_disabled
-            return result
-
-        return wrapper_func
-
-    return wrapper
