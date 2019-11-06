@@ -77,6 +77,14 @@ class OpenShift:
                 "installed with openshift extras?"
             ) from exc
 
+        try:
+            import argo.workflows as argo
+        except ImportError as exc:
+            raise ImportError(
+                "Unable to import argo-workflows package. Was thoth-common library "
+                "installed with argo extras?"
+            ) from exc
+
         self.kubernetes_verify_tls = bool(
             int(os.getenv("KUBERNETES_VERIFY_TLS", 1)) and kubernetes_verify_tls
         )
@@ -97,6 +105,9 @@ class OpenShift:
             self.ocp_client = DynamicClient(
                 client.ApiClient(configuration=configuration)
             )
+            self.argo_client = argo.client.V1alpha1Api(
+                argo.client.ApiClient(configuration=configuration)
+            )
         except Exception as exc:
             _LOGGER.warning(
                 "Failed to load in cluster configuration, fallback to a local development setup: %s",
@@ -105,8 +116,11 @@ class OpenShift:
             k8s_client = config.new_client_from_config()
             k8s_client.configuration.verify_ssl = self.kubernetes_verify_tls
             k8s_client.rest_client = RESTClientObject(k8s_client.configuration)
+
             self.ocp_client = DynamicClient(k8s_client)
             self.in_cluster = False
+
+            self.argo_client = argo.client.V1alpha1Api(k8s_client)
 
         self.amun_inspection_namespace = amun_inspection_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESPACE"
@@ -525,6 +539,43 @@ class OpenShift:
         job_spec["kind"] = "Job"
         job_spec["metadata"]["generateName"] = item["metadata"]["name"] + "-"
         return job_spec
+
+    def _submit_workflow(
+        self,
+        wf: argo.models.V1alpha1Workflow,
+        namespace: Optional[str] = None,
+        parameters: Optional[Dict[str, str]] = None,
+    ):
+        """Submit an Argo Workflow."""
+        if namespace is None:
+            if not self.frontend_namespace:
+                raise ConfigurationError(
+                    "No frontend namespace configured to run graph-refresh job"
+                )
+            namespace = self.frontend_namespace
+
+        parameters = parameters or {}
+
+        new_parameters: List[argo.models.V1alpha1Parameter] = []
+        for name, value in parameters.items():
+            param = argo.models.V1alpha1Parameter(
+                name=name,
+                value=value
+            )
+            new_parameters.append(param)
+
+        for p in wf.spec.arguments.parameters:
+            if p.name in parameters:
+                continue  # overridden
+            elif not p.value and not p.default:
+                raise Exception("Required parameter {p.name}")
+
+            new_parameters.append(p)
+
+        wf.spec.arguments.parameters = new_parameters
+
+        # submit the workflow
+        self.argo_client.create_namespaced_workflow(namespace, wf)
 
     def schedule_graph_refresh(self, namespace: Optional[str] = None) -> str:
         """Schedule graph refresh job in frontend namespace by default."""
