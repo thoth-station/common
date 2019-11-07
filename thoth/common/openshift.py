@@ -109,6 +109,8 @@ class OpenShift:
             self.ocp_client = DynamicClient(k8s_client)
             self.in_cluster = False
 
+        self.configuration = self.ocp_client.configuration
+
         self.amun_inspection_namespace = amun_inspection_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESPACE"
         )
