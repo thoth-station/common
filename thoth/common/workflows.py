@@ -16,6 +16,7 @@
 
 """Workflow management for Thoth."""
 
+import json
 import random
 import re
 import yaml
@@ -45,7 +46,12 @@ class Workflow(models.V1alpha1Workflow):
     """
 
     def __init__(
-        self, api_version=None, kind=None, metadata=None, spec=None, status=None
+        self,
+        api_version: str = None,
+        kind: str = None,
+        metadata: models.V1alpha1Metadata = None,
+        spec: models.V1alpha1WorkflowSpec = None,
+        status: models.V1alpha1WorkflowStatus = None,
     ):
         """Initialize Workflow instance."""
         super().__init__(
@@ -56,29 +62,42 @@ class Workflow(models.V1alpha1Workflow):
             status=status,
         )
 
-        self.__dict__.update(self.metadata)
+    @property
+    def name(self) -> str:
+        return self.metadata.name
+
+    @property
+    def id(self) -> str:
+        return f"workflow-{self.name}-{abs(self.__hash__())}"
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __hash__(self):
+        """Compute hash of this Workflow."""
+        return self.to_str().__hash__()
 
     @classmethod
     def from_dict(cls, wf: dict) -> "Workflow":
         """Create a Workflow from a dict."""
-        return cls(**wf)
+        attr = type("AttributeDict", (), {"data": json.dumps(wf)})
+
+        wf: models.V1alpha1Workflow = client.ApiClient().deserialize(
+            attr, models.V1alpha1Workflow
+        )
+        return cls(
+            api_version=wf.api_version,
+            kind=wf.kind,
+            metadata=wf.metadata,
+            spec=wf.spec,
+            status=wf.status,
+        )
 
     @classmethod
     def from_file(cls, fp: str) -> "Workflow":
         """Create a Workflow from a file."""
         wf_path = Path(fp)
-        wf_yaml: dict = yaml.safe_load(wf_path.read_text())
-
-        wf = {}
-        # replace camelCase keys with snake_case
-        def _to_snake_case(stream: str):
-            return re.sub(
-                r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", stream
-            ).lower()
-
-        for k, val in wf_yaml.items():
-            new_key = _to_snake_case(k)
-            wf[new_key] = val
+        wf: dict = yaml.safe_load(wf_path.read_text())
 
         wf["status"] = wf.get("status", {})
         return cls.from_dict(wf)
@@ -112,8 +131,12 @@ class WorkflowManager:
         """Submit an Argo Workflow to a given namespace."""
         parameters = parameters or {}
 
-        if not isinstance(wf, Workflow):
+        if not isinstance(wf, Workflow) and isinstance(wf, dict):
             wf = Workflow.from_dict(wf)
+        elif not isinstance(models.v1):
+            raise TypeError(
+                f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}"
+            )
 
         new_parameters: List[models.V1alpha1Parameter] = []
         for name, value in parameters.items():
