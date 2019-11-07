@@ -20,7 +20,7 @@ def url() -> str:
 
 
 def test_from_file():
-    """Test `Workflow.from_file` methods"""
+    """Test `Workflow.from_file` methods."""
     wf = Workflow.from_file(_WORKFLOW_FILE_PATH)
 
     assert isinstance(wf, Workflow)
@@ -30,7 +30,7 @@ def test_from_file():
 
 
 def test_from_url(url):
-    """Test `Workflow.from_url` methods"""
+    """Test `Workflow.from_url` methods."""
     from .workflows import requests
 
     fake_response = type("Response", (), {})

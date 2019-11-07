@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b4f4056419c89a1e49dd3ae0acb17e14df4e57003b9efbe0db4e6ac3aab5ec34"
+            "sha256": "3febbdd33ee125ec92e3939debd9c61954e4d2a50dc1ba4dbf074b9f1011d99c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -138,6 +138,13 @@
                 "sha256:b3ad476fc9cca60302b52c50e1839342d2092aeaba586d69cbf9249f87f52463"
             ],
             "version": "==0.8.0"
+        },
+        "flexmock": {
+            "hashes": [
+                "sha256:5033ceb974d6452cf8716c2ff5059074b77e546df5c849fb44a53f98dfe0d82c"
+            ],
+            "index": "pypi",
+            "version": "==0.10.4"
         },
         "google-auth": {
             "hashes": [

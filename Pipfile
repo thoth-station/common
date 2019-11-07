@@ -12,6 +12,7 @@ openshift = "==0.8.0"
 attrs = "*"
 pyyaml = "*"
 attrdict = "*"
+flexmock = "*"
 
 [dev-packages]
 pytest = "*"
