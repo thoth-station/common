@@ -17,6 +17,7 @@
 """Workflow management for Thoth."""
 
 import random
+import re
 import yaml
 
 from pathlib import Path
@@ -60,13 +61,26 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def from_dict(cls, wf: dict) -> "Workflow":
         """Create a Workflow from a dict."""
+        return cls(**wf)
 
     @classmethod
     def from_file(cls, fp: str) -> "Workflow":
         """Create a Workflow from a file."""
         wf_path = Path(fp)
-        wf: dict = yaml.safe_load(wf_path.read_text())
+        wf_yaml: dict = yaml.safe_load(wf_path.read_text())
 
+        wf = {}
+        # replace camelCase keys with snake_case
+        def _to_snake_case(stream: str):
+            return re.sub(
+                r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", stream
+            ).lower()
+
+        for k, val in wf_yaml.items():
+            new_key = _to_snake_case(k)
+            wf[new_key] = val
+
+        wf["status"] = wf.get("status", {})
         return cls.from_dict(wf)
 
     @classmethod
