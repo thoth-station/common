@@ -19,6 +19,7 @@
 import json
 import random
 import re
+import requests
 import yaml
 
 from pathlib import Path
@@ -27,6 +28,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
+
+from attrdict import AttrDict
 
 from argo.workflows import client
 from argo.workflows import models
@@ -62,15 +65,22 @@ class Workflow(models.V1alpha1Workflow):
             status=status,
         )
 
+        if not status:
+            # fixup the status empty dict to prevent serialization issues
+            status = None
+
     @property
     def name(self) -> str:
+        """Get Workflow name."""
         return self.metadata.name
 
     @property
     def id(self) -> str:
+        """Get Workflow ID."""
         return f"workflow-{self.name}-{abs(self.__hash__())}"
 
     def __eq__(self, other):
+        """Compare workflows for equality."""
         return self.id == other.id
 
     def __hash__(self):
@@ -78,33 +88,79 @@ class Workflow(models.V1alpha1Workflow):
         return self.to_str().__hash__()
 
     @classmethod
-    def from_dict(cls, wf: dict) -> "Workflow":
-        """Create a Workflow from a dict."""
-        attr = type("AttributeDict", (), {"data": json.dumps(wf)})
+    def from_file(cls, fp: str, fmt: str = "yaml") -> "Workflow":
+        """Create a Workflow from a file."""
+        wf_path = Path(fp)
 
-        wf: models.V1alpha1Workflow = client.ApiClient().deserialize(
-            attr, models.V1alpha1Workflow
+        fmt = fmt.lower()
+        if fmt == "yaml":
+            wf: dict = yaml.safe_load(wf_path.read_text())
+        elif fmt == "json":
+            wf: dict = json.loads(wf_path.read_text())
+        else:
+            raise ValueError(f"Argument `fmt` expected 'yaml' or 'json', got: {fmt}")
+
+        return cls.from_dict(wf)
+
+    @classmethod
+    def from_url(cls, url: str, validate: bool = False) -> "Workflow":
+        """Create a Workflow from a remote file."""
+        resp = requests.get(
+            "https://raw.githubusercontent.com/argoproj/argo/master/examples/hello-world.yaml"
         )
+        resp.raise_for_status()
+
+        wf = yaml.safe_load(resp.text)
+        return cls.from_dict(wf, validate=validate)
+
+    @classmethod
+    def from_dict(cls, wf: dict, validate: bool = False) -> "Workflow":
+        """Create a Workflow from a dict."""
+        return cls.from_string(json.dumps(wf), validate=validate)
+
+    @classmethod
+    def from_string(cls, wf: str, validate: bool = False) -> "Workflow":
+        """Create a Workflow from a YAML string."""
+        body = {"data": wf}
+
+        return cls.__deserialize(body, validate=validate)
+
+    @classmethod
+    def __deserialize(cls, body: dict, *, validate: bool) -> "Workflow":
+        """Deserialize given object into a Workflow instance."""
+
+        def __to_snake_case(obj: dict):
+            if isinstance(obj, dict):
+                aux = dict()
+                for key, value in obj.items():
+                    new_key = re.sub(
+                        r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key
+                    ).lower()
+                    aux[new_key] = __to_snake_case(value)
+
+                return aux
+
+            return obj
+
+        if validate:
+            attr = type("AttributeDict", (), body)
+
+            wf: models.V1alpha1Workflow = client.ApiClient().deserialize(
+                attr, models.V1alpha1Workflow
+            )
+        else:
+            obj = json.loads(body["data"])
+            aux = __to_snake_case(obj)
+
+            wf: models.V1alpha1Workflow = AttrDict(**aux)
+
         return cls(
             api_version=wf.api_version,
             kind=wf.kind,
             metadata=wf.metadata,
             spec=wf.spec,
-            status=wf.status,
+            status=wf.get("status", {}),  # a small hack to overcome validation
         )
-
-    @classmethod
-    def from_file(cls, fp: str) -> "Workflow":
-        """Create a Workflow from a file."""
-        wf_path = Path(fp)
-        wf: dict = yaml.safe_load(wf_path.read_text())
-
-        wf["status"] = wf.get("status", {})
-        return cls.from_dict(wf)
-
-    @classmethod
-    def from_url(cls, url: str) -> "Workflow":
-        """Create a Workflow from a remote file."""
 
 
 class WorkflowManager:
