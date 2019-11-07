@@ -14,9 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""Workflow management for Thoth."""
+
 import random
+import yaml
+
+from pathlib import Path
 
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -40,6 +46,7 @@ class Workflow(models.V1alpha1Workflow):
     def __init__(
         self, api_version=None, kind=None, metadata=None, spec=None, status=None
     ):
+        """Initialize Workflow instance."""
         super().__init__(
             api_version=api_version,
             kind=kind,
@@ -57,6 +64,10 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def from_file(cls, fp: str) -> "Workflow":
         """Create a Workflow from a file."""
+        wf_path = Path(fp)
+        wf: dict = yaml.safe_load(wf_path.read_text())
+
+        return cls.from_dict(wf)
 
     @classmethod
     def from_url(cls, url: str) -> "Workflow":
@@ -67,8 +78,11 @@ class WorkflowManager:
     """Argo Workflow manager."""
 
     def __init__(
-        self, ocp_client: Optional[OpenShift] = None, ocp_config: Optional[Dict] = None
+        self,
+        ocp_client: Optional[OpenShift] = None,
+        ocp_config: Optional[Dict[str, str]] = None,
     ):
+        """Initialize WorkflowManager instance."""
         ocp_config = ocp_config or {}
 
         self.openshift = ocp_client or OpenShift(**ocp_config)
@@ -76,7 +90,7 @@ class WorkflowManager:
 
     def _submit_workflow(
         self,
-        namespace: Optional[str],
+        namespace: str,
         wf: Union[models.V1alpha1Workflow, dict],
         *,
         parameters: Optional[Dict[str, str]] = None,
@@ -103,6 +117,8 @@ class WorkflowManager:
         wf.spec.arguments.parameters = new_parameters
 
         # submit the workflow
-        created = self.api.create_namespaced_workflow(namespace, wf)
+        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(
+            namespace, wf
+        )
 
-        return created.name
+        return created.metadata.name
