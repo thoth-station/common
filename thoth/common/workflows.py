@@ -16,6 +16,7 @@
 
 """Workflow management for Thoth."""
 
+import logging
 import json
 import random
 import re
@@ -38,6 +39,8 @@ from .exceptions import ConfigurationError
 from .exceptions import WorkflowError
 
 from .openshift import OpenShift
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Workflow(models.V1alpha1Workflow):
@@ -69,15 +72,23 @@ class Workflow(models.V1alpha1Workflow):
             # fixup the status empty dict to prevent serialization issues
             status = None
 
+        self.__validated = False
+
     @property
     def name(self) -> str:
         """Get Workflow name."""
-        return self.metadata.name
+        return self.metadata.get("name")
 
     @property
     def id(self) -> str:
         """Get Workflow ID."""
-        return f"workflow-{self.name}-{abs(self.__hash__())}"
+        digest = abs(self.__hash__())
+        return f"workflow{'-' + self.name if self.name else ''}-{digest}"
+
+    @property
+    def validated(self) -> str:
+        """Return whether this workflow has been validated."""
+        return self.__validated
 
     def __eq__(self, other):
         """Compare workflows for equality."""
@@ -103,7 +114,7 @@ class Workflow(models.V1alpha1Workflow):
         return cls.from_dict(wf)
 
     @classmethod
-    def from_url(cls, url: str, validate: bool = False) -> "Workflow":
+    def from_url(cls, url: str, validate: bool = True) -> "Workflow":
         """Create a Workflow from a remote file."""
         resp = requests.get(
             "https://raw.githubusercontent.com/argoproj/argo/master/examples/hello-world.yaml"
@@ -114,12 +125,12 @@ class Workflow(models.V1alpha1Workflow):
         return cls.from_dict(wf, validate=validate)
 
     @classmethod
-    def from_dict(cls, wf: dict, validate: bool = False) -> "Workflow":
+    def from_dict(cls, wf: dict, validate: bool = True) -> "Workflow":
         """Create a Workflow from a dict."""
         return cls.from_string(json.dumps(wf), validate=validate)
 
     @classmethod
-    def from_string(cls, wf: str, validate: bool = False) -> "Workflow":
+    def from_string(cls, wf: str, validate: bool = True) -> "Workflow":
         """Create a Workflow from a YAML string."""
         body = {"data": wf}
 
@@ -149,18 +160,25 @@ class Workflow(models.V1alpha1Workflow):
                 attr, models.V1alpha1Workflow
             )
         else:
+            _LOGGER.warning(
+                "Validation is turned off. This may result in missing or invalid attributes."
+            )
             obj = json.loads(body["data"])
             aux = __to_snake_case(obj)
 
             wf: models.V1alpha1Workflow = AttrDict(**aux)
 
-        return cls(
+        instance = cls(
             api_version=wf.api_version,
             kind=wf.kind,
             metadata=wf.metadata,
             spec=wf.spec,
             status=wf.get("status", {}),  # a small hack to overcome validation
         )
+
+        instance.__validated = validate
+
+        return instance
 
 
 class WorkflowManager:
@@ -183,13 +201,14 @@ class WorkflowManager:
         wf: Union[models.V1alpha1Workflow, dict],
         *,
         parameters: Optional[Dict[str, str]] = None,
+        validate: bool = True,
     ) -> str:
         """Submit an Argo Workflow to a given namespace."""
         parameters = parameters or {}
 
         if not isinstance(wf, Workflow) and isinstance(wf, dict):
-            wf = Workflow.from_dict(wf)
-        elif not isinstance(models.v1):
+            wf = Workflow.from_dict(wf, validate=validate)
+        elif not isinstance(wf, models.V1alpha1Workflow):
             raise TypeError(
                 f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}"
             )
@@ -199,19 +218,43 @@ class WorkflowManager:
             param = models.V1alpha1Parameter(name=name, value=value)
             new_parameters.append(param)
 
-        for p in wf.spec.arguments.parameters:
-            if p.name in parameters:
-                continue  # overridden
-            elif not p.value and not p.default:
-                raise WorkflowError(f"Missing required workflow parameter {p.name}")
+        if hasattr(wf.spec, "arguments"):
+            for p in wf.spec.arguments.get("parameters", []):
+                if p.name in parameters:
+                    continue  # overridden
+                elif not p.value and not p.default:
+                    raise WorkflowError(f"Missing required workflow parameter {p.name}")
 
-            new_parameters.append(p)
+                new_parameters.append(p)
 
-        wf.spec.arguments.parameters = new_parameters
+            wf.spec.arguments.parameters = new_parameters
+
+        body = wf.to_dict()
+        if not getattr(wf, "validated", True):
+            _LOGGER.debug(
+                "The Workflow has not been previously validated. Sanitizing for serialization.",
+                wf,
+            )
+            body = __to_camel_case(wf)
+
+            def __to_camel_case(obj: dict):
+                if isinstance(obj, dict):
+                    aux = dict()
+                    for key, value in obj.items():
+                        new_key = re.sub(
+                            r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key
+                        )
+                        aux[new_key] = __to_camel_case(value)
+
+                    return aux
+
+                return obj
+
+        _LOGGER.debug("Submitting workflow: ", wf)
 
         # submit the workflow
         created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(
-            namespace, wf
+            namespace, body
         )
 
         return created.metadata.name
