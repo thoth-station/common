@@ -16,7 +16,7 @@ _WORKFLOW_FILE_PATH = Path(_HERE, "../../fixtures/workflows/hello-world.yaml")
 
 @pytest.fixture
 def url() -> str:
-    return "FAKE_URL"
+    """Fake URL fixture."""
 
 
 def test_from_file():

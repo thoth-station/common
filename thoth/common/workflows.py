@@ -139,7 +139,7 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def __deserialize(cls, body: dict, *, validate: bool) -> "Workflow":
         """Deserialize given object into a Workflow instance."""
-
+        # noqa: D202
         def __to_snake_case(obj: dict):
             if isinstance(obj, dict):
                 aux = dict()
