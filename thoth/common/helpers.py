@@ -19,7 +19,12 @@
 
 import datetime
 import os
+import re
+
 from datetime import timezone
+
+from typing import Any
+from typing import Dict
 from typing import Generator
 from typing import Optional
 
@@ -101,3 +106,29 @@ def get_service_account_token() -> str:
             "Unable to get service account token, please check "
             "that service has service account assigned with exposed token"
         ) from exc
+
+
+def to_camel_case(obj: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert dictionary keys to camelCase."""
+    if isinstance(obj, dict):
+        aux = dict()
+        for key, value in obj.items():
+            new_key = re.sub(r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key)
+            aux[new_key] = to_camel_case(value)
+
+        return aux
+
+    return obj
+
+
+def to_snake_case(obj: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert dictionary keys to snake_case."""
+    if isinstance(obj, dict):
+        aux = dict()
+        for key, value in obj.items():
+            new_key = re.sub(r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key).lower()
+            aux[new_key] = to_snake_case(value)
+
+        return aux
+
+    return obj

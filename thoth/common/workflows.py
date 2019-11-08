@@ -39,6 +39,9 @@ from argo.workflows import models
 from .exceptions import ConfigurationError
 from .exceptions import WorkflowError
 
+from .helpers import to_camel_case
+from .helpers import to_snake_case
+
 from .openshift import OpenShift
 
 _LOGGER = logging.getLogger(__name__)
@@ -140,18 +143,6 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def __deserialize(cls, body: Dict[str, str], *, validate: bool) -> "Workflow":
         """Deserialize given object into a Workflow instance."""
-        # noqa: D202
-        def __to_snake_case(obj: Dict[str, Any]):
-            if isinstance(obj, dict):
-                aux = dict()
-                for key, value in obj.items():
-                    new_key = re.sub(r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key).lower()
-                    aux[new_key] = __to_snake_case(value)
-
-                return aux
-
-            return obj
-
         if validate:
             attr = type("AttributeDict", (), body)
 
@@ -159,7 +150,7 @@ class Workflow(models.V1alpha1Workflow):
         else:
             _LOGGER.warning("Validation is turned off. This may result in missing or invalid attributes.")
             obj = json.loads(body["data"])
-            aux = __to_snake_case(obj)
+            aux = to_snake_case(obj)
 
             wf: models.V1alpha1Workflow = AttrDict(**aux)
 
@@ -228,18 +219,7 @@ class WorkflowManager:
             _LOGGER.debug(
                 "The Workflow has not been previously validated. Sanitizing for serialization.", wf,
             )
-            body = __to_camel_case(wf)
-
-            def __to_camel_case(obj: Dict[str, Any]) -> Dict[str, Any]:
-                if isinstance(obj, dict):
-                    aux = dict()
-                    for key, value in obj.items():
-                        new_key = re.sub(r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key)
-                        aux[new_key] = __to_camel_case(value)
-
-                    return aux
-
-                return obj
+            body = to_camel_case(wf)
 
         _LOGGER.debug("Submitting workflow: ", wf)
 
