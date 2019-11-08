@@ -1,3 +1,4 @@
+attrdict
 daiquiri
 sentry-sdk
 requests

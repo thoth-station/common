@@ -25,6 +25,7 @@ import yaml
 
 from pathlib import Path
 
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -53,61 +54,58 @@ class Workflow(models.V1alpha1Workflow):
 
     def __init__(
         self,
-        api_version: str = None,
-        kind: str = None,
-        metadata: models.V1alpha1Metadata = None,
-        spec: models.V1alpha1WorkflowSpec = None,
-        status: models.V1alpha1WorkflowStatus = None,
+        api_version: str,
+        kind: str,
+        metadata: models.V1alpha1Metadata,
+        spec: models.V1alpha1WorkflowSpec,
+        status: Optional[models.V1alpha1WorkflowStatus] = None,
     ):
         """Initialize Workflow instance."""
         super().__init__(
-            api_version=api_version,
-            kind=kind,
-            metadata=metadata,
-            spec=spec,
-            status=status,
+            api_version=api_version, kind=kind, metadata=metadata, spec=spec, status=status or {},
         )
 
         if not status:
             # fixup the status empty dict to prevent serialization issues
-            status = None
+            self.status = None
 
         self.__validated = False
 
     @property
-    def name(self) -> str:
+    def name(self) -> Union[str, None]:
         """Get Workflow name."""
-        return self.metadata.get("name")
+        name: Union[str, None] = getattr(self.metadata, "name", None)
+        return name
 
     @property
     def id(self) -> str:
         """Get Workflow ID."""
-        digest = abs(self.__hash__())
+        digest: str = abs(self.__hash__())
         return f"workflow{'-' + self.name if self.name else ''}-{digest}"
 
     @property
-    def validated(self) -> str:
+    def validated(self) -> bool:
         """Return whether this workflow has been validated."""
         return self.__validated
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> Any:
         """Compare workflows for equality."""
         return self.id == other.id
 
-    def __hash__(self):
+    def __hash__(self) -> Any:
         """Compute hash of this Workflow."""
         return self.to_str().__hash__()
 
     @classmethod
-    def from_file(cls, fp: str, fmt: str = "yaml") -> "Workflow":
+    def from_file(cls, fp: Union[str, Path], fmt: str = "yaml") -> "Workflow":
         """Create a Workflow from a file."""
         wf_path = Path(fp)
 
         fmt = fmt.lower()
         if fmt == "yaml":
-            wf: dict = yaml.safe_load(wf_path.read_text())
+            wf: Dict[str, Any] = yaml.safe_load(wf_path.read_text())
         elif fmt == "json":
-            wf: dict = json.loads(wf_path.read_text())
+            wf: Dict[str, Any] = json.loads(wf_path.read_text())
         else:
             raise ValueError(f"Argument `fmt` expected 'yaml' or 'json', got: {fmt}")
 
@@ -125,8 +123,11 @@ class Workflow(models.V1alpha1Workflow):
         return cls.from_dict(wf, validate=validate)
 
     @classmethod
-    def from_dict(cls, wf: dict, validate: bool = True) -> "Workflow":
+    def from_dict(cls, wf: Dict[str, Any], validate: bool = True) -> "Workflow":
         """Create a Workflow from a dict."""
+        # work around validation issues and allow empty status
+        wf["status"] = wf.get("status", {}) or {}
+
         return cls.from_string(json.dumps(wf), validate=validate)
 
     @classmethod
@@ -137,16 +138,14 @@ class Workflow(models.V1alpha1Workflow):
         return cls.__deserialize(body, validate=validate)
 
     @classmethod
-    def __deserialize(cls, body: dict, *, validate: bool) -> "Workflow":
+    def __deserialize(cls, body: Dict[str, str], *, validate: bool) -> "Workflow":
         """Deserialize given object into a Workflow instance."""
         # noqa: D202
-        def __to_snake_case(obj: dict):
+        def __to_snake_case(obj: Dict[str, Any]):
             if isinstance(obj, dict):
                 aux = dict()
                 for key, value in obj.items():
-                    new_key = re.sub(
-                        r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key
-                    ).lower()
+                    new_key = re.sub(r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key).lower()
                     aux[new_key] = __to_snake_case(value)
 
                 return aux
@@ -156,13 +155,9 @@ class Workflow(models.V1alpha1Workflow):
         if validate:
             attr = type("AttributeDict", (), body)
 
-            wf: models.V1alpha1Workflow = client.ApiClient().deserialize(
-                attr, models.V1alpha1Workflow
-            )
+            wf: models.V1alpha1Workflow = client.ApiClient().deserialize(attr, models.V1alpha1Workflow)
         else:
-            _LOGGER.warning(
-                "Validation is turned off. This may result in missing or invalid attributes."
-            )
+            _LOGGER.warning("Validation is turned off. This may result in missing or invalid attributes.")
             obj = json.loads(body["data"])
             aux = __to_snake_case(obj)
 
@@ -173,7 +168,7 @@ class Workflow(models.V1alpha1Workflow):
             kind=wf.kind,
             metadata=wf.metadata,
             spec=wf.spec,
-            status=wf.get("status", {}),  # a small hack to overcome validation
+            status=wf.status,  # a small hack to overcome validation
         )
 
         instance.__validated = validate
@@ -185,9 +180,7 @@ class WorkflowManager:
     """Argo Workflow manager."""
 
     def __init__(
-        self,
-        ocp_client: Optional[OpenShift] = None,
-        ocp_config: Optional[Dict[str, str]] = None,
+        self, ocp_client: Optional[OpenShift] = None, ocp_config: Optional[Dict[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
         ocp_config = ocp_config or {}
@@ -198,20 +191,18 @@ class WorkflowManager:
     def _submit_workflow(
         self,
         namespace: str,
-        wf: Union[models.V1alpha1Workflow, dict],
+        wf: Union[models.V1alpha1Workflow, Dict[str, Any]],
         *,
         parameters: Optional[Dict[str, str]] = None,
         validate: bool = True,
-    ) -> str:
+    ) -> Union[str, None]:
         """Submit an Argo Workflow to a given namespace."""
         parameters = parameters or {}
 
         if not isinstance(wf, Workflow) and isinstance(wf, dict):
             wf = Workflow.from_dict(wf, validate=validate)
         elif not isinstance(wf, models.V1alpha1Workflow):
-            raise TypeError(
-                f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}"
-            )
+            raise TypeError(f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}")
 
         new_parameters: List[models.V1alpha1Parameter] = []
         for name, value in parameters.items():
@@ -229,21 +220,21 @@ class WorkflowManager:
 
             wf.spec.arguments.parameters = new_parameters
 
+        # Set the ID so that we can track it easily later on
+        wf.metadata.id = wf.id
+
         body = wf.to_dict()
         if not getattr(wf, "validated", True):
             _LOGGER.debug(
-                "The Workflow has not been previously validated. Sanitizing for serialization.",
-                wf,
+                "The Workflow has not been previously validated. Sanitizing for serialization.", wf,
             )
             body = __to_camel_case(wf)
 
-            def __to_camel_case(obj: dict):
+            def __to_camel_case(obj: Dict[str, Any]) -> Dict[str, Any]:
                 if isinstance(obj, dict):
                     aux = dict()
                     for key, value in obj.items():
-                        new_key = re.sub(
-                            r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key
-                        )
+                        new_key = re.sub(r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key)
                         aux[new_key] = __to_camel_case(value)
 
                     return aux
@@ -253,8 +244,7 @@ class WorkflowManager:
         _LOGGER.debug("Submitting workflow: ", wf)
 
         # submit the workflow
-        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(
-            namespace, body
-        )
+        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(namespace, body)
 
-        return created.metadata.name
+        # return the computed Workflow ID
+        return wf.id

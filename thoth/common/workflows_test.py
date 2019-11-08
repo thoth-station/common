@@ -7,7 +7,7 @@ import yaml
 from flexmock import flexmock
 from pathlib import Path
 
-from .workflows import Workflow
+from thoth.common.workflows import Workflow
 
 
 _HERE = Path(__file__).parent
@@ -19,7 +19,7 @@ def url() -> str:
     """Fake URL fixture."""
 
 
-def test_from_file():
+def test_from_file() -> None:
     """Test `Workflow.from_file` methods."""
     wf = Workflow.from_file(_WORKFLOW_FILE_PATH)
 
@@ -29,14 +29,14 @@ def test_from_file():
     assert len(wf.spec.templates) == 1
 
 
-def test_from_url(url):
+def test_from_url(url: str) -> None:
     """Test `Workflow.from_url` methods."""
-    from .workflows import requests
+    from thoth.common import workflows
 
     fake_response = type("Response", (), {})
     fake_response.text = _WORKFLOW_FILE_PATH.read_text()
     fake_response.raise_for_status = lambda: None
-    flexmock(requests).should_receive("get").and_return(fake_response)
+    flexmock(workflows).should_receive("requests.get").and_return(fake_response)
 
     wf = Workflow.from_url(url)
 

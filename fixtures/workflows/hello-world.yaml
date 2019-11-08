@@ -11,3 +11,4 @@ spec:
         image: docker/whalesay:latest
         command: [cowsay]
         args: ["hello world"]
+        name: hello-world-container
