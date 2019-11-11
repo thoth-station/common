@@ -44,6 +44,8 @@ class RuntimeEnvironment:
     cuda_version = attr.ib(type=str, default=None)
     name = attr.ib(type=str, default=None)
 
+    _fully_specified = attr.ib(type=Optional[bool], default=None)
+
     @classmethod
     def load(cls, content: Optional[str] = None) -> "RuntimeEnvironment":
         """Load runtime environment information from file or from a JSON representation, transparently."""
@@ -118,3 +120,17 @@ class RuntimeEnvironment:
         """Convert runtime environment configuration to a string representation."""
         dict_representation = self.to_dict(without_none=True)
         return str(dict_representation)
+
+    def is_fully_specified(self) -> bool:
+        """Pre-cache check if the given runtime environment is fully specified."""
+        if self._fully_specified is None:
+            runtime_environment = (
+                self.operating_system.name,
+                self.operating_system.version,
+                self.python_version,
+            )
+            self._fully_specified = all(
+                i is not None for i in runtime_environment
+            )
+
+        return self._fully_specified
