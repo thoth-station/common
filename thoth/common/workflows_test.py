@@ -7,7 +7,7 @@ import yaml
 from flexmock import flexmock
 from pathlib import Path
 
-from thoth.common.workflows import Workflow
+from .workflows import Workflow
 
 
 _HERE = Path(__file__).parent
@@ -31,7 +31,7 @@ def test_from_file() -> None:
 
 def test_from_url(url: str) -> None:
     """Test `Workflow.from_url` methods."""
-    from thoth.common import workflows
+    from thoth.common import workflows  # type: ignore
 
     fake_response = type("Response", (), {})
     fake_response.text = _WORKFLOW_FILE_PATH.read_text()

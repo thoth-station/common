@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Mapping
 from typing import Optional
 from typing import Union
 
@@ -47,7 +48,7 @@ from .openshift import OpenShift
 _LOGGER = logging.getLogger(__name__)
 
 
-class Workflow(models.V1alpha1Workflow):
+class Workflow(models.V1alpha1Workflow):  # type: ignore
     """Argo Workflow instance.
 
     This is a subclass of argo.workflows V1alpha1Workflow model
@@ -102,13 +103,15 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def from_file(cls, fp: Union[str, Path], fmt: str = "yaml") -> "Workflow":
         """Create a Workflow from a file."""
+        fmt = fmt.lower()
+
         wf_path = Path(fp)
 
-        fmt = fmt.lower()
+        wf: Dict[str, Any]
         if fmt == "yaml":
-            wf: Dict[str, Any] = yaml.safe_load(wf_path.read_text())
+            wf = yaml.safe_load(wf_path.read_text())
         elif fmt == "json":
-            wf: Dict[str, Any] = json.loads(wf_path.read_text())
+            wf = json.loads(wf_path.read_text())
         else:
             raise ValueError(f"Argument `fmt` expected 'yaml' or 'json', got: {fmt}")
 
@@ -143,16 +146,17 @@ class Workflow(models.V1alpha1Workflow):
     @classmethod
     def __deserialize(cls, body: Dict[str, str], *, validate: bool) -> "Workflow":
         """Deserialize given object into a Workflow instance."""
+        wf: models.V1alpha1Workflow
         if validate:
             attr = type("AttributeDict", (), body)
 
-            wf: models.V1alpha1Workflow = client.ApiClient().deserialize(attr, models.V1alpha1Workflow)
+            wf = client.ApiClient().deserialize(attr, models.V1alpha1Workflow)
         else:
             _LOGGER.warning("Validation is turned off. This may result in missing or invalid attributes.")
             obj = json.loads(body["data"])
             aux = to_snake_case(obj)
 
-            wf: models.V1alpha1Workflow = AttrDict(**aux)
+            wf = AttrDict(**aux)
 
         instance = cls(
             api_version=wf.api_version,
@@ -171,7 +175,7 @@ class WorkflowManager:
     """Argo Workflow manager."""
 
     def __init__(
-        self, ocp_client: Optional[OpenShift] = None, ocp_config: Optional[Dict[str, str]] = None,
+        self, ocp_client: Optional[OpenShift] = None, ocp_config: Optional[Mapping[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
         ocp_config = ocp_config or {}
