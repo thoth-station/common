@@ -2098,3 +2098,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.9.15 (2019-11-13T11:05:15)
+* Provide a method to check if the given environment is fully specified
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.1 to 0.13.2
+* Fix boolean types in mypy.ini
+* :pushpin: Automatic update of dependency pytest-mypy from 0.4.1 to 0.4.2
+* Start using mypy for type checking
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.0 to 0.13.1
+* :pushpin: Automatic update of dependency pytest from 5.2.1 to 5.2.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.12.3 to 0.13.0
+* :pushpin: Automatic update of dependency attrs from 19.2.0 to 19.3.0
