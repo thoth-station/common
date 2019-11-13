@@ -169,6 +169,39 @@ class WorkflowManager:
         self.openshift = ocp_client or OpenShift(**ocp_config)
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
+    def submit_inspection_workflow(
+        self,
+        inspection_id: str,
+        template_parameters: Dict[str, Any] = None,
+        workflow_parameters: Dict[str, Any] = None,
+        use_hw_template: bool = False
+    ) -> str:
+        """Submit the Inspection Workflow."""
+        template = self.get_inspection_workflow_template(
+            use_hw_template=use_hw_template
+        )
+        self.openshift.set_template_parameters(template, **template_parameters)
+
+        template = self.oc_process(self.amun_inspection_namespace, template)
+
+        workflow_object: Dict[str, Any] = template["objects"][0]
+        workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
+
+        return self._submit_workflow(
+            self.openshift.amun_inspection_namespace,
+            workflow,
+            parameters=workflow_parameters,
+        )
+
+    def get_inspection_workflow_template(self, use_hw_template: bool) -> Dict[str, Any]:
+        """Get Inspection Workflow template."""
+        if use_hw_template:
+            label_selector = "template=amun-inspection-workflow-with-cpu"
+        else:
+            label_selector = "template=amun-inspection-workflow"
+
+        return self.openshift._get_template(label_selector, namespace=self.openshift.amun_infra_namespace)
+
     def _submit_workflow(
         self,
         namespace: str,
@@ -176,8 +209,11 @@ class WorkflowManager:
         *,
         parameters: Optional[Dict[str, str]] = None,
         validate: bool = True,
-    ) -> Union[str, None]:
-        """Submit an Argo Workflow to a given namespace."""
+    ) -> str:
+        """Submit an Argo Workflow to a given namespace.
+
+        :returns: Workflow ID
+        """
         parameters = parameters or {}
 
         if not isinstance(wf, Workflow) and isinstance(wf, dict):
