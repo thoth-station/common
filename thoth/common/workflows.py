@@ -18,8 +18,6 @@
 
 import logging
 import json
-import random
-import re
 import requests
 import yaml
 
@@ -69,10 +67,6 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
             api_version=api_version, kind=kind, metadata=metadata, spec=spec, status=status or {},
         )
 
-        if not status:
-            # fixup the status empty dict to prevent serialization issues
-            self.status = None
-
         self.__validated = False
 
     @property
@@ -101,21 +95,12 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
         return self.to_str().__hash__()
 
     @classmethod
-    def from_file(cls, fp: Union[str, Path], fmt: str = "yaml") -> "Workflow":
+    def from_file(cls, fp: Union[str, Path], validate: bool = True) -> "Workflow":
         """Create a Workflow from a file."""
-        fmt = fmt.lower()
-
         wf_path = Path(fp)
 
-        wf: Dict[str, Any]
-        if fmt == "yaml":
-            wf = yaml.safe_load(wf_path.read_text())
-        elif fmt == "json":
-            wf = json.loads(wf_path.read_text())
-        else:
-            raise ValueError(f"Argument `fmt` expected 'yaml' or 'json', got: {fmt}")
-
-        return cls.from_dict(wf)
+        wf: Dict[str, Any] = yaml.safe_load(wf_path.read_text())
+        return cls.from_dict(wf, validate=validate)
 
     @classmethod
     def from_url(cls, url: str, validate: bool = True) -> "Workflow":
@@ -125,7 +110,7 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
         )
         resp.raise_for_status()
 
-        wf = yaml.safe_load(resp.text)
+        wf: Dict[str, Any] = yaml.safe_load(resp.text)
         return cls.from_dict(wf, validate=validate)
 
     @classmethod

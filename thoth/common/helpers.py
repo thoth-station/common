@@ -27,11 +27,15 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Optional
+from typing import TypeVar
 
 from contextlib import contextmanager
 
+T = TypeVar("T")
+
 SERVICE_TOKEN_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 SERVICE_CERT_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+
 _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 
 
@@ -108,7 +112,7 @@ def get_service_account_token() -> str:
         ) from exc
 
 
-def to_camel_case(obj: Dict[str, Any]) -> Dict[str, Any]:
+def to_camel_case(obj: T) -> T:
     """Convert dictionary keys to camelCase."""
     if isinstance(obj, dict):
         aux = dict()
@@ -116,12 +120,12 @@ def to_camel_case(obj: Dict[str, Any]) -> Dict[str, Any]:
             new_key = re.sub(r"(?<=.{1})_([a-z])", lambda m: f"{m.group(1).upper()}", key)
             aux[new_key] = to_camel_case(value)
 
-        return aux
+        return aux  # type: ignore
 
     return obj
 
 
-def to_snake_case(obj: Dict[str, Any]) -> Dict[str, Any]:
+def to_snake_case(obj: T) -> T:
     """Convert dictionary keys to snake_case."""
     if isinstance(obj, dict):
         aux = dict()
@@ -129,6 +133,6 @@ def to_snake_case(obj: Dict[str, Any]) -> Dict[str, Any]:
             new_key = re.sub(r"(?<=.{1})([A-Z])", lambda m: f"_{m.group(0)}", key).lower()
             aux[new_key] = to_snake_case(value)
 
-        return aux
+        return aux  # type: ignore
 
     return obj
