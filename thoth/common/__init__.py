@@ -32,7 +32,7 @@ from .logging import init_logging
 from .openshift import OpenShift
 
 __name__ = "thoth-common"
-__version__ = "0.9.15"
+__version__ = "0.9.16"
 
 
 __all__ = [
