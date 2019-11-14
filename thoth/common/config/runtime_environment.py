@@ -95,6 +95,8 @@ class RuntimeEnvironment:
     def to_dict(self, without_none: bool = False) -> Dict[str, Any]:
         """Convert runtime environment configuration to a dict representation."""
         dict_ = attr.asdict(self)
+        # Do not propagate private property.
+        dict_.pop("_fully_specified", None)
         if not without_none:
             return dict_
 
