@@ -78,8 +78,9 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
     @property
     def id(self) -> str:
         """Get Workflow ID."""
-        digest: str = abs(self.__hash__())
-        return f"workflow{'-' + self.name if self.name else ''}-{digest}"
+        prefix: str = self.name or getattr(self.metadata, "generate_name")
+        digest: str = OpenShift.generate_id(prefix)
+        return f"workflow-{digest}"
 
     @property
     def validated(self) -> bool:
