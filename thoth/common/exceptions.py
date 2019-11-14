@@ -27,3 +27,7 @@ class NotFoundException(ThothCommonException):
 
 class ConfigurationError(ThothCommonException):
     """Raised on miss-configuration issues."""
+
+
+class WorkflowError(ThothCommonException):
+    """Raised on workflow related issues."""

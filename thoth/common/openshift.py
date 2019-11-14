@@ -105,8 +105,11 @@ class OpenShift:
             k8s_client = config.new_client_from_config()
             k8s_client.configuration.verify_ssl = self.kubernetes_verify_tls
             k8s_client.rest_client = RESTClientObject(k8s_client.configuration)
+
             self.ocp_client = DynamicClient(k8s_client)
             self.in_cluster = False
+
+        self.configuration = self.ocp_client.configuration
 
         self.amun_inspection_namespace = amun_inspection_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESPACE"
@@ -827,7 +830,7 @@ class OpenShift:
             THOTH_SOLVER_INDEXES=",".join(indexes) if indexes else "",
             THOTH_LOG_SOLVER="DEBUG" if debug else "INFO",
             THOTH_SOLVER_OUTPUT=output,
-            THOTH_SOLVER_JOB_ID=job_id or self._generate_id(solver),
+            THOTH_SOLVER_JOB_ID=job_id or self.generate_id(solver),
         )
 
         template = self.oc_process(self.middletier_namespace, template)
@@ -858,7 +861,7 @@ class OpenShift:
                 "Unable to schedule solver job without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id(solver)
+        job_id = job_id or self.generate_id(solver)
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -920,7 +923,7 @@ class OpenShift:
                 "Unknown environment type %r, has to be runtime or buildtime"
             )
 
-        job_id = job_id or self._generate_id("package-extract")
+        job_id = job_id or self.generate_id("package-extract")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -966,7 +969,7 @@ class OpenShift:
             THOTH_ANALYZED_IMAGE=image,
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output,
-            THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self._generate_id("package-extract"),
+            THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self.generate_id("package-extract"),
             THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({
                 "origin": origin,
                 "environment_type": environment_type,
@@ -1017,7 +1020,7 @@ class OpenShift:
                 "Unable to schedule package analyzer job without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id("package-analyzer")
+        job_id = job_id or self.generate_id("package-analyzer")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1058,7 +1061,7 @@ class OpenShift:
             THOTH_PACKAGE_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_ANALYZER_DRY_RUN=dry_run,
             THOTH_PACKAGE_ANALYZER_JOB_ID=job_id
-            or self._generate_id("package-analyzer"),
+            or self.generate_id("package-analyzer"),
         )
 
         template = self.oc_process(self.middletier_namespace, template)
@@ -1134,7 +1137,7 @@ class OpenShift:
         return job_id
 
     @staticmethod
-    def _generate_id(prefix: str) -> str:
+    def generate_id(prefix: str) -> str:
         """Generate an identifier."""
         return prefix + "-%016x" % random.getrandbits(64)
 
@@ -1159,7 +1162,7 @@ class OpenShift:
                 "Unable to schedule dependency monkey without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id("dependency-monkey")
+        job_id = job_id or self.generate_id("dependency-monkey")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1207,7 +1210,7 @@ class OpenShift:
             "THOTH_DEPENDENCY_MONKEY_DRY_RUN": int(bool(dry_run)),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id
-            or self._generate_id("dependency-monkey"),
+            or self.generate_id("dependency-monkey"),
         }
 
         if decision is not None:
@@ -1255,7 +1258,7 @@ class OpenShift:
                 "Unable to schedule build analyze without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id("build-analyze")
+        job_id = job_id or self.generate_id("build-analyze")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1281,7 +1284,7 @@ class OpenShift:
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self._generate_id("build-analyze"),
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-analyze"),
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1315,7 +1318,7 @@ class OpenShift:
                 "Unable to schedule build report without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id("build-report")
+        job_id = job_id or self.generate_id("build-report")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1341,7 +1344,7 @@ class OpenShift:
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self._generate_id("build-report"),
+            "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self.generate_id("build-report"),
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1375,7 +1378,7 @@ class OpenShift:
                 "Unable to schedule build dependencies without middletier namespace being set"
             )
 
-        job_id = job_id or self._generate_id("build-dependencies")
+        job_id = job_id or self.generate_id("build-dependencies")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1402,7 +1405,7 @@ class OpenShift:
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
             "THOTH_BUILD_ANALYZER_JOB_ID": job_id
-            or self._generate_id("build-dependencies"),
+            or self.generate_id("build-dependencies"),
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1449,7 +1452,7 @@ class OpenShift:
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        job_id = job_id or self._generate_id("adviser")
+        job_id = job_id or self.generate_id("adviser")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1503,7 +1506,7 @@ class OpenShift:
             "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
-            "THOTH_ADVISER_JOB_ID": job_id or self._generate_id("adviser"),
+            "THOTH_ADVISER_JOB_ID": job_id or self.generate_id("adviser"),
         }
 
         if count:
@@ -1555,7 +1558,7 @@ class OpenShift:
                 "Unable to schedule provenance checker without backend namespace being set"
             )
 
-        job_id = job_id or self._generate_id("provenance-checker")
+        job_id = job_id or self.generate_id("provenance-checker")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1599,7 +1602,7 @@ class OpenShift:
             THOTH_WHITELISTED_SOURCES=",".join(whitelisted_sources or []),
             THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
             THOTH_PROVENANCE_CHECKER_JOB_ID=job_id
-            or self._generate_id("provenance-checker"),
+            or self.generate_id("provenance-checker"),
         )
 
         template = self.oc_process(self.backend_namespace, template)
@@ -1791,7 +1794,7 @@ class OpenShift:
         self.set_template_parameters(
             template,
             THOTH_SYNC_DOCUMENT_ID=document_id,
-            THOTH_JOB_ID=job_id or self._generate_id(graph_sync_type),
+            THOTH_JOB_ID=job_id or self.generate_id(graph_sync_type),
             THOTH_FORCE_SYNC=force_sync,
             THOTH_GRAPH_SYNC_TYPE=graph_sync_type,
         )
@@ -1824,7 +1827,7 @@ class OpenShift:
                 "Unable to schedule Kebechet without backend namespace being set"
             )
 
-        job_id = job_id or self._generate_id("kebechet-run-url")
+        job_id = job_id or self.generate_id("kebechet-run-url")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1845,7 +1848,7 @@ class OpenShift:
                 "Unable to schedule Kebechet without backend namespace being set"
             )
 
-        job_id = job_id or self._generate_id("kebechet-run-results")
+        job_id = job_id or self.generate_id("kebechet-run-results")
         parameters = locals()
         parameters.pop("self", None)
         return self._schedule_workload(
@@ -1867,7 +1870,7 @@ class OpenShift:
         template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Create a kebechet run-url job."""
-        job_id = job_id or self._generate_id("kebechet-run-url")
+        job_id = job_id or self.generate_id("kebechet-run-url")
         template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
@@ -1903,7 +1906,7 @@ class OpenShift:
         template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Create a kebechet run-results job."""
-        job_id = job_id or self._generate_id("kebechet-run-results")
+        job_id = job_id or self.generate_id("kebechet-run-results")
         template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,

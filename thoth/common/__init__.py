@@ -30,6 +30,8 @@ from .helpers import timestamp2datetime
 from .json import SafeJSONEncoder
 from .logging import init_logging
 from .openshift import OpenShift
+from .workflows import Workflow
+from .workflows import WorkflowManager
 
 __name__ = "thoth-common"
 __version__ = "0.9.16"

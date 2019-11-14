@@ -1,3 +1,4 @@
+attrdict
 daiquiri
 sentry-sdk
 requests
@@ -5,4 +6,5 @@ rfc5424-logging-handler
 attrs
 pyyaml
 requests
-openshift==0.8.0
+openshift ~= 0.10.0
+argo-workflows >= 2.0, < 3.0
