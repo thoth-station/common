@@ -2109,3 +2109,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pytest from 5.2.1 to 5.2.2
 * :pushpin: Automatic update of dependency sentry-sdk from 0.12.3 to 0.13.0
 * :pushpin: Automatic update of dependency attrs from 19.2.0 to 19.3.0
+
+## Release 0.9.16 (2019-11-14T02:34:54)
+* Do not propagate private property on to_dict()
+
