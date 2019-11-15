@@ -15,4 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests related to thoth-common library."""
+"""A base class for implementing tests."""
+
+from pathlib import Path
+
+
+_HERE = Path(__file__).parent
+
+
+class CommonTestCase:
+    """A base class for implementing test cases."""
+
+    DATA = _HERE / "data"
