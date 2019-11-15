@@ -172,35 +172,52 @@ class WorkflowManager:
     def submit_inspection_workflow(
         self,
         inspection_id: str,
-        template_parameters: Dict[str, Any] = None,
-        workflow_parameters: Dict[str, Any] = None,
-        use_hw_template: bool = False
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+        use_hw_template: bool = False,
     ) -> str:
         """Submit the Inspection Workflow."""
-        template = self.get_inspection_workflow_template(
-            use_hw_template=use_hw_template
-        )
-        self.openshift.set_template_parameters(template, **template_parameters)
+        if not (self.openshift.amun_infra_namespace and self.openshift.amun_inspection_namespace):
+            raise ConfigurationError(
+                "Unable to create inspection workflow."
+                "Amun infra and inspection namespaces were not provided."
+            )
 
-        template = self.oc_process(self.amun_inspection_namespace, template)
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        template = self.get_inspection_workflow_template(
+            use_hw_template=use_hw_template, parameters=template_parameters
+        )
 
         workflow_object: Dict[str, Any] = template["objects"][0]
         workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
 
         return self._submit_workflow(
-            self.openshift.amun_inspection_namespace,
-            workflow,
-            parameters=workflow_parameters,
+            self.openshift.amun_inspection_namespace, workflow, parameters=workflow_parameters,
         )
 
-    def get_inspection_workflow_template(self, use_hw_template: bool) -> Dict[str, Any]:
+    def get_inspection_workflow_template(
+        self, use_hw_template: bool, parameters: Dict[str, str]
+    ) -> Dict[str, Any]:
         """Get Inspection Workflow template."""
+        if not self.openshift.amun_infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.amun_inspection_namespace:
+            raise ConfigurationError("Inspection namespace was not provided.")
+
         if use_hw_template:
             label_selector = "template=amun-inspection-workflow-with-cpu"
         else:
             label_selector = "template=amun-inspection-workflow"
 
-        return self.openshift._get_template(label_selector, namespace=self.openshift.amun_infra_namespace)
+        template = self.openshift._get_template(label_selector, namespace=self.openshift.amun_infra_namespace)
+
+        self.openshift.set_template_parameters(template, **parameters)
+
+        template = self.openshift.oc_process(self.openshift.amun_inspection_namespace, template)
+        return template
 
     def _submit_workflow(
         self,
