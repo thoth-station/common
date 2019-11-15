@@ -493,7 +493,7 @@ class OpenShift:
     def _get_template(self, _label_selector: str, namespace: Optional[str] = None) -> Dict[str, Any]:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
-            api_version="template.openshift.io/v1", kind="Template"
+            api_version="template.openshift.io/v1", kind="Template", name="templates"
         ).get(
             namespace=namespace or self.infra_namespace, label_selector=_label_selector
         )
