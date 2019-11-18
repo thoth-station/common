@@ -18,11 +18,11 @@
     "default": {
         "argo-workflows": {
             "hashes": [
-                "sha256:49c53091cddc56793300ab5c6a2e4d6ae6857aa425a5541a376bfd58e9c345b3",
-                "sha256:7d759e83bcd828abecb830878b67bdfc73b2b04d595d512d61f34e0d49e02685"
+                "sha256:75275aec1bf33457873f6a92ffe27a16403ef9db8482cb97eb675e6514658066",
+                "sha256:d8ee16a7db03fa9d71822ee03c6bf438fa1c7372575bb818bb509c1fd7e43efc"
             ],
             "index": "pypi",
-            "version": "==2.1.0"
+            "version": "==2.1.1"
         },
         "attrdict": {
             "hashes": [
@@ -167,10 +167,10 @@
         },
         "pyasn1": {
             "hashes": [
-                "sha256:62cdade8b5530f0b185e09855dd422bc05c0bbff6b72ff61381c09dac7befd8c",
-                "sha256:a9495356ca1d66ed197a0f72b41eb1823cf7ea8b5bd07191673e8147aecf8604"
+                "sha256:39c7e2ec30515947ff4e87fb6f456dfc6e84857d34be479c9d4a4ba4bf46aa5d",
+                "sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba"
             ],
-            "version": "==0.4.7"
+            "version": "==0.4.8"
         },
         "pyasn1-modules": {
             "hashes": [
@@ -611,10 +611,10 @@
         },
         "jsonschema": {
             "hashes": [
-                "sha256:2fa0684276b6333ff3c0b1b27081f4b2305f0a36cf702a23db50edb141893c3f",
-                "sha256:94c0a13b4a0616458b42529091624e66700a17f847453e52279e35509a5b7631"
+                "sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163",
+                "sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a"
             ],
-            "version": "==3.1.1"
+            "version": "==3.2.0"
         },
         "jupyter-core": {
             "hashes": [
