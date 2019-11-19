@@ -20,3 +20,19 @@ This library will automatically discover installed packages and enable `Sentry
 integrations <https://docs.sentry.io/platforms/python/>`_ if you use Flask,
 SQLAlchemy or AIOHTTP. An exception is for Flask applications, that need to
 explicitly install ``sentry-sdk[flask]`` due to integrations dependencies.
+
+Logging setup
+=============
+
+To setup a logger in any of Thoth's component (component that are namespaced
+with ``thoth``), you can simply set an environment variable. The name of
+environment variable is constructed from module name. Let's say you want to
+debug ``thoth.adviser.pipeline`` module, in that case you can set environment
+variable:
+
+``THOTH_LOG_ADVISER_PIPELINE=DEBUG`` which will cause loggers
+``thoth.adviser.pipeline`` to be set to ``DEBUG`` mode. See `log-levels
+documentation <https://docs.python.org/3/library/logging.html#logging-levels>`_
+for more info. If a module has underscore in its name, replace it with double
+underscore in the environment variable name.
+
