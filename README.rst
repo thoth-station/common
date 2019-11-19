@@ -16,3 +16,7 @@ installed via pip or `Pipenv <https://pipenv.readthedocs.io>`_ as shown below:
 
   pipenv install thoth-common
 
+This library will automatically discover installed packages and enable `Sentry
+integrations <https://docs.sentry.io/platforms/python/>`_ if you use Flask,
+SQLAlchemy or AIOHTTP. An exception is for Flask applications, that need to
+explicitly install ``sentry-sdk[flask]`` due to integrations dependencies.

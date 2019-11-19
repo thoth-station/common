@@ -22,6 +22,7 @@ import logging
 import socket
 import time
 from typing import Optional
+from typing import List
 from typing import Dict
 
 from sentry_sdk import init as sentry_sdk_init  # type: ignore
@@ -33,6 +34,7 @@ _RSYSLOG_HOST = os.getenv("RSYSLOG_HOST")
 _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
+_LOGGER = logging.getLogger(__name__)
 
 
 def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]) -> None:
@@ -54,6 +56,52 @@ def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional
         for logger, level in logging_configuration.items():
             level = getattr(logging, level)
             logging.getLogger(logger).setLevel(level)
+
+
+def _get_sentry_integrations() -> List[object]:
+    """Get integrations for Sentry based on installed packages."""
+    integrations = []
+    try:
+        import flask
+    except ImportError:
+        pass
+    else:
+        try:
+            from sentry_sdk.integrations.flask import FlaskIntegration
+        except ImportError as exc:
+            _LOGGER.warning("Cannot import Sentry Flask integration: %s", str(exc))
+
+        else:
+            integrations.append(FlaskIntegration())
+            _LOGGER.debug("Flask integration for Sentry enabled")
+
+    try:
+        import sqlalchemy
+    except ImportError:
+        pass
+    else:
+        try:
+            from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        except ImportError as exc:
+            _LOGGER.warning("Cannot import Sentry SQLAlchemy integration: %s", str(exc))
+        else:
+            integrations.append(SqlalchemyIntegration())
+            _LOGGER.debug("SQLAlchemy integration for Sentry enabled")
+
+    try:
+        import aiohttp
+    except ImportError:
+        pass
+    else:
+        try:
+            from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+        except ImportError as exc:
+            _LOGGER.warning("Cannot import Sentry AIOHTTP integration: %s", str(exc))
+        else:
+            integrations.append(AioHttpIntegration())
+            _LOGGER.debug("AIOHTTP integration for Sentry enabled")
+
+    return integrations
 
 
 def init_logging(
@@ -117,12 +165,14 @@ def init_logging(
 
     if _SENTRY_DSN:
         try:
+            integrations = _get_sentry_integrations()
             root_logger.info(
-                "Setting up logging to a Sentry instance %r, environment %r",
+                "Setting up logging to a Sentry instance %r, environment %r and integrations %r",
                 _SENTRY_DSN.rsplit("@", maxsplit=1)[1],
-                environment
+                environment,
+                [integration.__class__.__name__ for integration in integrations]
             )
-            sentry_sdk_init(_SENTRY_DSN, environment=environment)
+            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
