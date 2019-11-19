@@ -72,7 +72,7 @@ def _get_sentry_integrations() -> List[object]:
             _LOGGER.warning("Cannot import Sentry Flask integration: %s", str(exc))
 
         else:
-            integrations.append(FlaskIntegration)
+            integrations.append(FlaskIntegration())
             _LOGGER.debug("Flask integration for Sentry enabled")
 
     try:
