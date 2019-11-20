@@ -258,8 +258,8 @@ class WorkflowManager:
 
             wf.spec.arguments.parameters = new_parameters
 
-        # Set the ID so that we can track it easily later on
-        wf.metadata.id = wf.id
+        # Set the ID to the name that we can track it easily later on
+        wf.metadata.name = wf.id
 
         if not getattr(wf, "validated", True):
             _LOGGER.debug("The Workflow has not been previously validated." "Sanitizing for serialization.")
@@ -273,4 +273,4 @@ class WorkflowManager:
         created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(namespace, body)
 
         # return the computed Workflow ID
-        return wf.id
+        return wf.name
