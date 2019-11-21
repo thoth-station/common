@@ -169,6 +169,60 @@ class WorkflowManager:
         self.openshift = ocp_client or OpenShift(**ocp_config)
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
+    def submit_inspection_workflow(
+        self,
+        inspection_id: str,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+        use_hw_template: bool = False,
+    ) -> str:
+        """Submit the Inspection Workflow."""
+        if not (self.openshift.amun_infra_namespace and self.openshift.amun_inspection_namespace):
+            raise ConfigurationError(
+                "Unable to create inspection workflow."
+                "Amun infra and inspection namespaces were not provided."
+            )
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        template_parameters.update({"AMUN_INSPECTION_ID": inspection_id})
+
+        template = self.get_inspection_workflow_template(
+            use_hw_template=use_hw_template, parameters=template_parameters
+        )
+
+        workflow_object: Dict[str, Any] = template["objects"][0]
+        workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
+
+        return self._submit_workflow(
+            self.openshift.amun_inspection_namespace, workflow, parameters=workflow_parameters,
+        )
+
+    def get_inspection_workflow_template(
+        self, use_hw_template: bool, parameters: Dict[str, str]
+    ) -> Dict[str, Any]:
+        """Get Inspection Workflow template."""
+        if not self.openshift.amun_infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.amun_inspection_namespace:
+            raise ConfigurationError("Inspection namespace was not provided.")
+
+        if use_hw_template:
+            label_selector = "template=amun-inspection-workflow-with-cpu"
+        else:
+            label_selector = "template=amun-inspection-workflow"
+
+        template = self.openshift._get_template(
+            label_selector, namespace=self.openshift.amun_infra_namespace
+        )
+
+        self.openshift.set_template_parameters(template, **parameters)
+
+        template = self.openshift.oc_process(self.openshift.amun_inspection_namespace, template)
+        return template
+
     def _submit_workflow(
         self,
         namespace: str,
@@ -176,8 +230,11 @@ class WorkflowManager:
         *,
         parameters: Optional[Dict[str, str]] = None,
         validate: bool = True,
-    ) -> Union[str, None]:
-        """Submit an Argo Workflow to a given namespace."""
+    ) -> str:
+        """Submit an Argo Workflow to a given namespace.
+
+        :returns: Workflow ID
+        """
         parameters = parameters or {}
 
         if not isinstance(wf, Workflow) and isinstance(wf, dict):
@@ -191,30 +248,29 @@ class WorkflowManager:
             new_parameters.append(param)
 
         if hasattr(wf.spec, "arguments"):
-            for p in wf.spec.arguments.get("parameters", []):
+            for p in getattr(wf.spec.arguments, "parameters", []):
                 if p.name in parameters:
                     continue  # overridden
-                elif not p.value and not p.default:
+                elif not getattr(p, "value") and not getattr(p, "default"):
                     raise WorkflowError(f"Missing required workflow parameter {p.name}")
 
                 new_parameters.append(p)
 
             wf.spec.arguments.parameters = new_parameters
 
-        # Set the ID so that we can track it easily later on
-        wf.metadata.id = wf.id
+        # Set the ID to the name that we can track it easily later on
+        wf.metadata.name = wf.id
 
-        body = wf.to_dict()
         if not getattr(wf, "validated", True):
-            _LOGGER.debug(
-                "The Workflow has not been previously validated. Sanitizing for serialization.", wf,
-            )
-            body = to_camel_case(wf)
+            _LOGGER.debug("The Workflow has not been previously validated." "Sanitizing for serialization.")
+            body = to_camel_case(wf.to_dict())
+        else:
+            body = self.api.api_client.sanitize_for_serialization(wf)
 
-        _LOGGER.debug("Submitting workflow: ", wf)
+        _LOGGER.debug(f"Submitting workflow: {body}")
 
         # submit the workflow
         created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(namespace, body)
 
         # return the computed Workflow ID
-        return wf.id
+        return wf.name
