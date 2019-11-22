@@ -26,6 +26,7 @@ from typing import List
 from typing import Dict
 
 from sentry_sdk import init as sentry_sdk_init  # type: ignore
+from sentry_sdk.integrations.logging import ignore_logger
 import daiquiri
 import daiquiri.formatter
 from rfc5424logging import Rfc5424SysLogHandler
@@ -162,6 +163,11 @@ def init_logging(
     _init_log_levels(
         logging_env_var_start or _DEFAULT_LOGGING_CONF_START, logging_configuration
     )
+
+    ignored_loggers = os.getenv("THOTH_SENTRY_IGNORE_LOGGER")
+    if ignored_loggers:
+        for logger in ignored_loggers.split(","):
+            ignore_logger(logger)
 
     if _SENTRY_DSN:
         try:
