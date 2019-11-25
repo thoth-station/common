@@ -18,11 +18,11 @@
     "default": {
         "argo-workflows": {
             "hashes": [
-                "sha256:75275aec1bf33457873f6a92ffe27a16403ef9db8482cb97eb675e6514658066",
-                "sha256:d8ee16a7db03fa9d71822ee03c6bf438fa1c7372575bb818bb509c1fd7e43efc"
+                "sha256:4b530c65e40da0bbf575823e823b303d8d152af49e03b629daf4573ea9977558",
+                "sha256:c7f7bdca6eb7aab4d9f7f3582c58d2ce05a3990cdc21cc9ad5d8420c4151e13a"
             ],
             "index": "pypi",
-            "version": "==2.1.1"
+            "version": "==2.1.2"
         },
         "attrdict": {
             "hashes": [
@@ -764,10 +764,10 @@
         },
         "pbr": {
             "hashes": [
-                "sha256:2c8e420cd4ed4cec4e7999ee47409e876af575d4c35a45840d59e8b5f3155ab8",
-                "sha256:b32c8ccaac7b1a20c0ce00ce317642e6cf231cf038f9875e0280e28af5bf7ac9"
+                "sha256:139d2625547dbfa5fb0b81daebb39601c478c21956dc57e2e07b74450a8c506b",
+                "sha256:61aa52a0f18b71c5cc58232d2cf8f8d09cd67fcad60b742a60124cb8d6951488"
             ],
-            "version": "==5.4.3"
+            "version": "==5.4.4"
         },
         "pluggy": {
             "hashes": [
