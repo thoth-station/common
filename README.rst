@@ -36,3 +36,19 @@ documentation <https://docs.python.org/3/library/logging.html#logging-levels>`_
 for more info. If a module has underscore in its name, replace it with double
 underscore in the environment variable name.
 
+Ignoring reports from a logger
+==============================
+
+In some cases it's expected to turn off reporting of some logger to Sentry. You
+can provide ``THOTH_SENTRY_IGNORE_LOGGER`` environment variable which holds a
+comma separated list of loggers that should be ignored when reporting errors
+to Sentry:
+
+.. code-block:: console
+
+  THOTH_SENTRY_IGNORE_LOGGER="thoth.adviser.resolver,thoth.adviser.run"
+
+
+This is helpful if you want to report errors to users but not to Thoth
+application itself.
+
