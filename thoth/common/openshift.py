@@ -823,6 +823,7 @@ class OpenShift:
 
         template = template or self.get_solver_template(solver)
 
+        job_id = job_id or self.generate_id(solver)
         self.set_template_parameters(
             template,
             THOTH_SOLVER_NO_TRANSITIVE=int(not transitive),
@@ -830,7 +831,8 @@ class OpenShift:
             THOTH_SOLVER_INDEXES=",".join(indexes) if indexes else "",
             THOTH_LOG_SOLVER="DEBUG" if debug else "INFO",
             THOTH_SOLVER_OUTPUT=output,
-            THOTH_SOLVER_JOB_ID=job_id or self.generate_id(solver),
+            THOTH_SOLVER_JOB_ID=job_id,
+            THOTH_DOCUMENT_ID=job_id,
         )
 
         template = self.oc_process(self.middletier_namespace, template)
@@ -962,6 +964,7 @@ class OpenShift:
             )
 
         template = template or self.get_package_extract_template()
+        job_id = job_id or self.generate_id("package-extract")
 
         self.set_template_parameters(
             template,
@@ -969,7 +972,8 @@ class OpenShift:
             THOTH_ANALYZED_IMAGE=image,
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
             THOTH_ANALYZER_OUTPUT=output,
-            THOTH_PACKAGE_EXTRACT_JOB_ID=job_id or self.generate_id("package-extract"),
+            THOTH_PACKAGE_EXTRACT_JOB_ID=job_id,
+            THOTH_DOCUMENT_ID=job_id,
             THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({
                 "origin": origin,
                 "environment_type": environment_type,
@@ -1051,6 +1055,7 @@ class OpenShift:
             )
 
         template = template or self.get_package_analyzer_template()
+        job_id = job_id or self.generate_id("package-analyzer")
 
         self.set_template_parameters(
             template,
@@ -1060,8 +1065,8 @@ class OpenShift:
             THOTH_PACKAGE_ANALYZER_DEBUG=debug,
             THOTH_PACKAGE_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_ANALYZER_DRY_RUN=dry_run,
-            THOTH_PACKAGE_ANALYZER_JOB_ID=job_id
-            or self.generate_id("package-analyzer"),
+            THOTH_PACKAGE_ANALYZER_JOB_ID=job_id,
+            THOTH_DOCUMENT_ID=job_id,
         )
 
         template = self.oc_process(self.middletier_namespace, template)
@@ -1202,6 +1207,7 @@ class OpenShift:
             # There was passed a serialized Pipfile into dict, serialize it into JSON.
             requirements = json.dumps(requirements)
 
+        job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
             "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
@@ -1209,8 +1215,8 @@ class OpenShift:
             "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
             "THOTH_DEPENDENCY_MONKEY_DRY_RUN": int(bool(dry_run)),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
-            "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id
-            or self.generate_id("dependency-monkey"),
+            "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
+            "THOTH_DOCUMENT_ID": job_id,
         }
 
         if decision is not None:
@@ -1280,11 +1286,13 @@ class OpenShift:
             )
 
         template = template or self.get_build_analyze_template()
+        job_id = job_id or self.generate_id("build-analyze")
 
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-analyze"),
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id,
+            "THOTH_DOCUMENT_ID": job_id,
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1340,11 +1348,13 @@ class OpenShift:
             )
 
         template = template or self.get_build_report_template()
+        job_id = job_id or self.generate_id("build-report")
 
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
             "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self.generate_id("build-report"),
+            "THOTH_DOCUMENT_ID": job_id,
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1400,12 +1410,13 @@ class OpenShift:
             )
 
         template = template or self.get_build_dependencies_template()
+        job_id = job_id or self.generate_id("build-dependencies")
 
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYZER_JOB_ID": job_id
-            or self.generate_id("build-dependencies"),
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id,
+            "THOTH_DOCUMENT_ID": job_id,
         }
 
         self.set_template_parameters(template, **parameters)
@@ -1487,6 +1498,7 @@ class OpenShift:
             )
 
         template = template or self.get_adviser_template()
+        job_id = job_id or self.generate_id("adviser")
 
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": application_stack.pop("requirements").replace(
@@ -1506,7 +1518,8 @@ class OpenShift:
             "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
-            "THOTH_ADVISER_JOB_ID": job_id or self.generate_id("adviser"),
+            "THOTH_ADVISER_JOB_ID": job_id,
+            "THOTH_DOCUMENT_ID": job_id,
         }
 
         if count:
@@ -1588,6 +1601,7 @@ class OpenShift:
             )
 
         template = template or self.get_provenance_checker_template()
+        job_id = job_id or self.generate_id("provenance-checker")
 
         requirements = application_stack.pop("requirements").replace("\n", "\\n")
         requirements_locked = application_stack.pop("requirements_lock").replace(
@@ -1601,8 +1615,8 @@ class OpenShift:
             THOTH_ADVISER_METADATA=json.dumps({"origin": origin}),
             THOTH_WHITELISTED_SOURCES=",".join(whitelisted_sources or []),
             THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
-            THOTH_PROVENANCE_CHECKER_JOB_ID=job_id
-            or self.generate_id("provenance-checker"),
+            THOTH_PROVENANCE_CHECKER_JOB_ID=job_id,
+            THOTH_DOCUMENT_ID=job_id,
         )
 
         template = self.oc_process(self.backend_namespace, template)
