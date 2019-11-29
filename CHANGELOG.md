@@ -2555,3 +2555,44 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.9.17 (2019-11-29T07:44:51)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.3 to 0.13.4
+* :pushpin: Automatic update of dependency pytest from 5.3.0 to 5.3.1
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.1 to 2.1.2
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.2 to 0.13.3
+* Add configuration of ignored loggers
+* Imlicitly assign workflow ID to the workflow name
+* Sanitize workflow before submitting
+* Process inspection template before retrieval
+* Added methods to submit inspection workflows
+* :pushpin: Automatic update of dependency pytest from 5.2.4 to 5.3.0
+* Add few notes about logging to the README file
+* Print integrations to log
+* Update README file
+* Enable Sentry integrations
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.0 to 2.1.1
+* :pushpin: Automatic update of dependency pytest from 5.2.3 to 5.2.4
+* Fix error due to ambiguous template resources
+* Move data related files to tests/data dir
+* :pushpin: Automatic update of dependency pytest from 5.2.2 to 5.2.3
+* Move workflows tests to the tests/ folder
+* fixed W391 blank line at end of file
+* Generate workflow ID by the unified `generate_id`
+* Refactorings
+* Fixed typing issues
+* Reduce complexity of _submit_workflow method
+* Return Workflow ID on submission
+* Fix coala issues
+* :pushpin: Lock dependencies for Argo
+* Added missing flexmock dependency to the Pipfile
+* Sanitize for serialization and validate by default
+* Added deserialization of Workflow
+* Implement Workflow.from_file method
+* Syntactic sugar to load Workflow from a file
+* Namespace is no longer optional
+* Added configuration property to OpenShift instance
+* Moved Workflow management to a separate module
+* Added Argo client to the OpenShift class
+* Release of version 0.9.16
+* Enable running pytest for testsuite implementation
