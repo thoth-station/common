@@ -2596,3 +2596,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Added Argo client to the OpenShift class
 * Release of version 0.9.16
 * Enable running pytest for testsuite implementation
+
+## Release 0.9.18 (2019-11-29T11:24:38)
+* Release of version 0.9.17
+* :pushpin: Relock
+* Make workflow management publicly consumable
+* Propagate document id into templates
