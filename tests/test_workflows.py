@@ -19,10 +19,10 @@
 
 import pytest
 
+import requests
 from flexmock import flexmock
 
-from thoth.common import workflows
-from thoth.common.workflows import Workflow
+from thoth.common import Workflow  # type: ignore
 
 from .base import CommonTestCase
 
@@ -51,7 +51,7 @@ class TestWorkflows(CommonTestCase):
         fake_response = type(
             "Response", (), {"text": self._WORKFLOW_FILE.read_text(), "raise_for_status": lambda: None}
         )
-        flexmock(workflows).should_receive("requests.get").and_return(fake_response)
+        flexmock(requests).should_receive("get").and_return(fake_response)
 
         wf = Workflow.from_url(url)
 

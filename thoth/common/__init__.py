@@ -50,5 +50,7 @@ __all__ = [
     "parse_datetime",
     "RuntimeEnvironment",
     "SafeJSONEncoder",
+    "Workflow"
+    "WorkflowManager"
     "timestamp2datetime",
 ]
