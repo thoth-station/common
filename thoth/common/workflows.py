@@ -64,7 +64,11 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
     ):
         """Initialize Workflow instance."""
         super().__init__(
-            api_version=api_version, kind=kind, metadata=metadata, spec=spec, status=status or {},
+            api_version=api_version,
+            kind=kind,
+            metadata=metadata,
+            spec=spec,
+            status=status or {},
         )
 
         self.__validated = False
@@ -138,7 +142,9 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
 
             wf = client.ApiClient().deserialize(attr, models.V1alpha1Workflow)
         else:
-            _LOGGER.warning("Validation is turned off. This may result in missing or invalid attributes.")
+            _LOGGER.warning(
+                "Validation is turned off. This may result in missing or invalid attributes."
+            )
             obj = json.loads(body["data"])
             aux = to_snake_case(obj)
 
@@ -161,7 +167,9 @@ class WorkflowManager:
     """Argo Workflow manager."""
 
     def __init__(
-        self, ocp_client: Optional[OpenShift] = None, ocp_config: Optional[Mapping[str, str]] = None,
+        self,
+        ocp_client: Optional[OpenShift] = None,
+        ocp_config: Optional[Mapping[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
         ocp_config = ocp_config or {}
@@ -169,61 +177,18 @@ class WorkflowManager:
         self.openshift = ocp_client or OpenShift(**ocp_config)
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
-    def submit_inspection_workflow(
-        self,
-        inspection_id: str,
-        template_parameters: Optional[Dict[str, str]] = None,
-        workflow_parameters: Optional[Dict[str, Any]] = None,
-        use_hw_template: bool = False,
-    ) -> str:
-        """Submit the Inspection Workflow."""
-        if not (self.openshift.amun_infra_namespace and self.openshift.amun_inspection_namespace):
-            raise ConfigurationError(
-                "Unable to create inspection workflow."
-                "Amun infra and inspection namespaces were not provided."
-            )
-
-        template_parameters = template_parameters or {}
-        workflow_parameters = workflow_parameters or {}
-
-        template_parameters.update({"AMUN_INSPECTION_ID": inspection_id})
-
-        template = self.get_inspection_workflow_template(
-            use_hw_template=use_hw_template, parameters=template_parameters
-        )
-
-        workflow_object: Dict[str, Any] = template["objects"][0]
-        workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
-
-        return self._submit_workflow(
-            self.openshift.amun_inspection_namespace, workflow, parameters=workflow_parameters,
-        )
-
-    def get_inspection_workflow_template(
-        self, use_hw_template: bool, parameters: Dict[str, str]
-    ) -> Dict[str, Any]:
-        """Get Inspection Workflow template."""
-        if not self.openshift.amun_infra_namespace:
-            raise ConfigurationError("Infra namespace was not provided.")
-
-        if not self.openshift.amun_inspection_namespace:
-            raise ConfigurationError("Inspection namespace was not provided.")
-
-        if use_hw_template:
-            label_selector = "template=amun-inspection-workflow-with-cpu"
-        else:
-            label_selector = "template=amun-inspection-workflow"
-
-        template = self.openshift._get_template(
-            label_selector, namespace=self.openshift.amun_infra_namespace
-        )
+    def get_workflow_template(
+        self, namespace: str, label_selector: str, *, parameters: Dict[str, str]
+    ):
+        """Get Workflow template."""
+        template = self.openshift._get_template(label_selector, namespace=namespace)
 
         self.openshift.set_template_parameters(template, **parameters)
 
-        template = self.openshift.oc_process(self.openshift.amun_inspection_namespace, template)
+        template = self.openshift.oc_process(namespace, template)
         return template
 
-    def _submit_workflow(
+    def submit_workflow(
         self,
         namespace: str,
         wf: Union[models.V1alpha1Workflow, Dict[str, Any]],
@@ -240,7 +205,9 @@ class WorkflowManager:
         if not isinstance(wf, Workflow) and isinstance(wf, dict):
             wf = Workflow.from_dict(wf, validate=validate)
         elif not isinstance(wf, models.V1alpha1Workflow):
-            raise TypeError(f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}")
+            raise TypeError(
+                f"Expected {Union[models.V1alpha1Workflow, dict]}, got {type(wf)}"
+            )
 
         new_parameters: List[models.V1alpha1Parameter] = []
         for name, value in parameters.items():
@@ -262,7 +229,10 @@ class WorkflowManager:
         wf.metadata.name = wf.id
 
         if not getattr(wf, "validated", True):
-            _LOGGER.debug("The Workflow has not been previously validated." "Sanitizing for serialization.")
+            _LOGGER.debug(
+                "The Workflow has not been previously validated."
+                "Sanitizing for serialization."
+            )
             body = to_camel_case(wf.to_dict())
         else:
             body = self.api.api_client.sanitize_for_serialization(wf)
@@ -270,7 +240,62 @@ class WorkflowManager:
         _LOGGER.debug(f"Submitting workflow: {body}")
 
         # submit the workflow
-        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(namespace, body)
+        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(
+            namespace, body
+        )
 
         # return the computed Workflow ID
         return wf.name
+
+    def submit_workflow_from_template(
+        self,
+        namespace: str,
+        label_selector: str,
+        *,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Retrieve and Submit Workflow from an OpenShift template."""
+        template = self.get_workflow_template(
+            namespace, label_selector, parameters=template_parameters
+        )
+
+        workflow_object: Dict[str, Any] = template["objects"][0]
+        workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
+
+        workflow_id = self.submit_workflow(namespace, workflow, parameters=workflow_parameters)
+
+        return workflow_id
+
+    def submit_inspection_workflow(
+        self,
+        inspection_id: str,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+        use_hw_template: bool = False,
+    ) -> str:
+        """Submit the Inspection Workflow."""
+        if not self.openshift.amun_infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.amun_inspection_namespace:
+            raise ConfigurationError("Inspection namespace was not provided.")
+
+        if use_hw_template:
+            label_selector = "template=amun-inspection-workflow-with-cpu"
+        else:
+            label_selector = "template=amun-inspection-workflow"
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        template_parameters.update({"AMUN_INSPECTION_ID": inspection_id})
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.amun_inspection_namespace,
+            label_selector,
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters
+        )
+
+        return workflow_id
