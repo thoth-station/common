@@ -2602,3 +2602,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Relock
 * Make workflow management publicly consumable
 * Propagate document id into templates
+
+## Release 0.9.19 (2019-11-29T13:25:32)
+* Fix testsuite
+* Library fixes
