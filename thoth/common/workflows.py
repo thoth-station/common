@@ -254,8 +254,20 @@ class WorkflowManager:
         *,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
+        workflow_namespace: Optional[str] = None,
     ) -> str:
-        """Retrieve and Submit Workflow from an OpenShift template."""
+        """Retrieve and Submit Workflow from an OpenShift template.
+
+        :param namespace: namespace to lookup the template in
+
+            If `workflow_namespace` is not provided, this namespace
+            is also implicitly the namespace where the workflow is submitted
+
+        :param label_selector: selector for the template, i.e. 'template=workflow-template'
+        :param template_parameters: parameters for the template
+        :param workflow_parameters: parameters for the workflow
+        :param workflow_namespace: namespace to submit the workflow to
+        """
         template = self.get_workflow_template(
             namespace, label_selector, parameters=template_parameters
         )
@@ -263,7 +275,9 @@ class WorkflowManager:
         workflow_object: Dict[str, Any] = template["objects"][0]
         workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
 
-        workflow_id = self.submit_workflow(namespace, workflow, parameters=workflow_parameters)
+        workflow_id = self.submit_workflow(
+            workflow_namespace or namespace, workflow, parameters=workflow_parameters
+        )
 
         return workflow_id
 
@@ -289,13 +303,17 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters.update({"AMUN_INSPECTION_ID": inspection_id})
+        template_parameters["AMUN_INSPECTION_ID"] = inspection_id
+        template_parameters["THOTH_INFRA_NAMESPACE"] = template_parameters.get(
+            "THOTH_INFRA_NAMESPACE", self.amun_infra_namespace
+        )
 
         workflow_id: str = self.submit_workflow_from_template(
-            self.openshift.amun_inspection_namespace,
+            template_parameters["THOTH_INFRA_NAMESPACE"],
             label_selector,
             template_parameters=template_parameters,
-            workflow_parameters=workflow_parameters
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.amun_inspection_namespace
         )
 
         return workflow_id
