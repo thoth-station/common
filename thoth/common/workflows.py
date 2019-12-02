@@ -309,7 +309,7 @@ class WorkflowManager:
         )
 
         workflow_id: str = self.submit_workflow_from_template(
-            template_parameters["THOTH_INFRA_NAMESPACE"],
+            self.openshift.amun_infra_namespace,
             label_selector,
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
