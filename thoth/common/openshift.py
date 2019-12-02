@@ -769,7 +769,7 @@ class OpenShift:
             )
 
         response = self.ocp_client.resources.get(
-            api_version="template.openshift.io/v1", kind="Template"
+            api_version="template.openshift.io/v1", kind="Template", name="templates"
         ).get(namespace=self.infra_namespace, label_selector="template=solver")
         _LOGGER.debug(
             "OpenShift response for getting solver template: %r", response.to_dict()
