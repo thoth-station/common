@@ -305,7 +305,7 @@ class WorkflowManager:
 
         template_parameters["AMUN_INSPECTION_ID"] = inspection_id
         template_parameters["THOTH_INFRA_NAMESPACE"] = template_parameters.get(
-            "THOTH_INFRA_NAMESPACE", self.amun_infra_namespace
+            "THOTH_INFRA_NAMESPACE", self.openshift.amun_infra_namespace
         )
 
         workflow_id: str = self.submit_workflow_from_template(
