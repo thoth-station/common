@@ -1144,7 +1144,7 @@ class OpenShift:
     @staticmethod
     def generate_id(prefix: str) -> str:
         """Generate an identifier."""
-        return prefix + "-%016x" % random.getrandbits(64)
+        return prefix + "-%08x" % random.getrandbits(64)
 
     def schedule_dependency_monkey(
         self,
