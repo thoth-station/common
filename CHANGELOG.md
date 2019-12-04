@@ -2606,3 +2606,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.9.19 (2019-11-29T13:25:32)
 * Fix testsuite
 * Library fixes
+
+## Release 0.9.20 (2019-12-04T13:25:53)
+* Updated randbits to fix #568
+* Use 8 random digits in the ID instead of 16
+* :pushpin: Automatic update of dependency pyyaml from 5.1.2 to 5.2
+* Inspection Workflow template is stored in amun infra
+* Fixed ResourceNotUniqueError in get_solver_names
+* Fixed accessor to amun_infra_namespace attribute
+* Allow for different workflow and template namespaces
+* :pushpin: Automatic update of dependency mypy from 0.740 to 0.750
