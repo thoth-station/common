@@ -2616,3 +2616,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fixed accessor to amun_infra_namespace attribute
 * Allow for different workflow and template namespaces
 * :pushpin: Automatic update of dependency mypy from 0.740 to 0.750
+
+## Release 0.9.21 (2019-12-05T09:05:19)
+* Sentry's aiohttp integration is supported only for Python 3.7+
