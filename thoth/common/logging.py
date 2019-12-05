@@ -18,6 +18,7 @@
 """Logging configuration for whole Thoth."""
 
 import os
+import sys
 import logging
 import socket
 import time
@@ -89,18 +90,20 @@ def _get_sentry_integrations() -> List[object]:
             integrations.append(SqlalchemyIntegration())
             _LOGGER.debug("SQLAlchemy integration for Sentry enabled")
 
-    try:
-        import aiohttp
-    except ImportError:
-        pass
-    else:
+    if sys.version_info >= (3, 7):
+        # Available only for python 3.7+
         try:
-            from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-        except ImportError as exc:
-            _LOGGER.warning("Cannot import Sentry AIOHTTP integration: %s", str(exc))
+            import aiohttp
+        except ImportError:
+            pass
         else:
-            integrations.append(AioHttpIntegration())
-            _LOGGER.debug("AIOHTTP integration for Sentry enabled")
+            try:
+                from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+            except ImportError as exc:
+                _LOGGER.warning("Cannot import Sentry AIOHTTP integration: %s", str(exc))
+            else:
+                integrations.append(AioHttpIntegration())
+                _LOGGER.debug("AIOHTTP integration for Sentry enabled")
 
     return integrations
 
