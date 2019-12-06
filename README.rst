@@ -36,6 +36,17 @@ documentation <https://docs.python.org/3/library/logging.html#logging-levels>`_
 for more info. If a module has underscore in its name, replace it with double
 underscore in the environment variable name.
 
+To setup a logger that is not introduced by a Thoth's component, you can set
+``THOTH_ADJUST_LOGGING`` environment variable. The format of this environment
+variable THOTH_ADJUST_LOGGING is a comma separated list where each entry is
+made out of a logger name and a corresponding log-level ("DEBUG", "INFO",
+"WARNING", "ERROR" as for standard Python's logging). These two are delimited
+by a colon, an example:
+
+.. code-block:: console
+
+        THOTH_ADJUST_LOGGING="flask:WARNING,alembic.migrations:ERROR"
+
 Ignoring reports from a logger
 ==============================
 
