@@ -35,6 +35,7 @@ from rfc5424logging import Rfc5424SysLogHandler
 _RSYSLOG_HOST = os.getenv("RSYSLOG_HOST")
 _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
+_LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +59,46 @@ def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional
         for logger, level in logging_configuration.items():
             level = getattr(logging, level)
             logging.getLogger(logger).setLevel(level)
+
+
+def _logging_adjust() -> None:
+    """Adjust configuration of loggers available based on environment variables.
+
+    This configuration is not specific to thoth modules. Even thought this configuration
+    is a superset of Thoth's logging configuration, the Thoth's one was left untouched
+    as a lot of source depends on it.
+
+    The format of environment variable THOTH_ADJUST_LOGGING is a comma separated list where
+    each entry is made out of a logger name and a corresponding log-level ("DEBUG", "INFO",
+    "WARNING", "ERROR" as for standard Python's logging). These two are delimited by a colon:
+
+        THOTH_ADJUST_LOGGING="flask:WARNING,alembic.migrations:ERROR"
+    """
+    adjustment = os.getenv(_LOGGING_ADJUSTMENT_CONF)
+    if not adjustment:
+        return
+
+    for item in adjustment.split(","):
+        entry = item.rsplit(":", maxsplit=1)
+        if len(entry) != 2:
+            _LOGGER.warning(
+                "Skipping adjustment of logging for entry %r: invalid configuration entry provided",
+                item
+            )
+            continue
+
+        logger, level = entry
+        level_obj = getattr(logging, level, None)
+        if level_obj is None:
+            _LOGGER.warning(
+                "Skipping adjustment for entry %r: invalid log-level %r specified",
+                item,
+                level
+            )
+            continue
+
+        _LOGGER.debug("Setting log-level %r for logger %r", level, logger)
+        logging.getLogger(logger).setLevel(level_obj)
 
 
 def _get_sentry_integrations() -> List[object]:
@@ -166,6 +207,7 @@ def init_logging(
     _init_log_levels(
         logging_env_var_start or _DEFAULT_LOGGING_CONF_START, logging_configuration
     )
+    _logging_adjust()
 
     ignored_loggers = os.getenv("THOTH_SENTRY_IGNORE_LOGGER")
     if ignored_loggers:
