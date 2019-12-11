@@ -2619,3 +2619,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.21 (2019-12-05T09:05:19)
 * Sentry's aiohttp integration is supported only for Python 3.7+
+
+## Release 0.9.22 (2019-12-11T16:04:37)
+* Correct bug in one function
+* Add Thamos documentation
+* Add is_s2i flag to adviser scheduling
+* Point documentation to other libraries
+* Introduce a generic logger adjustment
+* Add Google Analytics
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.4 to 0.13.5
+* Change Sphinx theme
