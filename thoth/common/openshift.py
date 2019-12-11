@@ -480,7 +480,7 @@ class OpenShift:
 
         try:
             response: Dict[str, Any] = self.ocp_client.resources.get(
-                api_version="batch/v1", kind="JobList"
+                api_version="batch/v1", kind="Job",
             ).get(namespace=namespace, label_selector=label_selector)
         except openshift.dynamic.exceptions.NotFoundError as exc:
             raise NotFoundException(
