@@ -18,11 +18,11 @@
     "default": {
         "argo-workflows": {
             "hashes": [
-                "sha256:4b530c65e40da0bbf575823e823b303d8d152af49e03b629daf4573ea9977558",
-                "sha256:c7f7bdca6eb7aab4d9f7f3582c58d2ce05a3990cdc21cc9ad5d8420c4151e13a"
+                "sha256:3ee42a0c8cc3c471c1cfb4e03ec954d2c17b1d0b30757749dee0c725a9ee160a",
+                "sha256:f40b847ec0e4a17a9cd75719091e0bfba31ec99aa166ebb0c6c0ad548222425b"
             ],
             "index": "pypi",
-            "version": "==2.1.2"
+            "version": "==2.1.3"
         },
         "attrdict": {
             "hashes": [
