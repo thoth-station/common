@@ -32,6 +32,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
+
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .helpers import (
@@ -435,8 +437,11 @@ class OpenShift:
     def get_configmap(self, configmap_id: str, namespace: str) -> Dict[str, Any]:
         """Get the given configmap in a namespace, return object representing config map."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
-        result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
-        return result
+        try:
+            result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
+            return result
+        except OpenShiftNotFoundError as exc:
+            raise NotFoundException(f"Configmap {configmap_id!r} not found in namespace {namespace!r}") from exc
 
     def get_configmaps(self, namespace: str, label_selector: str) -> Dict[str, Any]:
         """Get all configmaps in a namespace and select them by label."""
