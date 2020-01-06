@@ -24,6 +24,7 @@ import typing
 import json
 import random
 import urllib3
+import time
 
 from typing import Any
 from typing import Dict
@@ -1144,6 +1145,16 @@ class OpenShift:
                 ),
             },
         )
+
+        # Busy wait until the workload gets propagated to the cluster to avoid time delay issues.
+        for _ in range(7):
+            try:
+                self.get_configmap(job_id, namespace)
+            except NotFoundException:
+                time.sleep(.3)
+            else:
+                break
+
         return job_id
 
     @staticmethod
