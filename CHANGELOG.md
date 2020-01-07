@@ -2629,3 +2629,19 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add Google Analytics
 * :pushpin: Automatic update of dependency sentry-sdk from 0.13.4 to 0.13.5
 * Change Sphinx theme
+
+## Release 0.9.23 (2020-01-07T17:06:29)
+* correct namespace use
+* Schedule adviser workflow
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.3 to 1.3.4
+* :pushpin: Automatic update of dependency pyyaml from 5.2 to 5.3
+* Be more aggressive with busy wait
+* Busy wait on configmap creation to make sure cm gets propagated in the cluster
+* Raise not found error if configmap was not found
+* Happy new year!
+* :pushpin: Automatic update of dependency mypy from 0.760 to 0.761
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.3 to 2.1.4
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.2 to 2.1.3
+* :pushpin: Automatic update of dependency mypy from 0.750 to 0.760
+* :pushpin: Automatic update of dependency daiquiri from 1.6.0 to 1.6.1
+* :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
