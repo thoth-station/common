@@ -1147,7 +1147,7 @@ class OpenShift:
         )
 
         # Busy wait until the workload gets propagated to the cluster to avoid time delay issues.
-        for _ in range(7):
+        for _ in range(100):
             try:
                 self.get_configmap(job_id, namespace)
             except NotFoundException:
