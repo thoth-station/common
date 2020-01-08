@@ -144,11 +144,19 @@ class OpenShift:
                 "TLS verification when communicating with k8s/okd master is disabled"
             )
 
-        self.use_argo =  use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+        self.use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+
+        self.workflow_manager = None
 
         if self.use_argo:
             _LOGGER.info(
                 "Using Argo Workflow to run jobs"
+            )
+            import workflows
+            self.workflow_manager = workflows.WorkflowManager(
+                ocp_config={
+                    "kubernetes_verify_tls": self.kubernetes_verify_tls
+                    }
             )
 
     @property
@@ -1509,7 +1517,6 @@ class OpenShift:
                 labels={"component": "adviser"},
             )
 
-        import workflows
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
@@ -1518,22 +1525,21 @@ class OpenShift:
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
         template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
-        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = runtime_environment
-        template_parameters["THOTH_ADVISER_LIMIT"] = limit
-        template_parameters["THOTH_ADVISER_COUNT"] = count
-        template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(runtime_environment)
+
+        if limit is not None:
+            template_parameters["THOTH_ADVISER_LIMIT"] = limit
+
+        if count is not None:
+            template_parameters["THOTH_ADVISER_COUNT"] = count
+
+        if limit_latest_versions is not None:
+            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
 
         workflow_parameters = {}
-        workflow_parameters["THOTH_DOCUMENT_ID"] = f"advise-{adviser_id}"
-
-        workflow_manager = workflows.WorkflowManager(
-            ocp_config={
-                "kubernetes_verify_tls": self.kubernetes_verify_tls
-                }
-        )
 
         return self._schedule_workflow(
-            workflow=workflow_manager.submit_adviser_workflow,
+            workflow=self.workflow_manager.submit_adviser_workflow,
             parameters={
                 "adviser_id": adviser_id,
                 "template_parameters": template_parameters,
