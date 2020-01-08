@@ -41,7 +41,6 @@ from .helpers import (
     _get_incluster_token_file,
     _get_incluster_ca_file,
 )
-from .workflows import WorkflowManager
 
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
@@ -64,6 +63,7 @@ class OpenShift:
         kubernetes_api_url: Optional[str] = None,
         kubernetes_verify_tls: bool = True,
         openshift_api_url: Optional[str] = None,
+        use_argo: bool = False,
         token: Optional[str] = None,
         token_file: Optional[str] = None,
         cert_file: Optional[str] = None,
@@ -142,6 +142,13 @@ class OpenShift:
         if not self.kubernetes_verify_tls:
             _LOGGER.warning(
                 "TLS verification when communicating with k8s/okd master is disabled"
+            )
+
+        self.use_argo =  use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+
+        if self.use_argo:
+            _LOGGER.info(
+                "Using Argo Workflow to run jobs"
             )
 
     @property
@@ -1488,6 +1495,21 @@ class OpenShift:
             raise ConfigurationError(
                 "Unable to schedule adviser without backend namespace being set"
             )
+
+        if not self.use_argo:
+            job_id = job_id or self.generate_id("adviser")
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_adviser.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_adviser_template.__name__,
+                job_id=job_id,
+                namespace=self.backend_namespace,
+                labels={"component": "adviser"},
+            )
+
+        import workflows
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
@@ -1504,7 +1526,7 @@ class OpenShift:
         workflow_parameters = {}
         workflow_parameters["THOTH_DOCUMENT_ID"] = f"advise-{adviser_id}"
 
-        workflow_manager = WorkflowManager(
+        workflow_manager = workflows.WorkflowManager(
             ocp_config={
                 "kubernetes_verify_tls": self.kubernetes_verify_tls
                 }
