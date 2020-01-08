@@ -41,6 +41,7 @@ from .helpers import (
     _get_incluster_token_file,
     _get_incluster_ca_file,
 )
+from .workflows import WorkflowManager
 
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
@@ -1157,6 +1158,14 @@ class OpenShift:
 
         return job_id
 
+    def _schedule_workflow(
+        self,
+        workflow: typing.Callable,
+        parameters: dict
+    ) -> str:
+        """Schedule an Argo Workflow."""
+        return workflow(**parameters)
+
     @staticmethod
     def generate_id(prefix: str) -> str:
         """Generate an identifier."""
@@ -1479,18 +1488,36 @@ class OpenShift:
             raise ConfigurationError(
                 "Unable to schedule adviser without backend namespace being set"
             )
+        adviser_id = job_id or self.generate_id("adviser")
+        template_parameters = {}
+        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
+        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack["requirements"]
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack["requirements_lock"]
+        template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
+        template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
+        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = runtime_environment
+        template_parameters["THOTH_ADVISER_LIMIT"] = limit
+        template_parameters["THOTH_ADVISER_COUNT"] = count
+        template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
 
-        job_id = job_id or self.generate_id("adviser")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_adviser.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_adviser_template.__name__,
-            job_id=job_id,
-            namespace=self.backend_namespace,
-            labels={"component": "adviser"},
+        workflow_parameters = {}
+        workflow_parameters["THOTH_DOCUMENT_ID"] = f"advise-{adviser_id}"
+
+        workflow_manager = WorkflowManager(
+            ocp_config={
+                "kubernetes_verify_tls": self.kubernetes_verify_tls
+                }
         )
+
+        return self._schedule_workflow(
+            workflow=workflow_manager.submit_adviser_workflow,
+            parameters={
+                "adviser_id": adviser_id,
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def run_adviser(
         self,

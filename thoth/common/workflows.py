@@ -51,7 +51,7 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
 
     This is a subclass of argo.workflows V1alpha1Workflow model
     which provides a convenient set of methods to make workflow
-    managemend easier.
+    management easier.
     """
 
     def __init__(
