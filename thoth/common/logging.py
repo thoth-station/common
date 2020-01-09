@@ -180,7 +180,7 @@ def init_logging(
     # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
 
     formatter = daiquiri.formatter.ColorFormatter(
-        fmt="%(asctime)s [%(process)d] %(color)s%(levelname)-8.8s %(name)s:"
+        fmt="%(asctime)s %(process)3d %(color)s%(levelname)-8.8s %(name)s:"
         "%(lineno)d: %(message)s%(color_stop)s"
     )
 
