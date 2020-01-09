@@ -147,17 +147,12 @@ class OpenShift:
         self.use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
 
         self.workflow_manager = None
-
         if self.use_argo:
             _LOGGER.info(
                 "Using Argo Workflow to run jobs"
             )
-            import workflows
-            self.workflow_manager = workflows.WorkflowManager(
-                ocp_config={
-                    "kubernetes_verify_tls": self.kubernetes_verify_tls
-                    }
-            )
+            from .workflows import WorkflowManager
+            self.workflow_manager = WorkflowManager(ocp_client=self.ocp_client)
 
     @property
     def token(self) -> str:
