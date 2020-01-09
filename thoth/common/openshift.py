@@ -63,6 +63,7 @@ class OpenShift:
         kubernetes_api_url: Optional[str] = None,
         kubernetes_verify_tls: bool = True,
         openshift_api_url: Optional[str] = None,
+        use_argo: bool = False,
         token: Optional[str] = None,
         token_file: Optional[str] = None,
         cert_file: Optional[str] = None,
@@ -141,6 +142,21 @@ class OpenShift:
         if not self.kubernetes_verify_tls:
             _LOGGER.warning(
                 "TLS verification when communicating with k8s/okd master is disabled"
+            )
+
+        self.use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+
+        self.workflow_manager = None
+
+        if self.use_argo:
+            _LOGGER.info(
+                "Using Argo Workflow to run jobs"
+            )
+            import workflows
+            self.workflow_manager = workflows.WorkflowManager(
+                ocp_config={
+                    "kubernetes_verify_tls": self.kubernetes_verify_tls
+                    }
             )
 
     @property
@@ -1157,6 +1173,14 @@ class OpenShift:
 
         return job_id
 
+    def _schedule_workflow(
+        self,
+        workflow: typing.Callable,
+        parameters: dict
+    ) -> str:
+        """Schedule an Argo Workflow."""
+        return workflow(**parameters)
+
     @staticmethod
     def generate_id(prefix: str) -> str:
         """Generate an identifier."""
@@ -1480,17 +1504,48 @@ class OpenShift:
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        job_id = job_id or self.generate_id("adviser")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_adviser.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_adviser_template.__name__,
-            job_id=job_id,
-            namespace=self.backend_namespace,
-            labels={"component": "adviser"},
-        )
+        if not self.use_argo:
+            job_id = job_id or self.generate_id("adviser")
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_adviser.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_adviser_template.__name__,
+                job_id=job_id,
+                namespace=self.backend_namespace,
+                labels={"component": "adviser"},
+            )
+
+        adviser_id = job_id or self.generate_id("adviser")
+        template_parameters = {}
+        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
+        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack["requirements"]
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack["requirements_lock"]
+        template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
+        template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
+        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(runtime_environment)
+
+        if limit is not None:
+            template_parameters["THOTH_ADVISER_LIMIT"] = limit
+
+        if count is not None:
+            template_parameters["THOTH_ADVISER_COUNT"] = count
+
+        if limit_latest_versions is not None:
+            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_adviser_workflow,
+            parameters={
+                "adviser_id": adviser_id,
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def run_adviser(
         self,
