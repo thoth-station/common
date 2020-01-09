@@ -168,13 +168,13 @@ class WorkflowManager:
 
     def __init__(
         self,
-        ocp_client: Optional[OpenShift] = None,
-        ocp_config: Optional[Mapping[str, str]] = None,
+        openshift: Optional[OpenShift] = None,
+        openshift_config: Optional[Mapping[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
-        ocp_config = ocp_config or {}
+        ocp_config = openshift_config or {}
 
-        self.openshift = ocp_client or OpenShift(**ocp_config)
+        self.openshift = openshift or OpenShift(**ocp_config)
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
     def get_workflow_template(

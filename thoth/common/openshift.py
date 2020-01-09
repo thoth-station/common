@@ -152,7 +152,7 @@ class OpenShift:
                 "Using Argo Workflow to run jobs"
             )
             from .workflows import WorkflowManager
-            self.workflow_manager = WorkflowManager(ocp_client=self.ocp_client)
+            self.workflow_manager = WorkflowManager(openshift=self)
 
     @property
     def token(self) -> str:
