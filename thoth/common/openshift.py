@@ -152,8 +152,8 @@ class OpenShift:
             _LOGGER.info(
                 "Using Argo Workflow to run jobs"
             )
-            import workflows
-            self.workflow_manager = workflows.WorkflowManager(
+            from .workflows import WorkflowManager
+            self.workflow_manager = WorkflowManager(
                 ocp_config={
                     "kubernetes_verify_tls": self.kubernetes_verify_tls
                     }
