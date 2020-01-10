@@ -2645,3 +2645,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency mypy from 0.750 to 0.760
 * :pushpin: Automatic update of dependency daiquiri from 1.6.0 to 1.6.1
 * :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+
+## Release 0.9.24 (2020-01-10T09:44:49)
+* Fix decision type environment variable name
+* Add missing argument to dependency monkey runs
+* Pass OpenShift instance instead of dynamic client to workflow manager
+* I had to do it... it was so annoying
+* Fix relative import issue
+* adjust-code
+* Add env variable to select type of scheduling
+* Migrate to workflow for Adviser
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.5 to 0.14.0
