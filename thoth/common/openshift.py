@@ -1188,6 +1188,7 @@ class OpenShift:
         *,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
         decision: Optional[str] = None,
@@ -1221,6 +1222,7 @@ class OpenShift:
         *,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
         decision: Optional[str] = None,
@@ -1245,6 +1247,9 @@ class OpenShift:
         job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
+            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
+                runtime_environment
+            ),
             "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
             "THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT": stack_output or "-",
             "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
