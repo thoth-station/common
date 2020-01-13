@@ -2656,3 +2656,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add env variable to select type of scheduling
 * Migrate to workflow for Adviser
 * :pushpin: Automatic update of dependency sentry-sdk from 0.13.5 to 0.14.0
+
+## Release 0.9.25 (2020-01-13T15:18:53)
+* Enable providing pipeline configuration to Dependency Monkey
