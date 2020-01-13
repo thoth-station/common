@@ -1186,6 +1186,7 @@ class OpenShift:
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
@@ -1220,6 +1221,7 @@ class OpenShift:
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
@@ -1247,6 +1249,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
+            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
                 runtime_environment
             ),
