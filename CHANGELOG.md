@@ -2659,3 +2659,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.25 (2020-01-13T15:18:53)
 * Enable providing pipeline configuration to Dependency Monkey
+
+## Release 0.9.26 (2020-01-14T14:09:36)
+* remove wrong default value to run Dependency Monkey
