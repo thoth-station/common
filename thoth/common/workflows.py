@@ -334,14 +334,38 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
-
         workflow_id: str = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=adviser",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
             workflow_namespace=self.openshift.backend_namespace
+        )
+
+        return workflow_id
+
+    def submit_solver_workflow(
+        self,
+        solver_id: str,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Solver Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=solver",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace
         )
 
         return workflow_id
