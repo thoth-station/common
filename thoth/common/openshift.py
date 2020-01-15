@@ -880,18 +880,38 @@ class OpenShift:
                 "Unable to schedule solver job without middletier namespace being set"
             )
 
-        job_id = job_id or self.generate_id(solver)
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_solver.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_solver_template.__name__,
-            template_method_parameters={"solver": solver},
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "solver"},
-        )
+        if not self.use_argo:
+            job_id = job_id or self.generate_id(solver)
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_solver.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_solver_template.__name__,
+                template_method_parameters={"solver": solver},
+                job_id=job_id,
+                namespace=self.middletier_namespace,
+                labels={"component": "solver"},
+            )
+
+        solver_id = job_id or self.generate_id(solver)
+        template_parameters = {}
+        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = solver_id
+        template_parameters["THOTH_SOLVER_NAME"] = solver
+        template_parameters["THOTH_SOLVER_PACKAGES"] = packages
+        template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
+        template_parameters["THOTH_SOLVER_INDEXES"] = indexes
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_solver_workflow,
+            parameters={
+                "solver_id": solver_id,
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def get_solver_template(self, solver: str) -> Dict[str, Any]:
         """Retrieve a solver template."""
