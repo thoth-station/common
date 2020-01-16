@@ -2667,3 +2667,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Try to avoid timing issues between job and configmap creation
 * :pushpin: Automatic update of dependency daiquiri from 1.6.1 to 2.0.0
 * Solver runs with Argo workflows
+
+## Release 0.9.28 (2020-01-16T19:38:12)
+* Use thoth.common as a root logger for logging information
