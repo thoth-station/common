@@ -479,10 +479,9 @@ class OpenShift:
                     "state": "registered",
                 }
             except Exception:
-                pass
-
-            # Raise the original exception as the given pod was not found based on job id.
-            raise
+                # Try to obtain the job once again - this can avoid timing issues when job
+                # is just created and we are asking for the job id.
+                job_id = self._get_pod_id_from_job(job_id, namespace)
 
         return self.get_pod_status_report(job_id, namespace)
 
@@ -880,18 +879,38 @@ class OpenShift:
                 "Unable to schedule solver job without middletier namespace being set"
             )
 
-        job_id = job_id or self.generate_id(solver)
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_solver.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_solver_template.__name__,
-            template_method_parameters={"solver": solver},
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "solver"},
-        )
+        if not self.use_argo:
+            job_id = job_id or self.generate_id(solver)
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_solver.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_solver_template.__name__,
+                template_method_parameters={"solver": solver},
+                job_id=job_id,
+                namespace=self.middletier_namespace,
+                labels={"component": "solver"},
+            )
+
+        solver_id = job_id or self.generate_id(solver)
+        template_parameters = {}
+        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = solver_id
+        template_parameters["THOTH_SOLVER_NAME"] = solver
+        template_parameters["THOTH_SOLVER_PACKAGES"] = packages
+        template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
+        template_parameters["THOTH_SOLVER_INDEXES"] = indexes
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_solver_workflow,
+            parameters={
+                "solver_id": solver_id,
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def get_solver_template(self, solver: str) -> Dict[str, Any]:
         """Retrieve a solver template."""
@@ -1157,15 +1176,6 @@ class OpenShift:
             },
         )
 
-        # Busy wait until the workload gets propagated to the cluster to avoid time delay issues.
-        for _ in range(100):
-            try:
-                self.get_configmap(job_id, namespace)
-            except NotFoundException:
-                time.sleep(.3)
-            else:
-                break
-
         return job_id
 
     def _schedule_workflow(
@@ -1186,6 +1196,7 @@ class OpenShift:
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
@@ -1220,6 +1231,7 @@ class OpenShift:
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
@@ -1247,6 +1259,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
+            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
                 runtime_environment
             ),
@@ -1260,7 +1273,7 @@ class OpenShift:
         }
 
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION"] = decision
+            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.upper()
 
         if seed is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
@@ -1270,8 +1283,6 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
-        else:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
@@ -1603,8 +1614,6 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
-        else:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
