@@ -479,10 +479,9 @@ class OpenShift:
                     "state": "registered",
                 }
             except Exception:
-                pass
-
-            # Raise the original exception as the given pod was not found based on job id.
-            raise
+                # Try to obtain the job once again - this can avoid timing issues when job
+                # is just created and we are asking for the job id.
+                job_id = self._get_pod_id_from_job(job_id, namespace)
 
         return self.get_pod_status_report(job_id, namespace)
 
@@ -1176,15 +1175,6 @@ class OpenShift:
                 ),
             },
         )
-
-        # Busy wait until the workload gets propagated to the cluster to avoid time delay issues.
-        for _ in range(100):
-            try:
-                self.get_configmap(job_id, namespace)
-            except NotFoundException:
-                time.sleep(.3)
-            else:
-                break
 
         return job_id
 
