@@ -2662,3 +2662,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.26 (2020-01-14T14:09:36)
 * remove wrong default value to run Dependency Monkey
+
+## Release 0.9.27 (2020-01-16T17:37:40)
+* Try to avoid timing issues between job and configmap creation
+* :pushpin: Automatic update of dependency daiquiri from 1.6.1 to 2.0.0
+* Solver runs with Argo workflows
