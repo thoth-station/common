@@ -893,9 +893,9 @@ class OpenShift:
                 labels={"component": "solver"},
             )
 
-        solver_id = job_id or self.generate_id(solver)
+        job_id = job_id or self.generate_id("")
         template_parameters = {}
-        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = solver_id
+        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = job_id
         template_parameters["THOTH_SOLVER_NAME"] = solver
         template_parameters["THOTH_SOLVER_PACKAGES"] = packages
         template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
@@ -906,7 +906,6 @@ class OpenShift:
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
             parameters={
-                "solver_id": solver_id,
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters
                 }
@@ -1552,7 +1551,6 @@ class OpenShift:
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
             parameters={
-                "adviser_id": adviser_id,
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters
                 }
