@@ -320,7 +320,6 @@ class WorkflowManager:
 
     def submit_adviser_workflow(
         self,
-        adviser_id: str,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
     ) -> str:
@@ -346,7 +345,6 @@ class WorkflowManager:
 
     def submit_solver_workflow(
         self,
-        solver_id: str,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
     ) -> str:
