@@ -918,7 +918,7 @@ class OpenShift:
                 "Infra namespace is required to gather solver template when running solver"
             )
 
-        template = self._get_template("template=solver")
+        template = self._get_template("template=solver-workload-operator")
 
         # Get only one solver - the solver that was requested.
         solver_entry = None
@@ -1040,7 +1040,7 @@ class OpenShift:
                 "Infra namespace is required to gather package-extract template when running it"
             )
 
-        return self._get_template("template=package-extract")
+        return self._get_template("template=package-extract-workload-operator")
 
     def schedule_package_analyzer(
         self,
@@ -1122,7 +1122,7 @@ class OpenShift:
                 "Infra namespace is required to gather package-analyzer template when running it"
             )
 
-        return self._get_template("template=package-analyzer")
+        return self._get_template("template=package-analyzer-workload-operator")
 
     def create_config_map(
         self, configmap_name: str, namespace: str, labels: Dict[str, str], data: Dict[str, str],
@@ -1303,7 +1303,7 @@ class OpenShift:
                 "Infra namespace is required to gather Dependency Monkey template when running it"
             )
 
-        return self._get_template("template=dependency-monkey")
+        return self._get_template("template=dependency-monkey-workload-operator")
 
     def schedule_build_analyze(
         self, document_id: str, output: str, job_id: Optional[str] = None
@@ -1633,7 +1633,7 @@ class OpenShift:
                 "Infra namespace is required to gather adviser template when running it"
             )
 
-        return self._get_template("template=adviser")
+        return self._get_template("template=adviser-workload-operator")
 
     def schedule_provenance_checker(
         self,
@@ -1718,7 +1718,7 @@ class OpenShift:
                 "Infra namespace is required to gather provenance template when running it"
             )
 
-        return self._get_template("template=provenance-checker")
+        return self._get_template("template=provenance-checker-workload-operator")
 
     def _schedule_graph_sync(
         self,
