@@ -2670,3 +2670,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.9.28 (2020-01-16T19:38:12)
 * Use thoth.common as a root logger for logging information
+
+## Release 0.9.29 (2020-01-20T15:55:34)
+* Rename template used by workload opeartor
+* Correct solver id input
+* :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3
