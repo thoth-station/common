@@ -148,6 +148,11 @@ def _get_sentry_integrations() -> List[object]:
 
     return integrations
 
+def _set_sentry_filter(event, hint):
+    print(event)
+    print("hint"+hint)
+    return event
+
 
 def init_logging(
     logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
@@ -217,13 +222,14 @@ def init_logging(
     if _SENTRY_DSN:
         try:
             integrations = _get_sentry_integrations()
+            custom_filter = _set_sentry_filter()
             root_logger.info(
                 "Setting up logging to a Sentry instance %r, environment %r and integrations %r",
                 _SENTRY_DSN.rsplit("@", maxsplit=1)[1],
                 environment,
                 [integration.__class__.__name__ for integration in integrations]
             )
-            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations)
+            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations, before_send=custom_filter)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
