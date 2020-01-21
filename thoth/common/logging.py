@@ -151,14 +151,21 @@ def _get_sentry_integrations() -> List[object]:
 def before_send_handler(event, hint):
     """ Ignores the exceptions passed in as as the environment variable in a comma separated manner.
     """
-    ignored_exceptions = os.environ("THOTH_SENTRY_IGNORE_EXCEPTION")
-    print(ignored_exceptions)
+    ignored_exceptions = os.getenv("THOTH_SENTRY_IGNORE_EXCEPTION")
     if ignored_exceptions:
+        exceptions_split = ignored_exceptions.split(',')
         if 'exc_info' in hint:
             exc_type, exc_value, tb = hint['exc_info']
-        for exception in ignored_exceptions.split(','):
-            if isinstance(exc_value, exception):
-                return None
+            for exception in exceptions_split:
+                if exception == exc_type.__name__:
+                    _LOGGER.info(hint)
+                    return None
+        elif 'log_record' in hint:
+            log_record = hint['log_record'].__dict__
+            for exception in exceptions_split:
+                if exception == log_record['name']:
+                    _LOGGER.info(hint)
+                    return None
     return event
 
 
