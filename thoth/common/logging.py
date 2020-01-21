@@ -148,10 +148,13 @@ def _get_sentry_integrations() -> List[object]:
 
     return integrations
 
+
 def before_send_handler(event, hint):
-    """ Ignores the exceptions passed in as as the environment variable in a comma separated manner.
+    """Filter the errors caught before sending to Sentry.
+
+    This function ignores the exceptions passed in as a environment variable in a comma separated manner.
     """
-    ignored_exceptions = os.getenv("THOTH_SENTRY_IGNORE_EXCEPTION")
+    ignored_exceptions = os.getenv('THOTH_SENTRY_IGNORE_EXCEPTION')
     if ignored_exceptions:
         exceptions_split = ignored_exceptions.split(',')
         if 'exc_info' in hint:
@@ -243,7 +246,8 @@ def init_logging(
                 environment,
                 [integration.__class__.__name__ for integration in integrations]
             )
-            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations, before_send=before_send_handler)
+            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations,
+                            before_send=before_send_handler)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
