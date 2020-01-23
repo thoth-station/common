@@ -161,13 +161,14 @@ def before_send_handler(event, hint):
     if 'exc_info' in hint:
         exc_type, exc_value, tb = hint['exc_info']
         for exception in exceptions_split:
-            if exception == exc_type.__name__:
+            if exception.strip() == exc_type.__name__:
                 return None
     elif 'log_record' in hint:
         log_record = hint['log_record'].__dict__
         for exception in exceptions_split:
-            if exception == log_record['name']:
+            if exception.strip() == log_record['name']:
                 return None
+    return event
 
 
 def init_logging(
