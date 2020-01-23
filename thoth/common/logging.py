@@ -169,6 +169,7 @@ def before_send_handler(event, hint):
             if exception == log_record['name']:
                 return None
 
+
 def init_logging(
     logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
 ) -> None:
