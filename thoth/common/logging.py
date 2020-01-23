@@ -155,22 +155,19 @@ def before_send_handler(event, hint):
     This function ignores the exceptions passed in as a environment variable in a comma separated manner.
     """
     ignored_exceptions = os.getenv('THOTH_SENTRY_IGNORE_EXCEPTION')
-    if ignored_exceptions:
-        exceptions_split = ignored_exceptions.split(',')
-        if 'exc_info' in hint:
-            exc_type, exc_value, tb = hint['exc_info']
-            for exception in exceptions_split:
-                if exception == exc_type.__name__:
-                    _LOGGER.info(hint)
-                    return None
-        elif 'log_record' in hint:
-            log_record = hint['log_record'].__dict__
-            for exception in exceptions_split:
-                if exception == log_record['name']:
-                    _LOGGER.info(hint)
-                    return None
-    return event
-
+    if not ignored_exceptions:
+        return event
+    exceptions_split = ignored_exceptions.split(',')
+    if 'exc_info' in hint:
+        exc_type, exc_value, tb = hint['exc_info']
+        for exception in exceptions_split:
+            if exception == exc_type.__name__:
+                return None
+    elif 'log_record' in hint:
+        log_record = hint['log_record'].__dict__
+        for exception in exceptions_split:
+            if exception == log_record['name']:
+                return None
 
 def init_logging(
     logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
