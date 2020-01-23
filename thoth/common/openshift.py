@@ -1403,7 +1403,7 @@ class OpenShift:
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self.generate_id("build-report"),
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-report"),
             "THOTH_DOCUMENT_ID": job_id,
         }
 
