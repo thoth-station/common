@@ -148,10 +148,9 @@ class OpenShift:
 
         self.workflow_manager = None
         if self.use_argo:
-            _LOGGER.info(
-                "Using Argo Workflow to run jobs"
-            )
+            _LOGGER.info("Using Argo Workflow to run jobs")
             from .workflows import WorkflowManager
+
             self.workflow_manager = WorkflowManager(openshift=self)
 
     @property
@@ -219,7 +218,9 @@ class OpenShift:
                     }
                 )
 
-    def get_pod_log(self, pod_id: str, namespace: Optional[str] = None) -> Optional[str]:
+    def get_pod_log(
+        self, pod_id: str, namespace: Optional[str] = None
+    ) -> Optional[str]:
         """Get log of a pod based on assigned pod ID."""
         if not namespace:
             if not self.middletier_namespace:
@@ -418,7 +419,9 @@ class OpenShift:
 
         return reported_status
 
-    def get_pod_status_report(self, pod_id: str, namespace: str) -> Dict[str, Optional[str]]:
+    def get_pod_status_report(
+        self, pod_id: str, namespace: str
+    ) -> Dict[str, Optional[str]]:
         """Get pod state and convert it to a user-friendly response."""
         state = self.get_pod_status(pod_id, namespace)
         return self._status_report(state)
@@ -449,18 +452,26 @@ class OpenShift:
         """Get the given configmap in a namespace, return object representing config map."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
         try:
-            result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
+            result: Dict[str, Any] = v1_configmap.get(
+                name=configmap_id, namespace=namespace
+            )
             return result
         except OpenShiftNotFoundError as exc:
-            raise NotFoundException(f"Configmap {configmap_id!r} not found in namespace {namespace!r}") from exc
+            raise NotFoundException(
+                f"Configmap {configmap_id!r} not found in namespace {namespace!r}"
+            ) from exc
 
     def get_configmaps(self, namespace: str, label_selector: str) -> Dict[str, Any]:
         """Get all configmaps in a namespace and select them by label."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
-        result: Dict[str, Any] = v1_configmap.get(label_selector=label_selector, namespace=namespace)
+        result: Dict[str, Any] = v1_configmap.get(
+            label_selector=label_selector, namespace=namespace
+        )
         return result
 
-    def get_job_status_report(self, job_id: str, namespace: str) -> Dict[str, Optional[str]]:
+    def get_job_status_report(
+        self, job_id: str, namespace: str
+    ) -> Dict[str, Optional[str]]:
         """Get status of a pod running inside a job."""
         try:
             job_id = self._get_pod_id_from_job(job_id, namespace)
@@ -490,13 +501,15 @@ class OpenShift:
         pod_id = self._get_pod_id_from_job(job_id, namespace)
         return self.get_pod_log(pod_id, namespace)
 
-    def get_jobs(self, label_selector: str, namespace: Optional[str] = None) -> Dict[str, Any]:
+    def get_jobs(
+        self, label_selector: str, namespace: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Get all Jobs, select them by the provided label."""
         import openshift
 
         try:
             response: Dict[str, Any] = self.ocp_client.resources.get(
-                api_version="batch/v1", kind="Job",
+                api_version="batch/v1", kind="Job"
             ).get(namespace=namespace, label_selector=label_selector)
         except openshift.dynamic.exceptions.NotFoundError as exc:
             raise NotFoundException(
@@ -506,7 +519,9 @@ class OpenShift:
         _LOGGER.debug("OpenShift response: %r", response)
         return response
 
-    def _get_template(self, _label_selector: str, namespace: Optional[str] = None) -> Dict[str, Any]:
+    def _get_template(
+        self, _label_selector: str, namespace: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Get template from infra namespace, use label_selector to identify which template to get."""
         response = self.ocp_client.resources.get(
             api_version="template.openshift.io/v1", kind="Template", name="templates"
@@ -716,7 +731,9 @@ class OpenShift:
             )
 
         # Fill in required fields for image pulling.
-        parameters["THOTH_INFRA_NAMESPACE"] = infra_namespace or self.amun_infra_namespace
+        parameters["THOTH_INFRA_NAMESPACE"] = (
+            infra_namespace or self.amun_infra_namespace
+        )
         if registry:
             parameters["THOTH_REGISTRY"] = registry
 
@@ -835,7 +852,9 @@ class OpenShift:
     ) -> str:
         """Run solver or all solver to solve the given requirements."""
         if self.middletier_namespace is None:
-            raise ConfigurationError("Solver requires middletier namespace to be specified")
+            raise ConfigurationError(
+                "Solver requires middletier namespace to be specified"
+            )
 
         template = template or self.get_solver_template(solver)
 
@@ -907,9 +926,9 @@ class OpenShift:
             workflow=self.workflow_manager.submit_solver_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters
-                }
-            )
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     def get_solver_template(self, solver: str) -> Dict[str, Any]:
         """Retrieve a solver template."""
@@ -1009,11 +1028,13 @@ class OpenShift:
             THOTH_ANALYZER_OUTPUT=output,
             THOTH_PACKAGE_EXTRACT_JOB_ID=job_id,
             THOTH_DOCUMENT_ID=job_id,
-            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps({
-                "origin": origin,
-                "environment_type": environment_type,
-                "is_external": is_external,
-            }),
+            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps(
+                {
+                    "origin": origin,
+                    "environment_type": environment_type,
+                    "is_external": is_external,
+                }
+            ),
         )
 
         if registry_user and registry_password:
@@ -1125,7 +1146,11 @@ class OpenShift:
         return self._get_template("template=package-analyzer-workload-operator")
 
     def create_config_map(
-        self, configmap_name: str, namespace: str, labels: Dict[str, str], data: Dict[str, str],
+        self,
+        configmap_name: str,
+        namespace: str,
+        labels: Dict[str, str],
+        data: Dict[str, str],
     ) -> str:
         """Create a ConfigMap in the given namespace."""
         v1_configmaps = self.ocp_client.resources.get(
@@ -1177,11 +1202,7 @@ class OpenShift:
 
         return job_id
 
-    def _schedule_workflow(
-        self,
-        workflow: typing.Callable,
-        parameters: dict
-    ) -> str:
+    def _schedule_workflow(self, workflow: typing.Callable, parameters: dict) -> str:
         """Schedule an Argo Workflow."""
         return workflow(**parameters)
 
@@ -1327,7 +1348,11 @@ class OpenShift:
         )
 
     def run_build_analyze(
-        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
+        self,
+        document_id: str,
+        output: str,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run build analyze on the provided user input."""
         if not self.middletier_namespace:
@@ -1389,7 +1414,11 @@ class OpenShift:
         )
 
     def run_build_report(
-        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
+        self,
+        document_id: str,
+        output: str,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run build report on the provided user input."""
         if not self.middletier_namespace:
@@ -1451,7 +1480,11 @@ class OpenShift:
         )
 
     def run_build_dependencies(
-        self, document_id: str, output: str, job_id: Optional[str] = None, template: Optional[Dict[str, Any]] = None
+        self,
+        document_id: str,
+        output: str,
+        job_id: Optional[str] = None,
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run build dependencies on the provided user input."""
         if not self.middletier_namespace:
@@ -1530,12 +1563,18 @@ class OpenShift:
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
-        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack["requirements"]
-        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack["requirements_lock"]
+        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
+            "requirements"
+        ]
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
+            "requirements_lock"
+        ]
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
         template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
-        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(runtime_environment)
+        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
+            runtime_environment
+        )
 
         if limit is not None:
             template_parameters["THOTH_ADVISER_LIMIT"] = limit
@@ -1544,7 +1583,9 @@ class OpenShift:
             template_parameters["THOTH_ADVISER_COUNT"] = count
 
         if limit_latest_versions is not None:
-            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+            template_parameters[
+                "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
+            ] = limit_latest_versions
 
         workflow_parameters = {}
 
@@ -1552,9 +1593,9 @@ class OpenShift:
             workflow=self.workflow_manager.submit_adviser_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters
-                }
-            )
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     def run_adviser(
         self,
@@ -1754,7 +1795,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_adviser(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of an adviser document."""
         if not document_id.startswith("adviser"):
@@ -1770,7 +1815,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_package_analyzer(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of an package-analysis document."""
         if not document_id.startswith("package-analyzer"):
@@ -1787,7 +1836,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_inspection(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of inspection."""
         if not document_id.startswith("inspection"):
@@ -1803,7 +1856,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_provenance_checker(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of a provenance checker result."""
         if not document_id.startswith("provenance-checker"):
@@ -1820,7 +1877,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_solver(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of solver result."""
         if not document_id.startswith("solver"):
@@ -1853,7 +1914,11 @@ class OpenShift:
         )
 
     def schedule_graph_sync_package_extract(
-        self, document_id: str, *, force_sync: bool = False, namespace: Optional[str] = None
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
     ) -> str:
         """Schedule a sync of package-extract."""
         if not document_id.startswith("package-extract"):
@@ -1913,7 +1978,12 @@ class OpenShift:
         return self._get_template("template=graph-sync-job")
 
     def schedule_kebechet_run_url(
-        self, url: str, service: str, *, verbose: bool = False, job_id: Optional[str] = None
+        self,
+        url: str,
+        service: str,
+        *,
+        verbose: bool = False,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -1933,8 +2003,40 @@ class OpenShift:
             labels={"component": "kebechet"},
         )
 
+    def schedule_thamos_workflow(
+        self, check_run_id: int, repo_url: str, commit_sha: str, installation_id: int
+    ) -> str:
+        """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
+        if not self.use_argo:
+            return NotImplementedError
+
+        workflow_id = self.generate_id("")
+        template_parameters = {}
+        template_parameters["EVENT_ID"] = workflow_id
+        template_parameters["THOTH_HOST"] = f"user-api.{self.frontend_namespace}.svc"
+        template_parameters["CHECK_RUN_ID"] = str(check_run_id)
+        template_parameters["REPO_URL"] = repo_url
+        template_parameters["INSTALLATION"] = str(installation_id)
+        template_parameters["REVISION"] = commit_sha
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_thamos_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
     def schedule_kebechet_run_results(
-        self, url: str, service: str, analysis_id: str, *, verbose: bool = False, job_id: Optional[str] = None
+        self,
+        url: str,
+        service: str,
+        analysis_id: str,
+        *,
+        verbose: bool = False,
+        job_id: Optional[str] = None,
     ) -> str:
         """Schedule a kebechet run."""
         if not self.backend_namespace:
@@ -2169,7 +2271,9 @@ class OpenShift:
             raise
 
         if len(response.json()["items"]) != 1:
-            raise ValueError(f"No or multiple cluster resources configured in namespace {namespace!r}")
+            raise ValueError(
+                f"No or multiple cluster resources configured in namespace {namespace!r}"
+            )
 
         # We get a very first item for now.
         status = response.json()["items"][0]["status"]
@@ -2311,7 +2415,9 @@ class OpenShift:
 
         return build_cpu, build_memory
 
-    def get_job_status_count(self, label_selector: str, namespace: str) -> Dict[str, int]:
+    def get_job_status_count(
+        self, label_selector: str, namespace: str
+    ) -> Dict[str, int]:
         """Count the number of Jobs per status in a specific namespace."""
         response = self.get_jobs(label_selector=label_selector, namespace=namespace)
         status = [
@@ -2342,11 +2448,16 @@ class OpenShift:
                 jobs_status_count["pending"] += 1
             elif not item["status"].keys():
                 jobs_status_count["waiting"] += 1
-            elif "startTime" in item["status"].keys() and len(item["status"].keys()) == 1:
+            elif (
+                "startTime" in item["status"].keys() and len(item["status"].keys()) == 1
+            ):
                 jobs_status_count["started"] += 1
             else:
                 try:
-                    if "BackoffLimitExceeded" in item["status"]["conditions"][0]["reason"]:
+                    if (
+                        "BackoffLimitExceeded"
+                        in item["status"]["conditions"][0]["reason"]
+                    ):
                         jobs_status_count["retry"] += 1
                 except Exception as excptn:
                     _LOGGER.error("Unknown job status %r", item)

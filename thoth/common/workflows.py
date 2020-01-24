@@ -313,7 +313,7 @@ class WorkflowManager:
             label_selector,
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.amun_inspection_namespace
+            workflow_namespace=self.openshift.amun_inspection_namespace,
         )
 
         return workflow_id
@@ -338,7 +338,7 @@ class WorkflowManager:
             label_selector="template=adviser",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.backend_namespace
+            workflow_namespace=self.openshift.backend_namespace,
         )
 
         return workflow_id
@@ -363,7 +363,34 @@ class WorkflowManager:
             label_selector="template=solver",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.middletier_namespace
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+
+    def submit_thamos_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Thamos Advise Workflow for Qeb-Hwt GitHub App.
+        :returns: int, workflow ID
+        """
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.backend_namespace:
+            raise ConfigurationError("Backend namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=qeb-hwt",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.backend_namespace,
         )
 
         return workflow_id
