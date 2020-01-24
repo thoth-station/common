@@ -1,5 +1,5 @@
 # thoth-common
-# Copyright(C) 2019 Marek Cermak
+# Copyright(C) 2019, 2020 Marek Cermak
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
 
     This is a subclass of argo.workflows V1alpha1Workflow model
     which provides a convenient set of methods to make workflow
-    managemend easier.
+    management easier.
     """
 
     def __init__(
@@ -168,13 +168,13 @@ class WorkflowManager:
 
     def __init__(
         self,
-        ocp_client: Optional[OpenShift] = None,
-        ocp_config: Optional[Mapping[str, str]] = None,
+        openshift: Optional[OpenShift] = None,
+        openshift_config: Optional[Mapping[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
-        ocp_config = ocp_config or {}
+        ocp_config = openshift_config or {}
 
-        self.openshift = ocp_client or OpenShift(**ocp_config)
+        self.openshift = openshift or OpenShift(**ocp_config)
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
     def get_workflow_template(
@@ -254,8 +254,20 @@ class WorkflowManager:
         *,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
+        workflow_namespace: Optional[str] = None,
     ) -> str:
-        """Retrieve and Submit Workflow from an OpenShift template."""
+        """Retrieve and Submit Workflow from an OpenShift template.
+
+        :param namespace: namespace to lookup the template in
+
+            If `workflow_namespace` is not provided, this namespace
+            is also implicitly the namespace where the workflow is submitted
+
+        :param label_selector: selector for the template, i.e. 'template=workflow-template'
+        :param template_parameters: parameters for the template
+        :param workflow_parameters: parameters for the workflow
+        :param workflow_namespace: namespace to submit the workflow to
+        """
         template = self.get_workflow_template(
             namespace, label_selector, parameters=template_parameters
         )
@@ -263,7 +275,9 @@ class WorkflowManager:
         workflow_object: Dict[str, Any] = template["objects"][0]
         workflow: Workflow = Workflow.from_dict(workflow_object, validate=True)
 
-        workflow_id = self.submit_workflow(namespace, workflow, parameters=workflow_parameters)
+        workflow_id = self.submit_workflow(
+            workflow_namespace or namespace, workflow, parameters=workflow_parameters
+        )
 
         return workflow_id
 
@@ -289,13 +303,67 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters.update({"AMUN_INSPECTION_ID": inspection_id})
+        template_parameters["AMUN_INSPECTION_ID"] = inspection_id
+        template_parameters["THOTH_INFRA_NAMESPACE"] = template_parameters.get(
+            "THOTH_INFRA_NAMESPACE", self.openshift.amun_infra_namespace
+        )
 
         workflow_id: str = self.submit_workflow_from_template(
-            self.openshift.amun_inspection_namespace,
+            self.openshift.amun_infra_namespace,
             label_selector,
             template_parameters=template_parameters,
-            workflow_parameters=workflow_parameters
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.amun_inspection_namespace
+        )
+
+        return workflow_id
+
+    def submit_adviser_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Adviser Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.backend_namespace:
+            raise ConfigurationError("Backend namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=adviser",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.backend_namespace
+        )
+
+        return workflow_id
+
+    def submit_solver_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Solver Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=solver",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace
         )
 
         return workflow_id

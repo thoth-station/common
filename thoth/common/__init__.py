@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-common
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ from .workflows import Workflow
 from .workflows import WorkflowManager
 
 __name__ = "thoth-common"
-__version__ = "0.9.19"
+__version__ = "0.9.29"
 
 
 __all__ = [

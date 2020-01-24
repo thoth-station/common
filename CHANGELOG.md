@@ -2606,3 +2606,72 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.9.19 (2019-11-29T13:25:32)
 * Fix testsuite
 * Library fixes
+
+## Release 0.9.20 (2019-12-04T13:25:53)
+* Updated randbits to fix #568
+* Use 8 random digits in the ID instead of 16
+* :pushpin: Automatic update of dependency pyyaml from 5.1.2 to 5.2
+* Inspection Workflow template is stored in amun infra
+* Fixed ResourceNotUniqueError in get_solver_names
+* Fixed accessor to amun_infra_namespace attribute
+* Allow for different workflow and template namespaces
+* :pushpin: Automatic update of dependency mypy from 0.740 to 0.750
+
+## Release 0.9.21 (2019-12-05T09:05:19)
+* Sentry's aiohttp integration is supported only for Python 3.7+
+
+## Release 0.9.22 (2019-12-11T16:04:37)
+* Correct bug in one function
+* Add Thamos documentation
+* Add is_s2i flag to adviser scheduling
+* Point documentation to other libraries
+* Introduce a generic logger adjustment
+* Add Google Analytics
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.4 to 0.13.5
+* Change Sphinx theme
+
+## Release 0.9.23 (2020-01-07T17:06:29)
+* correct namespace use
+* Schedule adviser workflow
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.3 to 1.3.4
+* :pushpin: Automatic update of dependency pyyaml from 5.2 to 5.3
+* Be more aggressive with busy wait
+* Busy wait on configmap creation to make sure cm gets propagated in the cluster
+* Raise not found error if configmap was not found
+* Happy new year!
+* :pushpin: Automatic update of dependency mypy from 0.760 to 0.761
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.3 to 2.1.4
+* :pushpin: Automatic update of dependency argo-workflows from 2.1.2 to 2.1.3
+* :pushpin: Automatic update of dependency mypy from 0.750 to 0.760
+* :pushpin: Automatic update of dependency daiquiri from 1.6.0 to 1.6.1
+* :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+
+## Release 0.9.24 (2020-01-10T09:44:49)
+* Fix decision type environment variable name
+* Add missing argument to dependency monkey runs
+* Pass OpenShift instance instead of dynamic client to workflow manager
+* I had to do it... it was so annoying
+* Fix relative import issue
+* adjust-code
+* Add env variable to select type of scheduling
+* Migrate to workflow for Adviser
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.5 to 0.14.0
+
+## Release 0.9.25 (2020-01-13T15:18:53)
+* Enable providing pipeline configuration to Dependency Monkey
+
+## Release 0.9.26 (2020-01-14T14:09:36)
+* remove wrong default value to run Dependency Monkey
+
+## Release 0.9.27 (2020-01-16T17:37:40)
+* Try to avoid timing issues between job and configmap creation
+* :pushpin: Automatic update of dependency daiquiri from 1.6.1 to 2.0.0
+* Solver runs with Argo workflows
+
+## Release 0.9.28 (2020-01-16T19:38:12)
+* Use thoth.common as a root logger for logging information
+
+## Release 0.9.29 (2020-01-20T15:55:34)
+* Rename template used by workload opeartor
+* Correct solver id input
+* :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3

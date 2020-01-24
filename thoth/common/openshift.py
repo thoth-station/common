@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-common
-# Copyright(C) 2018 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,12 +24,15 @@ import typing
 import json
 import random
 import urllib3
+import time
 
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+
+from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -60,6 +63,7 @@ class OpenShift:
         kubernetes_api_url: Optional[str] = None,
         kubernetes_verify_tls: bool = True,
         openshift_api_url: Optional[str] = None,
+        use_argo: bool = False,
         token: Optional[str] = None,
         token_file: Optional[str] = None,
         cert_file: Optional[str] = None,
@@ -139,6 +143,16 @@ class OpenShift:
             _LOGGER.warning(
                 "TLS verification when communicating with k8s/okd master is disabled"
             )
+
+        self.use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+
+        self.workflow_manager = None
+        if self.use_argo:
+            _LOGGER.info(
+                "Using Argo Workflow to run jobs"
+            )
+            from .workflows import WorkflowManager
+            self.workflow_manager = WorkflowManager(openshift=self)
 
     @property
     def token(self) -> str:
@@ -434,8 +448,11 @@ class OpenShift:
     def get_configmap(self, configmap_id: str, namespace: str) -> Dict[str, Any]:
         """Get the given configmap in a namespace, return object representing config map."""
         v1_configmap = self.ocp_client.resources.get(api_version="v1", kind="ConfigMap")
-        result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
-        return result
+        try:
+            result: Dict[str, Any] = v1_configmap.get(name=configmap_id, namespace=namespace)
+            return result
+        except OpenShiftNotFoundError as exc:
+            raise NotFoundException(f"Configmap {configmap_id!r} not found in namespace {namespace!r}") from exc
 
     def get_configmaps(self, namespace: str, label_selector: str) -> Dict[str, Any]:
         """Get all configmaps in a namespace and select them by label."""
@@ -462,10 +479,9 @@ class OpenShift:
                     "state": "registered",
                 }
             except Exception:
-                pass
-
-            # Raise the original exception as the given pod was not found based on job id.
-            raise
+                # Try to obtain the job once again - this can avoid timing issues when job
+                # is just created and we are asking for the job id.
+                job_id = self._get_pod_id_from_job(job_id, namespace)
 
         return self.get_pod_status_report(job_id, namespace)
 
@@ -480,7 +496,7 @@ class OpenShift:
 
         try:
             response: Dict[str, Any] = self.ocp_client.resources.get(
-                api_version="batch/v1", kind="JobList"
+                api_version="batch/v1", kind="Job",
             ).get(namespace=namespace, label_selector=label_selector)
         except openshift.dynamic.exceptions.NotFoundError as exc:
             raise NotFoundException(
@@ -769,7 +785,7 @@ class OpenShift:
             )
 
         response = self.ocp_client.resources.get(
-            api_version="template.openshift.io/v1", kind="Template"
+            api_version="template.openshift.io/v1", kind="Template", name="templates"
         ).get(namespace=self.infra_namespace, label_selector="template=solver")
         _LOGGER.debug(
             "OpenShift response for getting solver template: %r", response.to_dict()
@@ -863,18 +879,37 @@ class OpenShift:
                 "Unable to schedule solver job without middletier namespace being set"
             )
 
-        job_id = job_id or self.generate_id(solver)
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_solver.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_solver_template.__name__,
-            template_method_parameters={"solver": solver},
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "solver"},
-        )
+        if not self.use_argo:
+            job_id = job_id or self.generate_id(solver)
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_solver.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_solver_template.__name__,
+                template_method_parameters={"solver": solver},
+                job_id=job_id,
+                namespace=self.middletier_namespace,
+                labels={"component": "solver"},
+            )
+
+        job_id = job_id or self.generate_id("")
+        template_parameters = {}
+        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = job_id
+        template_parameters["THOTH_SOLVER_NAME"] = solver
+        template_parameters["THOTH_SOLVER_PACKAGES"] = packages
+        template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
+        template_parameters["THOTH_SOLVER_INDEXES"] = indexes
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_solver_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def get_solver_template(self, solver: str) -> Dict[str, Any]:
         """Retrieve a solver template."""
@@ -883,7 +918,7 @@ class OpenShift:
                 "Infra namespace is required to gather solver template when running solver"
             )
 
-        template = self._get_template("template=solver")
+        template = self._get_template("template=solver-workload-operator")
 
         # Get only one solver - the solver that was requested.
         solver_entry = None
@@ -1005,7 +1040,7 @@ class OpenShift:
                 "Infra namespace is required to gather package-extract template when running it"
             )
 
-        return self._get_template("template=package-extract")
+        return self._get_template("template=package-extract-workload-operator")
 
     def schedule_package_analyzer(
         self,
@@ -1087,7 +1122,7 @@ class OpenShift:
                 "Infra namespace is required to gather package-analyzer template when running it"
             )
 
-        return self._get_template("template=package-analyzer")
+        return self._get_template("template=package-analyzer-workload-operator")
 
     def create_config_map(
         self, configmap_name: str, namespace: str, labels: Dict[str, str], data: Dict[str, str],
@@ -1139,20 +1174,31 @@ class OpenShift:
                 ),
             },
         )
+
         return job_id
+
+    def _schedule_workflow(
+        self,
+        workflow: typing.Callable,
+        parameters: dict
+    ) -> str:
+        """Schedule an Argo Workflow."""
+        return workflow(**parameters)
 
     @staticmethod
     def generate_id(prefix: str) -> str:
         """Generate an identifier."""
-        return prefix + "-%016x" % random.getrandbits(64)
+        return prefix + "-%08x" % random.getrandbits(32)
 
     def schedule_dependency_monkey(
         self,
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
         decision: Optional[str] = None,
@@ -1184,8 +1230,10 @@ class OpenShift:
         requirements: typing.Union[str, Dict[str, Any]],
         context: Dict[str, Any],
         *,
+        pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         report_output: Optional[str] = None,
+        runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
         decision: Optional[str] = None,
@@ -1210,6 +1258,10 @@ class OpenShift:
         job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
+            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
+            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
+                runtime_environment
+            ),
             "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
             "THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT": stack_output or "-",
             "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
@@ -1220,7 +1272,7 @@ class OpenShift:
         }
 
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION"] = decision
+            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.upper()
 
         if seed is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
@@ -1230,8 +1282,6 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
-        else:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
@@ -1253,7 +1303,7 @@ class OpenShift:
                 "Infra namespace is required to gather Dependency Monkey template when running it"
             )
 
-        return self._get_template("template=dependency-monkey")
+        return self._get_template("template=dependency-monkey-workload-operator")
 
     def schedule_build_analyze(
         self, document_id: str, output: str, job_id: Optional[str] = None
@@ -1353,7 +1403,7 @@ class OpenShift:
         parameters = {
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYSER_JOB_ID": job_id or self.generate_id("build-report"),
+            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-report"),
             "THOTH_DOCUMENT_ID": job_id,
         }
 
@@ -1453,6 +1503,7 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
+        is_s2i: Optional[bool] = None,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1463,17 +1514,47 @@ class OpenShift:
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        job_id = job_id or self.generate_id("adviser")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_adviser.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_adviser_template.__name__,
-            job_id=job_id,
-            namespace=self.backend_namespace,
-            labels={"component": "adviser"},
-        )
+        if not self.use_argo:
+            job_id = job_id or self.generate_id("adviser")
+            parameters = locals()
+            parameters.pop("self", None)
+            return self._schedule_workload(
+                run_method_name=self.run_adviser.__name__,
+                run_method_parameters=parameters,
+                template_method_name=self.get_adviser_template.__name__,
+                job_id=job_id,
+                namespace=self.backend_namespace,
+                labels={"component": "adviser"},
+            )
+
+        adviser_id = job_id or self.generate_id("adviser")
+        template_parameters = {}
+        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
+        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack["requirements"]
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack["requirements_lock"]
+        template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
+        template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
+        template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
+        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(runtime_environment)
+
+        if limit is not None:
+            template_parameters["THOTH_ADVISER_LIMIT"] = limit
+
+        if count is not None:
+            template_parameters["THOTH_ADVISER_COUNT"] = count
+
+        if limit_latest_versions is not None:
+            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+
+        workflow_parameters = {}
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_adviser_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters
+                }
+            )
 
     def run_adviser(
         self,
@@ -1486,6 +1567,7 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
+        is_s2i: Optional[bool] = None,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1515,7 +1597,7 @@ class OpenShift:
                 runtime_environment
             ),
             "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
-            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
+            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin, "is_s2i": is_s2i}),
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_JOB_ID": job_id,
@@ -1530,8 +1612,6 @@ class OpenShift:
 
         if limit_latest_versions is not None:
             parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
-        else:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = -1
 
         self.set_template_parameters(template, **parameters)
 
@@ -1553,7 +1633,7 @@ class OpenShift:
                 "Infra namespace is required to gather adviser template when running it"
             )
 
-        return self._get_template("template=adviser")
+        return self._get_template("template=adviser-workload-operator")
 
     def schedule_provenance_checker(
         self,
@@ -1638,7 +1718,7 @@ class OpenShift:
                 "Infra namespace is required to gather provenance template when running it"
             )
 
-        return self._get_template("template=provenance-checker")
+        return self._get_template("template=provenance-checker-workload-operator")
 
     def _schedule_graph_sync(
         self,
