@@ -4,3 +4,5 @@ __pycache__
 docs/source/thoth.*.rst
 build/
 .mypy_cache/
+.coverage
+coverage.xml
