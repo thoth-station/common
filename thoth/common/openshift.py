@@ -912,7 +912,7 @@ class OpenShift:
                 labels={"component": "solver"},
             )
 
-        job_id = job_id or self.generate_id("")
+        job_id = job_id or self.generate_id()
         template_parameters = {}
         template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = job_id
         template_parameters["THOTH_SOLVER_NAME"] = solver
@@ -1207,9 +1207,12 @@ class OpenShift:
         return workflow(**parameters)
 
     @staticmethod
-    def generate_id(prefix: str) -> str:
+    def generate_id(prefix: Optional[str] = None) -> str:
         """Generate an identifier."""
-        return prefix + "-%08x" % random.getrandbits(32)
+        if prefix:
+            return prefix + "-%08x" % random.getrandbits(32)
+        else:
+            return "-%08x" % random.getrandbits(32)
 
     def schedule_dependency_monkey(
         self,
@@ -2010,7 +2013,7 @@ class OpenShift:
         if not self.use_argo:
             return NotImplementedError
 
-        workflow_id = self.generate_id("")
+        workflow_id = self.generate_id()
         template_parameters = {}
         template_parameters["EVENT_ID"] = workflow_id
         template_parameters["THOTH_HOST"] = f"user-api.{self.frontend_namespace}.svc"
