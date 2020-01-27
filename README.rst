@@ -70,4 +70,7 @@ the comma separated list of exception classes to be ignored when reporting to Se
 
 .. code-block:: console
 
-  THOTH_SENTRY_IGNORE_EXCEPTION="connexion.decorators.validation,ValueError"
+  THOTH_SENTRY_IGNORE_EXCEPTION="connexion.decorators.validation,builtins.ValueError"
+
+Remember all builtin exception classes need to be specified as in the same manner as
+ValueError is specified above. 
