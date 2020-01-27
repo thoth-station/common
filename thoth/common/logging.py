@@ -37,6 +37,7 @@ _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
+_IGNORED_EXCEPTIONS = []
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -149,6 +150,28 @@ def _get_sentry_integrations() -> List[object]:
     return integrations
 
 
+def before_send_handler(event, hint):
+    """Filter the errors caught before sending to Sentry.
+
+    This function ignores the exceptions passed in as a environment variable in a comma separated manner.
+    """
+    if len(_IGNORED_EXCEPTIONS) == 0:
+        return event
+    if 'exc_info' in hint:
+        exc_type, exc_value, tb = hint['exc_info']
+        for exception in _IGNORED_EXCEPTIONS:
+            module, name = exception
+            if module == getattr(exc_type, "__module__") and name == exc_type.__name__:
+                return None
+    elif 'log_record' in hint:
+        log_record = hint['log_record'].name
+        for exception in _IGNORED_EXCEPTIONS:
+            exp_signature = '.'.join(exception)
+            if exp_signature == log_record['name']:
+                return None
+    return event
+
+
 def init_logging(
     logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
 ) -> None:
@@ -214,6 +237,18 @@ def init_logging(
         for logger in ignored_loggers.split(","):
             ignore_logger(logger)
 
+    ignored_exceptions = os.getenv("THOTH_SENTRY_IGNORE_EXCEPTION")
+    if ignored_exceptions:
+        exceptions_split = ignored_exceptions.split(',')
+        for exception in exceptions_split:
+            exception_parts = exception.rsplit('.', maxsplit=1)
+            if len(exception_parts) == 2:
+                exc_module, exc_name = exception_parts
+                _IGNORED_EXCEPTIONS.append((exc_module, exc_name))
+            else:
+                root_logger.error(
+                    "Configuration for exceptions to be ignored not set correctly.")
+
     if _SENTRY_DSN:
         try:
             integrations = _get_sentry_integrations()
@@ -223,7 +258,8 @@ def init_logging(
                 environment,
                 [integration.__class__.__name__ for integration in integrations]
             )
-            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations)
+            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations,
+                            before_send=before_send_handler)
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
