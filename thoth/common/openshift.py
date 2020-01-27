@@ -2011,7 +2011,7 @@ class OpenShift:
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
-            return NotImplementedError
+            raise NotImplementedError
 
         workflow_id = self.generate_id()
         template_parameters = {}
