@@ -2675,3 +2675,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Rename template used by workload opeartor
 * Correct solver id input
 * :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3
+
+## Release 0.9.30 (2020-01-24T16:45:49)
+* Thamos workflow for GitHub App Qeb-Hwt
+* Fixed the spelling mistake causing issue
+* :pushpin: Automatic update of dependency sentry-sdk from 0.14.0 to 0.14.1
+* :pushpin: Automatic update of dependency pytest from 5.3.3 to 5.3.4
+
+## Release 0.9.31 (2020-01-27T14:58:02)
+* :sparkles: added pre-commit and did a little bit of coala cleanup
+* added xml coverage report
