@@ -164,7 +164,7 @@ def before_send_handler(event, hint):
             if module == getattr(exc_type, "__module__") and name == exc_type.__name__:
                 return None
     elif 'log_record' in hint:
-        log_record = hint['log_record'].__dict__
+        log_record = hint['log_record'].name
         for exception in _IGNORED_EXCEPTIONS:
             exp_signature = '.'.join(exception)
             if exp_signature == log_record['name']:
@@ -242,11 +242,12 @@ def init_logging(
         exceptions_split = ignored_exceptions.split(',')
         for exception in exceptions_split:
             exception_parts = exception.rsplit('.', maxsplit=1)
-            if len(exception_parts) != 2:
-                root_logger.exception(
+            if len(exception_parts) == 2:
+                exc_module, exc_name = exception_parts
+                _IGNORED_EXCEPTIONS.append((exc_module, exc_name))
+            else:
+                root_logger.error(
                     "Configuration for exceptions to be ignored not set correctly.")
-            exc_module, exc_name = exception_parts
-            _IGNORED_EXCEPTIONS.append([exc_module, exc_name])
 
     if _SENTRY_DSN:
         try:

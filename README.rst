@@ -64,9 +64,9 @@ This is helpful if you want to report errors to users but not to Thoth
 application itself.
 
 
-If you want some certain classes of error to be not reported to Sentry. You can
+If you want some certain classes of error not to be reported to Sentry, you can
 can provide ``THOTH_SENTRY_IGNORE_EXCEPTION`` environment variable which holds
-the comma separated list of exception classes to be ignored when reporting to Sentry:
+the comma-separated list of exception classes to be ignored when reporting to Sentry:
 
 .. code-block:: console
 
