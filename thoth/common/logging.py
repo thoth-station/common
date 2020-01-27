@@ -193,7 +193,7 @@ def init_logging(
             daiquiri.output.Stream(formatter=formatter),
         ),
     )
-    root_logger = logging.getLogger()
+    root_logger = logging.getLogger("thoth.common")
     environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
 
     # Disable annoying unverified HTTPS request warnings.
