@@ -113,8 +113,7 @@ def _get_sentry_integrations() -> List[object]:
         try:
             from sentry_sdk.integrations.flask import FlaskIntegration
         except ImportError as exc:
-            _LOGGER.warning(
-                "Cannot import Sentry Flask integration: %s", str(exc))
+            _LOGGER.warning("Cannot import Sentry Flask integration: %s", str(exc))
 
         else:
             integrations.append(FlaskIntegration())
@@ -128,8 +127,7 @@ def _get_sentry_integrations() -> List[object]:
         try:
             from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
         except ImportError as exc:
-            _LOGGER.warning(
-                "Cannot import Sentry SQLAlchemy integration: %s", str(exc))
+            _LOGGER.warning("Cannot import Sentry SQLAlchemy integration: %s", str(exc))
         else:
             integrations.append(SqlalchemyIntegration())
             _LOGGER.debug("SQLAlchemy integration for Sentry enabled")
@@ -144,8 +142,7 @@ def _get_sentry_integrations() -> List[object]:
             try:
                 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
             except ImportError as exc:
-                _LOGGER.warning(
-                    "Cannot import Sentry AIOHTTP integration: %s", str(exc))
+                _LOGGER.warning("Cannot import Sentry AIOHTTP integration: %s", str(exc))
             else:
                 integrations.append(AioHttpIntegration())
                 _LOGGER.debug("AIOHTTP integration for Sentry enabled")
