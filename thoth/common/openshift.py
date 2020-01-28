@@ -1543,6 +1543,10 @@ class OpenShift:
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
+        github_event_type: Optional[str] = None,
+        github_check_run_id: Optional[int] = None,
+        github_installation_id: Optional[int] = None,
+        revision: Optional[str] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1577,6 +1581,16 @@ class OpenShift:
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
         template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
             runtime_environment
+        )
+
+        template_parameters["THOTH_ADVISER_METADATA"] = json.dumps(
+            {
+                "github_event_type": github_event_type,
+                "github_check_run_id": github_check_run_id,
+                "github_installation_id": github_installation_id,
+                "origin": origin,
+                "revision": revision,
+            }
         )
 
         if limit is not None:
@@ -1615,6 +1629,10 @@ class OpenShift:
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
+        github_event_type: Optional[str] = None,
+        github_check_run_id: Optional[int] = None,
+        github_installation_id: Optional[int] = None,
+        revision: Optional[str] = None,
         template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run adviser on the provided user input."""
@@ -1641,7 +1659,15 @@ class OpenShift:
                 runtime_environment
             ),
             "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
-            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin, "is_s2i": is_s2i}),
+            "THOTH_ADVISER_METADATA": json.dumps(
+                {
+                    "github_event_type": github_event_type,
+                    "github_check_run_id": github_check_run_id,
+                    "github_installation_id": github_installation_id,
+                    "origin": origin,
+                    "revision": revision,
+                }
+            ),
             "THOTH_ADVISER_OUTPUT": output,
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_JOB_ID": job_id,
@@ -2007,7 +2033,12 @@ class OpenShift:
         )
 
     def schedule_thamos_workflow(
-        self, check_run_id: int, repo_url: str, commit_sha: str, installation_id: int
+        self,
+        github_event_type: str,
+        github_check_run_id: int,
+        github_installation_id: int,
+        origin: str,
+        revision: str,
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
@@ -2015,12 +2046,13 @@ class OpenShift:
 
         workflow_id = self.generate_id()
         template_parameters = {}
-        template_parameters["EVENT_ID"] = workflow_id
+        template_parameters["WORKFLOW_ID"] = workflow_id
+        template_parameters["GITHUB_EVENT_TYPE"] = github_event_type
+        template_parameters["GITHUB_CHECK_RUN_ID"] = str(github_check_run_id)
+        template_parameters["GITHUB_INSTALLATION_ID"] = str(github_installation_id)
+        template_parameters["ORIGIN"] = origin
+        template_parameters["REVISION"] = revision
         template_parameters["THOTH_HOST"] = f"user-api.{self.frontend_namespace}.svc"
-        template_parameters["CHECK_RUN_ID"] = str(check_run_id)
-        template_parameters["REPO_URL"] = repo_url
-        template_parameters["INSTALLATION"] = str(installation_id)
-        template_parameters["REVISION"] = commit_sha
 
         workflow_parameters = {}
 
