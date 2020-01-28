@@ -247,7 +247,7 @@ def init_logging(
                 _IGNORED_EXCEPTIONS.append((exc_module, exc_name))
             else:
                 root_logger.error(
-                    "Configuration for exceptions to be ignored not set correctly.")
+                    "The following configuration for ignoring exception couldn't be parsed: %r ", exception)
 
     if _SENTRY_DSN:
         try:
