@@ -2685,3 +2685,28 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.9.31 (2020-01-27T14:58:02)
 * :sparkles: added pre-commit and did a little bit of coala cleanup
 * added xml coverage report
+
+## Release 0.10.0 (2020-01-29T09:07:31)
+* Extend parameters for Adviser
+* :pushpin: Automatic update of dependency pre-commit from 1.21.0 to 2.0.0
+* Changed string formatting
+* Added log error
+* Added minor changes
+* Modified documentation
+* Reverted back autoindent
+* Removed dummy files
+* Modified function for init to handle env variables
+* Do not cache fully specified environment check
+* Added missing return
+* Fixed coala errors
+* Added suggested changes
+* Added suggested changes
+* Added readme back
+* Delete .env
+* Added to read me.
+* Added to read me.
+* Fixed Coala errors
+* Added modified filter function
+* Added before send filter
+* Experiment logging
+* Experiment logging
