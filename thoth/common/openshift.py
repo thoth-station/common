@@ -2060,6 +2060,7 @@ class OpenShift:
         github_installation_id: int,
         origin: str,
         revision: str,
+        host: str
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
@@ -2073,7 +2074,7 @@ class OpenShift:
         template_parameters["GITHUB_INSTALLATION_ID"] = str(github_installation_id)
         template_parameters["ORIGIN"] = origin
         template_parameters["REVISION"] = revision
-        template_parameters["THOTH_HOST"] = f"user-api.{self.frontend_namespace}.svc"
+        template_parameters["THOTH_HOST"] = host
 
         workflow_parameters = {}
 
