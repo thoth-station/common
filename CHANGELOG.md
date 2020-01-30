@@ -2710,3 +2710,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Added before send filter
 * Experiment logging
 * Experiment logging
+
+## Release 0.10.1 (2020-01-30T18:25:38)
+* Add host parameter for Thamos GitHub App
+* function to sync build analyzers report
+* :pushpin: Automatic update of dependency pre-commit from 2.0.0 to 2.0.1
+* :pushpin: Automatic update of dependency pytest from 5.3.4 to 5.3.5
