@@ -1843,6 +1843,27 @@ class OpenShift:
             force_sync=force_sync,
         )
 
+    def schedule_graph_sync_build_report(
+        self,
+        document_id: str,
+        *,
+        force_sync: bool = False,
+        namespace: Optional[str] = None,
+    ) -> str:
+        """Schedule a sync of an build log analysis document."""
+        if not document_id.startswith("build-report"):
+            raise ValueError(
+                f"Cannot sync document {document_id!r} as build-report document - document "
+                "is not build-analyzer result"
+            )
+
+        return self._schedule_graph_sync(
+            document_id,
+            namespace=namespace or self.middletier_namespace,  # type: ignore
+            graph_sync_type="build-report",
+            force_sync=force_sync,
+        )
+
     def schedule_graph_sync_package_analyzer(
         self,
         document_id: str,
