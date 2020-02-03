@@ -2716,3 +2716,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * function to sync build analyzers report
 * :pushpin: Automatic update of dependency pre-commit from 2.0.0 to 2.0.1
 * :pushpin: Automatic update of dependency pytest from 5.3.4 to 5.3.5
+
+## Release 0.10.2 (2020-02-03T11:15:27)
+* Remove prefix to avoid error in Thoth components
