@@ -427,7 +427,7 @@ class OpenShift:
         return self._status_report(state)
 
     def _get_pod_id_from_job(self, job_id: str, namespace: str) -> str:
-        """Get pod name from a job."""
+        """Get a single pod name from a job."""
         # Kubernetes automatically adds 'job-name' label -> reuse it.
         response = self.ocp_client.resources.get(api_version="v1", kind="Pod").get(
             namespace=namespace or self.infra_namespace,
@@ -446,6 +446,29 @@ class OpenShift:
             raise NotFoundException(f"Job with the given id {job_id} was not found")
 
         result: str = response["items"][0]["metadata"]["name"]
+
+        return result
+    def _get_pod_ids_from_job(self, job_id: str, namespace: str) -> List[str]:
+        """Get multiple pod names from a job.
+
+        This function is useful for a Job which schedules multiple pods, i.e.
+        when run to completion.
+        """
+        # Kubernetes automatically adds 'job-name' label -> reuse it.
+        response = self.ocp_client.resources.get(api_version="v1", kind="Pod").get(
+            namespace=namespace or self.infra_namespace,
+            label_selector=f"job-name={job_id}",
+        )
+        response = response.to_dict()
+        _LOGGER.debug("OpenShift response for pod ids from job: %r", response)
+
+        if not len(response.get("items", [])):
+            raise NotFoundException(f"Job with the given id {job_id} was not found")
+
+        result: List[str] = [
+            pod["metadata"]["name"] for pod in response["items"]
+        ]
+
         return result
 
     def get_configmap(self, configmap_id: str, namespace: str) -> Dict[str, Any]:
@@ -479,10 +502,12 @@ class OpenShift:
 
     def get_job_status_report(
         self, job_id: str, namespace: str
-    ) -> Dict[str, Optional[str]]:
-        """Get status of a pod running inside a job."""
+    ) -> List[Dict[str, Optional[str]]]:
+        """Get statuses of pods created by a Job."""
+        pod_ids: List[str]
+
         try:
-            job_id = self._get_pod_id_from_job(job_id, namespace)
+            pod_ids = self._get_pod_ids_from_job(job_id, namespace)
         except Exception:
             try:
                 # Try to retrieve configmap - if we are successful it means we have registered the given
@@ -500,11 +525,19 @@ class OpenShift:
             except Exception:
                 # Try to obtain the job once again - this can avoid timing issues when job
                 # is just created and we are asking for the job id.
-                job_id = self._get_pod_id_from_job(job_id, namespace)
+                pod_ids = self._get_pod_ids_from_job(job_id, namespace)
 
-        return self.get_pod_status_report(job_id, namespace)
+        return [
+            self.get_pod_status_report(p, namespace)
+            for p in pod_ids
+        ]
 
     def get_job_log(self, job_id: str, namespace: str) -> Optional[str]:
+        """Get log of a pod running inside a job."""
+        pod_id = self._get_pod_id_from_job(job_id, namespace)
+        return self.get_pod_log(pod_id, namespace)
+
+    def get_job_logs(self, job_id: str, namespace: str) -> Optional[str]:
         """Get log of a pod running inside a job."""
         pod_id = self._get_pod_id_from_job(job_id, namespace)
         return self.get_pod_log(pod_id, namespace)
@@ -2535,3 +2568,28 @@ class OpenShift:
                     _LOGGER.exception(excptn)
 
         return jobs_status_count
+
+    def get_workflow(
+        self, label_selector: str, namespace: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Get Workflow from a namespace, use label_selector to identify which one to get."""
+        try:
+            response = self.ocp_client.resources.get(
+                api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
+            ).get(
+                namespace=namespace or self.infra_namespace, label_selector=label_selector
+            )
+            _LOGGER.debug(
+                "OpenShift response for getting template by label_selector %r: %r",
+                label_selector,
+                response.to_dict(),
+            )
+        except OpenShiftNotFoundError as exc:
+            raise NotFoundException(
+                f"The given Workflow containing label {label_selector} could not be found"
+            ) from exc
+
+        self._raise_on_invalid_response_size(response)
+
+        wf: Dict[str, Any] = response.to_dict()["items"][0]
+        return wf
