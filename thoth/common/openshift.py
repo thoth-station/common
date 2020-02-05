@@ -469,6 +469,14 @@ class OpenShift:
         )
         return result
 
+    def get_image_streams(self, namespace: str, label_selector: str) -> Dict[str, Any]:
+        """Get all image streams in a namespace and select them by label."""
+        v1_image_streams = self.ocp_client.resources.get(api_version="image.openshift.io/v1", kind="ImageStream")
+        result: Dict[str, Any] = v1_image_streams.get(
+            label_selector=label_selector, namespace=namespace
+        )
+        return result
+
     def get_job_status_report(
         self, job_id: str, namespace: str
     ) -> Dict[str, Optional[str]]:
