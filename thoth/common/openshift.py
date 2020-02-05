@@ -448,6 +448,7 @@ class OpenShift:
         result: str = response["items"][0]["metadata"]["name"]
 
         return result
+
     def _get_pod_ids_from_job(self, job_id: str, namespace: str) -> List[str]:
         """Get multiple pod names from a job.
 
@@ -500,37 +501,55 @@ class OpenShift:
         )
         return result
 
+    def get_job_status(
+        self, job_id: str, namespace: str
+    ) -> Dict[str, Any]:
+        """Get status of a Job and Pods created by the Job.
+
+        :raises: NotFoundError if no Job of such name is found in the namespace
+        """
+        _TRANSLATION_TABLE = {
+            "startTime": "started_at",
+            "completionTime": "finished_at",
+        }
+
+        job_status: Dict[str, Any] = {}
+        try:
+            resources = self.ocp_client.resources.get(api_version="batch/v1", kind="Job")
+
+            job: Dict[str, Any] = resources.get(name=job_id, namespace=namespace)
+            for k, v in job["status"].items():
+                if k == "conditions":
+                    # conditions are discarded
+                    continue
+                job_status[_TRANSLATION_TABLE.get(k, k)] = v
+
+            # add completions information so that we can determine whether
+            # the Job is already finished according to the number of `succeeded`
+            # pods
+            job_status["completions"] = job["spec"]["completions"]
+
+        except OpenShiftNotFoundError as exc:
+            raise NotFoundException(
+                f"Job {job_id!r} not found in namespace {namespace!r}"
+            ) from exc
+
+        return job_status
+
     def get_job_status_report(
         self, job_id: str, namespace: str
-    ) -> List[Dict[str, Optional[str]]]:
-        """Get statuses of pods created by a Job."""
-        pod_ids: List[str]
+    ) -> Dict[str, Optional[str]]:
+        """Get status report of a Job and Pods created by the Job."""
+        report: Dict[str, Any] = self.get_job_status(job_id, namespace)
 
-        try:
-            pod_ids = self._get_pod_ids_from_job(job_id, namespace)
-        except Exception:
-            try:
-                # Try to retrieve configmap - if we are successful it means we have registered the given
-                # job (workload), but it was queued due to resources not being available. This code will go away
-                # once we introduce a proper workflow management.
-                self.get_configmap(job_id, namespace)
-                return {
-                    "container": None,
-                    "exit_code": None,
-                    "finished_at": None,
-                    "reason": "WorkloadRegistered",
-                    "started_at": None,
-                    "state": "registered",
-                }
-            except Exception:
-                # Try to obtain the job once again - this can avoid timing issues when job
-                # is just created and we are asking for the job id.
-                pod_ids = self._get_pod_ids_from_job(job_id, namespace)
-
-        return [
+        pod_ids: List[str] = self._get_pod_ids_from_job(job_id, namespace)
+        nodes: List[Dict[str, Any]] = [
             self.get_pod_status_report(p, namespace)
             for p in pod_ids
         ]
+
+        report["nodes"] = nodes
+        return report
 
     def get_job_log(self, job_id: str, namespace: str) -> Optional[str]:
         """Get log of a pod running inside a job."""
