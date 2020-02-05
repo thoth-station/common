@@ -1260,7 +1260,7 @@ class OpenShift:
         }
 
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION"] = decision
+            parameters["THOTH_DEPENDENCY_MONKEY_DECISION"] = decision.lower()
 
         if seed is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
@@ -1583,7 +1583,7 @@ class OpenShift:
             "THOTH_ADVISER_REQUIREMENTS_FORMAT": application_stack.get(
                 "requirements_formant", "pipenv"
             ),
-            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.upper(),
+            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.lower(),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
                 runtime_environment
             ),
