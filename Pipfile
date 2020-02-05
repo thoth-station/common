@@ -25,6 +25,7 @@ coala-bears = "*"
 pytest-mypy = "*"
 typeshed = "*"
 mypy = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.6"

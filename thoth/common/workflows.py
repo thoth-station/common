@@ -84,7 +84,7 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
         """Get Workflow ID."""
         prefix: str = self.name or getattr(self.metadata, "generate_name")
         digest: str = OpenShift.generate_id(prefix)
-        return f"workflow-{digest}"
+        return digest
 
     @property
     def validated(self) -> bool:
@@ -313,14 +313,13 @@ class WorkflowManager:
             label_selector,
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.amun_inspection_namespace
+            workflow_namespace=self.openshift.amun_inspection_namespace,
         )
 
         return workflow_id
 
     def submit_adviser_workflow(
         self,
-        adviser_id: str,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
     ) -> str:
@@ -334,14 +333,62 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
-
         workflow_id: str = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=adviser",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.backend_namespace
+            workflow_namespace=self.openshift.backend_namespace,
+        )
+
+        return workflow_id
+
+    def submit_solver_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Solver Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=solver",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+
+    def submit_thamos_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Submit Thamos Advise Workflow for Qeb-Hwt GitHub App."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.backend_namespace:
+            raise ConfigurationError("Backend namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: str = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=qeb-hwt",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.backend_namespace,
         )
 
         return workflow_id

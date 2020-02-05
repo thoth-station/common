@@ -63,3 +63,14 @@ to Sentry:
 This is helpful if you want to report errors to users but not to Thoth
 application itself.
 
+
+If you want some certain classes of error not to be reported to Sentry, you can
+can provide ``THOTH_SENTRY_IGNORE_EXCEPTION`` environment variable which holds
+the comma-separated list of exception classes to be ignored when reporting to Sentry:
+
+.. code-block:: console
+
+  THOTH_SENTRY_IGNORE_EXCEPTION="connexion.decorators.validation,builtins.ValueError"
+
+Remember all builtin exception classes need to be specified as in the same manner as
+ValueError is specified above. 

@@ -2645,3 +2645,77 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency mypy from 0.750 to 0.760
 * :pushpin: Automatic update of dependency daiquiri from 1.6.0 to 1.6.1
 * :pushpin: Automatic update of dependency pytest from 5.3.1 to 5.3.2
+
+## Release 0.9.24 (2020-01-10T09:44:49)
+* Fix decision type environment variable name
+* Add missing argument to dependency monkey runs
+* Pass OpenShift instance instead of dynamic client to workflow manager
+* I had to do it... it was so annoying
+* Fix relative import issue
+* adjust-code
+* Add env variable to select type of scheduling
+* Migrate to workflow for Adviser
+* :pushpin: Automatic update of dependency sentry-sdk from 0.13.5 to 0.14.0
+
+## Release 0.9.25 (2020-01-13T15:18:53)
+* Enable providing pipeline configuration to Dependency Monkey
+
+## Release 0.9.26 (2020-01-14T14:09:36)
+* remove wrong default value to run Dependency Monkey
+
+## Release 0.9.27 (2020-01-16T17:37:40)
+* Try to avoid timing issues between job and configmap creation
+* :pushpin: Automatic update of dependency daiquiri from 1.6.1 to 2.0.0
+* Solver runs with Argo workflows
+
+## Release 0.9.28 (2020-01-16T19:38:12)
+* Use thoth.common as a root logger for logging information
+
+## Release 0.9.29 (2020-01-20T15:55:34)
+* Rename template used by workload opeartor
+* Correct solver id input
+* :pushpin: Automatic update of dependency pytest from 5.3.2 to 5.3.3
+
+## Release 0.9.30 (2020-01-24T16:45:49)
+* Thamos workflow for GitHub App Qeb-Hwt
+* Fixed the spelling mistake causing issue
+* :pushpin: Automatic update of dependency sentry-sdk from 0.14.0 to 0.14.1
+* :pushpin: Automatic update of dependency pytest from 5.3.3 to 5.3.4
+
+## Release 0.9.31 (2020-01-27T14:58:02)
+* :sparkles: added pre-commit and did a little bit of coala cleanup
+* added xml coverage report
+
+## Release 0.10.0 (2020-01-29T09:07:31)
+* Extend parameters for Adviser
+* :pushpin: Automatic update of dependency pre-commit from 1.21.0 to 2.0.0
+* Changed string formatting
+* Added log error
+* Added minor changes
+* Modified documentation
+* Reverted back autoindent
+* Removed dummy files
+* Modified function for init to handle env variables
+* Do not cache fully specified environment check
+* Added missing return
+* Fixed coala errors
+* Added suggested changes
+* Added suggested changes
+* Added readme back
+* Delete .env
+* Added to read me.
+* Added to read me.
+* Fixed Coala errors
+* Added modified filter function
+* Added before send filter
+* Experiment logging
+* Experiment logging
+
+## Release 0.10.1 (2020-01-30T18:25:38)
+* Add host parameter for Thamos GitHub App
+* function to sync build analyzers report
+* :pushpin: Automatic update of dependency pre-commit from 2.0.0 to 2.0.1
+* :pushpin: Automatic update of dependency pytest from 5.3.4 to 5.3.5
+
+## Release 0.10.2 (2020-02-03T11:15:27)
+* Remove prefix to avoid error in Thoth components
