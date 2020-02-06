@@ -2724,3 +2724,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Adjust parameter for Thamos Workflos
 * Add method to retrieve image streams
 * Make decision type and recommendation type lowercase
+
+## Release 0.10.4 (2020-02-06T13:13:44)
+* Change template name for Argo migration
+* add missing parameter to advise method
