@@ -469,6 +469,14 @@ class OpenShift:
         )
         return result
 
+    def get_image_streams(self, namespace: str, label_selector: str) -> Dict[str, Any]:
+        """Get all image streams in a namespace and select them by label."""
+        v1_image_streams = self.ocp_client.resources.get(api_version="image.openshift.io/v1", kind="ImageStream")
+        result: Dict[str, Any] = v1_image_streams.get(
+            label_selector=label_selector, namespace=namespace
+        )
+        return result
+
     def get_job_status_report(
         self, job_id: str, namespace: str
     ) -> Dict[str, Optional[str]]:
@@ -2058,6 +2066,8 @@ class OpenShift:
         github_event_type: str,
         github_check_run_id: int,
         github_installation_id: int,
+        github_base_repo_url: int,
+        github_head_repo_url: int,
         origin: str,
         revision: str,
         host: str
@@ -2072,6 +2082,8 @@ class OpenShift:
         template_parameters["GITHUB_EVENT_TYPE"] = github_event_type
         template_parameters["GITHUB_CHECK_RUN_ID"] = str(github_check_run_id)
         template_parameters["GITHUB_INSTALLATION_ID"] = str(github_installation_id)
+        template_parameters["GITHUB_BASE_REPO_URL"] = str(github_base_repo_url)
+        template_parameters["GITHUB_HEAD_REPO_URL"] = str(github_head_repo_url)
         template_parameters["ORIGIN"] = origin
         template_parameters["REVISION"] = revision
         template_parameters["THOTH_HOST"] = host
