@@ -1554,6 +1554,7 @@ class OpenShift:
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
+        github_base_repo_url: Optional[str] = None,
         revision: Optional[str] = None,
     ) -> str:
         """Schedule an adviser run."""
@@ -1596,6 +1597,7 @@ class OpenShift:
                 "github_event_type": github_event_type,
                 "github_check_run_id": github_check_run_id,
                 "github_installation_id": github_installation_id,
+                "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "revision": revision,
             }
