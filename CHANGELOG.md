@@ -2719,3 +2719,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.2 (2020-02-03T11:15:27)
 * Remove prefix to avoid error in Thoth components
+
+## Release 0.10.3 (2020-02-06T09:43:49)
+* Adjust parameter for Thamos Workflos
+* Add method to retrieve image streams
+* Make decision type and recommendation type lowercase
