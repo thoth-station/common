@@ -1601,7 +1601,6 @@ class OpenShift:
                 "github_installation_id": github_installation_id,
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
-                "revision": revision,
             }
         )
 
