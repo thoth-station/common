@@ -1306,7 +1306,7 @@ class OpenShift:
         }
 
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.upper()
+            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
 
         if seed is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
