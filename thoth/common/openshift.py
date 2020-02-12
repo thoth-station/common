@@ -923,20 +923,19 @@ class OpenShift:
             )
 
         job_id = job_id or self.generate_id()
-        template_parameters = {}
-        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = job_id
-        template_parameters["THOTH_SOLVER_NAME"] = solver
-        template_parameters["THOTH_SOLVER_PACKAGES"] = packages
-        template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
-        template_parameters["THOTH_SOLVER_INDEXES"] = indexes
-
-        workflow_parameters = {}
+        template_parameters = {
+            'THOTH_SOLVER_WORKFLOW_ID': job_id,
+            'THOTH_SOLVER_NAME': solver,
+            'THOTH_SOLVER_PACKAGES': packages,
+            'THOTH_SOLVER_NO_TRANSITIVE': transitive,
+            'THOTH_SOLVER_INDEXES': indexes
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
+                "workflow_parameters": {},
             },
         )
 
@@ -2081,24 +2080,23 @@ class OpenShift:
             raise NotImplementedError
 
         workflow_id = self.generate_id()
-        template_parameters = {}
-        template_parameters["WORKFLOW_ID"] = workflow_id
-        template_parameters["GITHUB_EVENT_TYPE"] = github_event_type
-        template_parameters["GITHUB_CHECK_RUN_ID"] = str(github_check_run_id)
-        template_parameters["GITHUB_INSTALLATION_ID"] = str(github_installation_id)
-        template_parameters["GITHUB_BASE_REPO_URL"] = str(github_base_repo_url)
-        template_parameters["GITHUB_HEAD_REPO_URL"] = str(github_head_repo_url)
-        template_parameters["ORIGIN"] = origin
-        template_parameters["REVISION"] = revision
-        template_parameters["THOTH_HOST"] = host
-
-        workflow_parameters = {}
+        template_parameters = {
+            'WORKFLOW_ID': workflow_id,
+            'GITHUB_EVENT_TYPE': github_event_type,
+            'GITHUB_CHECK_RUN_ID': str(github_check_run_id),
+            'GITHUB_INSTALLATION_ID': str(github_installation_id),
+            'GITHUB_BASE_REPO_URL': str(github_base_repo_url),
+            'GITHUB_HEAD_REPO_URL': str(github_head_repo_url),
+            'ORIGIN': origin,
+            'REVISION': revision,
+            'THOTH_HOST': host
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_thamos_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
+                "workflow_parameters": {},
             },
         )
 
