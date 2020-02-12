@@ -1677,6 +1677,7 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "origin": origin,
                     "revision": revision,
+                    "is_s2i": is_s2i,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
