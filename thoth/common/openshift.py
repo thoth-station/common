@@ -543,12 +543,12 @@ class OpenShift:
         report: Dict[str, Any] = self.get_job_status(job_id, namespace)
 
         pod_ids: List[str] = self._get_pod_ids_from_job(job_id, namespace)
-        nodes: List[Dict[str, Any]] = [
+        pods: List[Dict[str, Any]] = [
             self.get_pod_status_report(p, namespace)
             for p in pod_ids
         ]
 
-        report["nodes"] = nodes
+        report["pods"] = pods
         return report
 
     def get_job_log(self, job_id: str, namespace: str) -> Optional[str]:
