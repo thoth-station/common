@@ -1580,12 +1580,15 @@ class OpenShift:
 
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
+
+        if application_stack.get("requirements_lock"):
+            template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
+                "requirements_lock"
+            ]
+
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
             "requirements"
-        ]
-        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
-            "requirements_lock"
         ]
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
         template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
