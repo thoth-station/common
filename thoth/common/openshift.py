@@ -2254,10 +2254,9 @@ class OpenShift:
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
         """Parse the given CPU requirement as used by OpenShift/Kubernetes."""
-        if isinstance(cpu_spec, str):
-            if cpu_spec.endswith("m"):
-                cpu_spec = cpu_spec[:-1]
-                return int(cpu_spec) / 1000
+        if isinstance(cpu_spec, str) and cpu_spec.endswith("m"):
+            cpu_spec = cpu_spec[:-1]
+            return int(cpu_spec) / 1000
 
         if cpu_spec is None:
             return None
