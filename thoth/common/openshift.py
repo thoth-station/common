@@ -1679,6 +1679,7 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "origin": origin,
                     "revision": revision,
+                    "is_s2i": is_s2i,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2255,10 +2256,9 @@ class OpenShift:
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
         """Parse the given CPU requirement as used by OpenShift/Kubernetes."""
-        if isinstance(cpu_spec, str):
-            if cpu_spec.endswith("m"):
-                cpu_spec = cpu_spec[:-1]
-                return int(cpu_spec) / 1000
+        if isinstance(cpu_spec, str) and cpu_spec.endswith("m"):
+            cpu_spec = cpu_spec[:-1]
+            return int(cpu_spec) / 1000
 
         if cpu_spec is None:
             return None
@@ -2353,7 +2353,7 @@ class OpenShift:
         pods_used = status["used"].get("pods")
         pods_hard = status["hard"].get("pods")
 
-        result = {
+        return {
             "used": {
                 "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")) or 0,
                 "memory": self.parse_memory_spec(status["used"].get("limits.memory"))
@@ -2367,8 +2367,6 @@ class OpenShift:
                 "pods": int(pods_hard) if pods_hard is not None else None,
             },
         }
-
-        return result
 
     def can_run_workload(self, template: Dict[str, Any], namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
