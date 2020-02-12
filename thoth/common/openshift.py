@@ -2351,7 +2351,7 @@ class OpenShift:
         pods_used = status["used"].get("pods")
         pods_hard = status["hard"].get("pods")
 
-        result = {
+        return {
             "used": {
                 "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")) or 0,
                 "memory": self.parse_memory_spec(status["used"].get("limits.memory"))
@@ -2365,8 +2365,6 @@ class OpenShift:
                 "pods": int(pods_hard) if pods_hard is not None else None,
             },
         }
-
-        return result
 
     def can_run_workload(self, template: Dict[str, Any], namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
