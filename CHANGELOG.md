@@ -2731,3 +2731,16 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.5 (2020-02-07T15:57:38)
 * Remove revision
+
+## Release 0.10.6 (2020-02-12T16:46:56)
+* Fix check for default value in workflow template
+* Return directly result
+* Simplfiy condition, do not use nested if
+* Simplify dictionary handling with dict instantiation
+* Propagate missing is_s2i flag to adviser metadata
+* Simplify dictionary handling with inlined dict
+* Add locked application stack optionally
+* Fix confusion with lowercase decision type
+* Add templates for releases
+* Update .thoth.yaml
+* Update .thoth.yaml
