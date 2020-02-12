@@ -218,7 +218,7 @@ class WorkflowManager:
             for p in getattr(wf.spec.arguments, "parameters", []):
                 if p.name in parameters:
                     continue  # overridden
-                elif not getattr(p, "value") and not getattr(p, "default"):
+                elif not (getattr(p, "value") or hasattr(p, "default")):
                     raise WorkflowError(f"Missing required workflow parameter {p.name}")
 
                 new_parameters.append(p)

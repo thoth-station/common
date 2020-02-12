@@ -923,20 +923,19 @@ class OpenShift:
             )
 
         job_id = job_id or self.generate_id()
-        template_parameters = {}
-        template_parameters["THOTH_SOLVER_WORKFLOW_ID"] = job_id
-        template_parameters["THOTH_SOLVER_NAME"] = solver
-        template_parameters["THOTH_SOLVER_PACKAGES"] = packages
-        template_parameters["THOTH_SOLVER_NO_TRANSITIVE"] = transitive
-        template_parameters["THOTH_SOLVER_INDEXES"] = indexes
-
-        workflow_parameters = {}
+        template_parameters = {
+            'THOTH_SOLVER_WORKFLOW_ID': job_id,
+            'THOTH_SOLVER_NAME': solver,
+            'THOTH_SOLVER_PACKAGES': packages,
+            'THOTH_SOLVER_NO_TRANSITIVE': transitive,
+            'THOTH_SOLVER_INDEXES': indexes
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
+                "workflow_parameters": {},
             },
         )
 
@@ -1306,7 +1305,7 @@ class OpenShift:
         }
 
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.upper()
+            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
 
         if seed is not None:
             parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
@@ -1580,12 +1579,15 @@ class OpenShift:
 
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
+
+        if application_stack.get("requirements_lock"):
+            template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
+                "requirements_lock"
+            ]
+
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
             "requirements"
-        ]
-        template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
-            "requirements_lock"
         ]
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
         template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
@@ -1677,6 +1679,7 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "origin": origin,
                     "revision": revision,
+                    "is_s2i": is_s2i,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2080,24 +2083,23 @@ class OpenShift:
             raise NotImplementedError
 
         workflow_id = self.generate_id()
-        template_parameters = {}
-        template_parameters["WORKFLOW_ID"] = workflow_id
-        template_parameters["GITHUB_EVENT_TYPE"] = github_event_type
-        template_parameters["GITHUB_CHECK_RUN_ID"] = str(github_check_run_id)
-        template_parameters["GITHUB_INSTALLATION_ID"] = str(github_installation_id)
-        template_parameters["GITHUB_BASE_REPO_URL"] = str(github_base_repo_url)
-        template_parameters["GITHUB_HEAD_REPO_URL"] = str(github_head_repo_url)
-        template_parameters["ORIGIN"] = origin
-        template_parameters["REVISION"] = revision
-        template_parameters["THOTH_HOST"] = host
-
-        workflow_parameters = {}
+        template_parameters = {
+            'WORKFLOW_ID': workflow_id,
+            'GITHUB_EVENT_TYPE': github_event_type,
+            'GITHUB_CHECK_RUN_ID': str(github_check_run_id),
+            'GITHUB_INSTALLATION_ID': str(github_installation_id),
+            'GITHUB_BASE_REPO_URL': str(github_base_repo_url),
+            'GITHUB_HEAD_REPO_URL': str(github_head_repo_url),
+            'ORIGIN': origin,
+            'REVISION': revision,
+            'THOTH_HOST': host
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_thamos_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
+                "workflow_parameters": {},
             },
         )
 
@@ -2254,10 +2256,9 @@ class OpenShift:
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
         """Parse the given CPU requirement as used by OpenShift/Kubernetes."""
-        if isinstance(cpu_spec, str):
-            if cpu_spec.endswith("m"):
-                cpu_spec = cpu_spec[:-1]
-                return int(cpu_spec) / 1000
+        if isinstance(cpu_spec, str) and cpu_spec.endswith("m"):
+            cpu_spec = cpu_spec[:-1]
+            return int(cpu_spec) / 1000
 
         if cpu_spec is None:
             return None
@@ -2352,7 +2353,7 @@ class OpenShift:
         pods_used = status["used"].get("pods")
         pods_hard = status["hard"].get("pods")
 
-        result = {
+        return {
             "used": {
                 "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")) or 0,
                 "memory": self.parse_memory_spec(status["used"].get("limits.memory"))
@@ -2366,8 +2367,6 @@ class OpenShift:
                 "pods": int(pods_hard) if pods_hard is not None else None,
             },
         }
-
-        return result
 
     def can_run_workload(self, template: Dict[str, Any], namespace: str) -> bool:
         """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
