@@ -2080,7 +2080,7 @@ class OpenShift:
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
-            raise NotImplementedError
+            _LOGGER.warning("No legacy implementation that would use workflow operator, using Argo workflows")
 
         workflow_id = self.generate_id()
         template_parameters = {
