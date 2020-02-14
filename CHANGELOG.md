@@ -2744,3 +2744,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add templates for releases
 * Update .thoth.yaml
 * Update .thoth.yaml
+
+## Release 0.10.7 (2020-02-14T12:35:20)
+* Always use Argo for thamos workflow
