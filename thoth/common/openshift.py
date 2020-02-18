@@ -1556,7 +1556,6 @@ class OpenShift:
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
-        revision: Optional[str] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1603,6 +1602,7 @@ class OpenShift:
                 "github_installation_id": github_installation_id,
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
+                "is_s2i": is_s2i,
             }
         )
 
@@ -1645,7 +1645,7 @@ class OpenShift:
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
-        revision: Optional[str] = None,
+        github_base_repo_url: Optional[str] = None,
         template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run adviser on the provided user input."""
@@ -1677,8 +1677,8 @@ class OpenShift:
                     "github_event_type": github_event_type,
                     "github_check_run_id": github_check_run_id,
                     "github_installation_id": github_installation_id,
+                    "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
-                    "revision": revision,
                     "is_s2i": is_s2i,
                 }
             ),
