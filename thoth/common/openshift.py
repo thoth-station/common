@@ -1590,6 +1590,7 @@ class OpenShift:
             "requirements"
         ]
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
+        template_parameters["THOTH_LOG_ADVISER"] = "DEBUG" if debug else "INFO"
         template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = "pipenv"
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
         template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
