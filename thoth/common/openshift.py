@@ -2613,3 +2613,13 @@ class OpenShift:
 
         wf: Dict[str, Any] = response.to_dict()["items"][0]
         return wf
+
+    def get_workflow_status(
+        self, label_selector: str, namespace: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Get a Workflow status, use label_selector to identify which one to get."""
+        wf: Dict[str, Any] = self.get_workflow(
+            label_selector=label_selector, namespace=namespace,
+        )
+
+        return wf["status"]
