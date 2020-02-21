@@ -2125,15 +2125,15 @@ class OpenShift:
         github_event_type: str,
         github_check_run_id: int,
         github_installation_id: int,
-        github_base_repo_url: int,
-        github_head_repo_url: int,
+        github_base_repo_url: str,
+        github_head_repo_url: str,
         origin: str,
         revision: str,
         host: str
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
-            _LOGGER.warning("No legacy implementation that would use workflow operator, using Argo workflows")
+            _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
 
         workflow_id = self.generate_id()
         template_parameters = {
@@ -2141,8 +2141,8 @@ class OpenShift:
             'GITHUB_EVENT_TYPE': github_event_type,
             'GITHUB_CHECK_RUN_ID': str(github_check_run_id),
             'GITHUB_INSTALLATION_ID': str(github_installation_id),
-            'GITHUB_BASE_REPO_URL': str(github_base_repo_url),
-            'GITHUB_HEAD_REPO_URL': str(github_head_repo_url),
+            'GITHUB_BASE_REPO_URL': github_base_repo_url,
+            'GITHUB_HEAD_REPO_URL': github_head_repo_url,
             'ORIGIN': origin,
             'REVISION': revision,
             'THOTH_HOST': host
