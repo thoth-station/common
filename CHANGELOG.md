@@ -2747,3 +2747,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.7 (2020-02-14T12:35:20)
 * Always use Argo for thamos workflow
+
+## Release 0.10.8 (2020-02-24T09:51:55)
+* Correct datatype
+* Added get_workflow_status method
+* Handle debug parameter for adviser in argo workflows
+* Changed `nodes` -> `pods` in job status report
+* Changed Job status report according to Amun API
+* Openshift methods for inspection workflows
+* Missing metadata parameters
