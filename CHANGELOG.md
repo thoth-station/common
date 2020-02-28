@@ -2756,3 +2756,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Changed Job status report according to Amun API
 * Openshift methods for inspection workflows
 * Missing metadata parameters
+
+## Release 0.10.9 (2020-02-28T13:21:48)
+* Migrate method to be used for Argo
