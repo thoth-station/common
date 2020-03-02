@@ -913,7 +913,7 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
+        template: Optional[Dict[str, Any]] = None
     ) -> str:
         """Run solver or all solver to solve the given requirements."""
         if self.middletier_namespace is None:
@@ -981,9 +981,9 @@ class OpenShift:
         template_parameters = {
             'THOTH_SOLVER_WORKFLOW_ID': job_id,
             'THOTH_SOLVER_NAME': solver,
-            'THOTH_SOLVER_PACKAGES': packages,
-            'THOTH_SOLVER_NO_TRANSITIVE': transitive,
-            'THOTH_SOLVER_INDEXES': indexes
+            'THOTH_SOLVER_PACKAGES': packages.replace("\n", "\\n"),
+            'THOTH_SOLVER_NO_TRANSITIVE': int(not transitive),
+            'THOTH_SOLVER_INDEXES': ",".join(indexes) if indexes else ""
         }
 
         return self._schedule_workflow(
