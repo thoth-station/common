@@ -1623,6 +1623,10 @@ class OpenShift:
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
+        ceph_bucket_prefix: Optional[str] = None,
+        ceph_bucket_name: Optional[str] = None,
+        ceph_host: Optional[str] = None,
+        deployment_name: Optional[str] = None
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1685,7 +1689,12 @@ class OpenShift:
                 "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
             ] = limit_latest_versions
 
-        workflow_parameters = {}
+        workflow_parameters = {
+            "ceph_bucket_prefix": ceph_bucket_prefix,
+            "ceph_bucket_name": ceph_bucket_name,
+            "ceph_host": ceph_host,
+            "deployment_name": deployment_name
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
