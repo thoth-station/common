@@ -958,6 +958,10 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
+        ceph_bucket_prefix: str = None,
+        ceph_bucket_name: str = None,
+        ceph_host: str = None,
+        deployment_name: str = None
     ) -> str:
         """Schedule the given solver."""
         if not self.middletier_namespace:
@@ -969,6 +973,10 @@ class OpenShift:
             job_id = job_id or self.generate_id(solver)
             parameters = locals()
             parameters.pop("self", None)
+            parameters.pop("ceph_bucket_prefix", None)
+            parameters.pop("ceph_bucket_name", None)
+            parameters.pop("ceph_host", None)
+            parameters.pop("deployment_name", None)
             return self._schedule_workload(
                 run_method_name=self.run_solver.__name__,
                 run_method_parameters=parameters,
