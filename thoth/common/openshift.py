@@ -958,10 +958,6 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
-        ceph_bucket_prefix: str = None,
-        ceph_bucket_name: str = None,
-        ceph_host: str = None,
-        deployment_name: str = None
     ) -> str:
         """Schedule the given solver."""
         if not self.middletier_namespace:
@@ -973,10 +969,6 @@ class OpenShift:
             job_id = job_id or self.generate_id(solver)
             parameters = locals()
             parameters.pop("self", None)
-            parameters.pop("ceph_bucket_prefix", None)
-            parameters.pop("ceph_bucket_name", None)
-            parameters.pop("ceph_host", None)
-            parameters.pop("deployment_name", None)
             return self._schedule_workload(
                 run_method_name=self.run_solver.__name__,
                 run_method_parameters=parameters,
@@ -1623,10 +1615,6 @@ class OpenShift:
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
-        ceph_bucket_prefix: Optional[str] = None,
-        ceph_bucket_name: Optional[str] = None,
-        ceph_host: Optional[str] = None,
-        deployment_name: Optional[str] = None
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1689,12 +1677,7 @@ class OpenShift:
                 "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
             ] = limit_latest_versions
 
-        workflow_parameters = {
-            "ceph_bucket_prefix": ceph_bucket_prefix,
-            "ceph_bucket_name": ceph_bucket_name,
-            "ceph_host": ceph_host,
-            "deployment_name": deployment_name
-        }
+        workflow_parameters = self._assign_workflow_parameters()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
