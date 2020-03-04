@@ -66,10 +66,6 @@ class OpenShift:
         kubernetes_verify_tls: bool = True,
         openshift_api_url: Optional[str] = None,
         use_argo: bool = False,
-        ceph_bucket_prefix: Optional[str] = None,
-        ceph_bucket_name: Optional[str] = None,
-        ceph_host: Optional[str] = None,
-        deployment_name: Optional[str] = None,
         token: Optional[str] = None,
         token_file: Optional[str] = None,
         cert_file: Optional[str] = None,
@@ -158,22 +154,6 @@ class OpenShift:
             from .workflows import WorkflowManager
 
             self.workflow_manager = WorkflowManager(openshift=self)
-
-        self.ceph_bucket_prefix = ceph_bucket_prefix or os.getenv(
-            "THOTH_CEPH_BUCKET_PREFIX"
-        )
-
-        self.ceph_bucket_name = ceph_bucket_name or os.getenv(
-            "THOTH_CEPH_BUCKET"
-        )
-
-        self.ceph_host = ceph_host or urlparse(os.getenv(
-            "THOTH_S3_ENDPOINT_URL"
-        )).netloc
-
-        self.deployment_name = deployment_name or os.getenv(
-            "THOTH_DEPLOYMENT_NAME"
-        )
 
     @property
     def token(self) -> str:
@@ -1008,24 +988,7 @@ class OpenShift:
             'THOTH_SOLVER_INDEXES': ",".join(indexes) if indexes else ""
         }
 
-        workflow_parameters = {
-            "ceph_bucket_prefix": self.ceph_bucket_prefix,
-            "ceph_bucket_name": self.ceph_bucket_name,
-            "ceph_host": self.ceph_host,
-            "deployment_name": self.deployment_name
-        }
-
-        workflow_params = (
-            self.ceph_bucket_prefix is not None,
-            self.ceph_bucket_name is not None,
-            self.ceph_host is not None,
-            self.deployment_name is not None,
-        )
-        workflow_params_present = sum(workflow_params)
-        if workflow_params_present != 0 and (workflow_params_present != len(workflow_params)):
-            raise ConfigurationError(
-                "Not all parameters required to run workflow are provided: %r" % workflow_parameters
-            )
+        workflow_parameters = self._assign_workflow_parameters()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
@@ -1723,6 +1686,17 @@ class OpenShift:
                 "workflow_parameters": workflow_parameters,
             },
         )
+
+    def _assign_workflow_parameters(self) -> Dict[str, Any]:
+        """Check and assign workflow parameters for different services."""
+        workflow_parameters = {
+            "ceph_bucket_prefix": os.environ["THOTH_CEPH_BUCKET_PREFIX"],
+            "ceph_bucket_name": os.environ["THOTH_CEPH_BUCKET"],
+            "ceph_host": urlparse(os.environ["THOTH_S3_ENDPOINT_URL"]).netloc,
+            "deployment_name": os.environ["THOTH_DEPLOYMENT_NAME"]
+        }
+
+        return workflow_parameters
 
     def run_adviser(
         self,
