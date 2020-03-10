@@ -1677,7 +1677,7 @@ class OpenShift:
                 "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
             ] = limit_latest_versions
 
-        workflow_parameters = {}
+        workflow_parameters = self._assign_workflow_parameters()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
