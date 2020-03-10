@@ -2759,3 +2759,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.9 (2020-02-28T13:21:48)
 * Migrate method to be used for Argo
+
+## Release 0.10.10 (2020-03-02T17:12:37)
+* Adjust inputs for solvers
