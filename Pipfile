@@ -23,9 +23,8 @@ pylint = "*"
 coala = "*"
 coala-bears = "*"
 pytest-mypy = "*"
-typeshed = "*"
 mypy = "*"
-pre-commit = "*"
+pre-commit = "==2.0.1"
 
 [requires]
 python_version = "3.6"
