@@ -26,6 +26,8 @@ import random
 import urllib3
 import time
 
+from urllib.parse import urlparse
+
 from typing import Any
 from typing import Dict
 from typing import List
@@ -986,11 +988,13 @@ class OpenShift:
             'THOTH_SOLVER_INDEXES': ",".join(indexes) if indexes else ""
         }
 
+        workflow_parameters = self._assign_workflow_parameters()
+
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": {},
+                "workflow_parameters": workflow_parameters,
             },
         )
 
@@ -1673,7 +1677,7 @@ class OpenShift:
                 "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
             ] = limit_latest_versions
 
-        workflow_parameters = {}
+        workflow_parameters = self._assign_workflow_parameters()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
@@ -1682,6 +1686,17 @@ class OpenShift:
                 "workflow_parameters": workflow_parameters,
             },
         )
+
+    def _assign_workflow_parameters(self) -> Dict[str, Any]:
+        """Check and assign workflow parameters for different services."""
+        workflow_parameters = {
+            "ceph_bucket_prefix": os.environ["THOTH_CEPH_BUCKET_PREFIX"],
+            "ceph_bucket_name": os.environ["THOTH_CEPH_BUCKET"],
+            "ceph_host": urlparse(os.environ["THOTH_S3_ENDPOINT_URL"]).netloc,
+            "deployment_name": os.environ["THOTH_DEPLOYMENT_NAME"]
+        }
+
+        return workflow_parameters
 
     def run_adviser(
         self,
