@@ -2762,3 +2762,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.10 (2020-03-02T17:12:37)
 * Adjust inputs for solvers
+
+## Release 0.10.11 (2020-03-10T19:09:12)
+
