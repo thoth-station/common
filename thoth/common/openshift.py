@@ -2449,14 +2449,14 @@ class OpenShift:
         self, name: str = None, label_selector: str = None, namespace: Optional[str] = None
     ) -> Dict[str, Any]:
         """Get Workflow from a namespace, use one of name or label_selector to identify which one to get."""
-        if not any([name, label_selector]):
-            raise ValueError("One of `name` or `label_selector` has to be provided.")
-        if name and label_selector:
-            raise ValueError("Either `name` or `label_selector` has to be provided.")
-
         wf: Dict[str, Any]
-
         if name:
+            if label_selector is not None:
+                _LOGGER.warning(
+                    "Only one of `name` or `label_selector` can be provided."
+                    f"Ignoring `label_selector={label_selector}`."
+                )
+
             try:
                 response = self.ocp_client.resources.get(
                     api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
@@ -2495,6 +2495,9 @@ class OpenShift:
             self._raise_on_invalid_response_size(response)
 
             wf = response.to_dict()["items"][0]
+
+        else:
+            raise ValueError("Either `name` or `label_selector` has to be provided.")
 
         return wf
 
