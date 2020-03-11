@@ -1517,7 +1517,7 @@ class OpenShift:
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
-        _ =  self._schedule_workflow(
+        _ = self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
             parameters={
                 "template_parameters": template_parameters,
