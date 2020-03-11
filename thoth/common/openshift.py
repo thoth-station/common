@@ -646,96 +646,6 @@ class OpenShift:
         result: str = response["metadata"]["name"]
         return result
 
-    def create_inspection_imagestream(self, inspection_id: str) -> str:
-        """Create imagestream for Amun."""
-        if not self.amun_infra_namespace:
-            raise ConfigurationError(
-                "Amun infra namespace is required in order to create Amun inspection imagestreams"
-            )
-
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to create inspection image stream without Amun inspection namespace being set"
-            )
-
-        template = self._get_template(
-            "template=amun-inspection-imagestream", self.amun_infra_namespace
-        )
-
-        self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
-        template = self.oc_process(self.amun_infra_namespace, template)
-        imagestream = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=imagestream["apiVersion"], kind=imagestream["kind"]
-        ).create(body=imagestream, namespace=self.amun_inspection_namespace)
-
-        response = response.to_dict()
-        _LOGGER.debug("OpenShift response for creating Amun ImageStream: %r", response)
-
-        result: str = response["metadata"]["name"]
-        return result
-
-    def schedule_inspection_build(
-        self, parameters: Dict[str, Any], inspection_id: str, use_hw_template: bool
-    ) -> str:
-        """Schedule inspection build."""
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to schedule inspection build without Amun inspection namespace being set"
-            )
-
-        return self._schedule_workload(
-            run_method_name=self.run_inspection_build.__name__,
-            template_method_name=self.get_inspection_build_template.__name__,
-            template_method_parameters={
-                "parameters": parameters,
-                "use_hw_template": use_hw_template,
-            },
-            namespace=self.amun_inspection_namespace,
-            labels={"component": "amun-inspection-build", "inspection": inspection_id},
-            job_id=inspection_id + "-build",
-        )
-
-    def get_inspection_build_template(
-        self, use_hw_template: bool, parameters: Dict[str, str]
-    ) -> Dict[str, Any]:
-        """Get inspection buildconfig that should be run."""
-        if not self.amun_infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required in order to create inspection imagestreams"
-            )
-
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to create inspection buildconfig without Amun inspection namespace being set"
-            )
-
-        if use_hw_template:
-            label_selector = "template=amun-inspection-buildconfig-with-cpu"
-        else:
-            label_selector = "template=amun-inspection-buildconfig"
-
-        template = self._get_template(label_selector, self.amun_infra_namespace)
-
-        self.set_template_parameters(template, **parameters)
-
-        template = self.oc_process(self.amun_inspection_namespace, template)
-        return template
-
-    def run_inspection_build(self, template: Dict[str, Any]) -> str:
-        """Run the inspection build."""
-        buildconfig = template["objects"][0]
-        response = self.ocp_client.resources.get(
-            api_version=buildconfig["apiVersion"], kind=buildconfig["kind"]
-        ).create(body=buildconfig, namespace=self.amun_inspection_namespace)
-
-        _LOGGER.debug(
-            "OpenShift response for creating Amun BuildConfig: %r", response.to_dict()
-        )
-        result: str = response.metadata.name
-        return result
-
     def schedule_inspection(
         self,
         dockerfile: str,
@@ -746,7 +656,7 @@ class OpenShift:
         """Schedule an inspection run."""
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
-                "Unable to schedule inspection without amun inspection namespace being set."
+                "Unable to schedule inspection without Amun inspection namespace being set."
             )
 
         inspection_id = self.generate_id(prefix="inspection", identifier=specification.get("identifier"))
