@@ -283,7 +283,6 @@ class WorkflowManager:
 
     def submit_inspection_workflow(
         self,
-        inspection_id: str,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
         use_hw_template: bool = False,
@@ -303,7 +302,6 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters["AMUN_INSPECTION_ID"] = inspection_id
         template_parameters["THOTH_INFRA_NAMESPACE"] = template_parameters.get(
             "THOTH_INFRA_NAMESPACE", self.openshift.amun_infra_namespace
         )
