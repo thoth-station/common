@@ -666,7 +666,6 @@ class OpenShift:
         template_parameters["AMUN_GENERATED_DOCKERFILE"] = dockerfile
         template_parameters["AMUN_CPU"] = specification["build"]["requests"]["cpu"]
         template_parameters["AMUN_MEMORY"] = specification["build"]["requests"]["memory"]
-        template_parameters["THOTH_INFRA_NAMESPACE"] = self.amun_infra_namespace
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile

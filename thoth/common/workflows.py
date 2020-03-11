@@ -302,9 +302,7 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters["THOTH_INFRA_NAMESPACE"] = template_parameters.get(
-            "THOTH_INFRA_NAMESPACE", self.openshift.amun_infra_namespace
-        )
+        template_parameters["THOTH_INFRA_NAMESPACE"] = self.openshift.amun_infra_namespace
 
         workflow_id: str = self.submit_workflow_from_template(
             self.openshift.amun_infra_namespace,
