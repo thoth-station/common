@@ -2446,36 +2446,64 @@ class OpenShift:
         return jobs_status_count
 
     def get_workflow(
-        self, label_selector: str, namespace: Optional[str] = None
+        self, name: str = None, label_selector: str = None, namespace: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Get Workflow from a namespace, use label_selector to identify which one to get."""
-        try:
-            response = self.ocp_client.resources.get(
-                api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
-            ).get(
-                namespace=namespace or self.infra_namespace, label_selector=label_selector
-            )
-            _LOGGER.debug(
-                "OpenShift response for getting template by label_selector %r: %r",
-                label_selector,
-                response.to_dict(),
-            )
-        except OpenShiftNotFoundError as exc:
-            raise NotFoundException(
-                f"The given Workflow containing label {label_selector} could not be found"
-            ) from exc
+        """Get Workflow from a namespace, use one of name or label_selector to identify which one to get."""
+        if not any([name, label_selector]):
+            raise ValueError("One of `name` or `label_selector` has to be provided.")
+        if name and label_selector:
+            raise ValueError("Either `name` or `label_selector` has to be provided.")
 
-        self._raise_on_invalid_response_size(response)
+        wf: Dict[str, Any]
 
-        wf: Dict[str, Any] = response.to_dict()["items"][0]
+        if name:
+            try:
+                response = self.ocp_client.resources.get(
+                    api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
+                ).get(
+                    namespace=namespace or self.infra_namespace, name=name
+                )
+                _LOGGER.debug(
+                    "OpenShift response for getting template by name %r: %r",
+                    name,
+                    response.to_dict(),
+                )
+            except OpenShiftNotFoundError as exc:
+                raise NotFoundException(
+                    f"The given Workflow {name} could not be found"
+                ) from exc
+
+            wf = response.to_dict()
+
+        elif label_selector:
+            try:
+                response = self.ocp_client.resources.get(
+                    api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
+                ).get(
+                    namespace=namespace or self.infra_namespace, label_selector=label_selector
+                )
+                _LOGGER.debug(
+                    "OpenShift response for getting template by label_selector %r: %r",
+                    label_selector,
+                    response.to_dict(),
+                )
+            except OpenShiftNotFoundError as exc:
+                raise NotFoundException(
+                    f"The given Workflow containing label {label_selector} could not be found"
+                ) from exc
+
+            self._raise_on_invalid_response_size(response)
+
+            wf = response.to_dict()["items"][0]
+
         return wf
 
     def get_workflow_status(
-        self, label_selector: str, namespace: Optional[str] = None
+        self, name: str = None, label_selector: str = None, namespace: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Get a Workflow status, use label_selector to identify which one to get."""
+        """Get a Workflow status, use one of name or label_selector to identify which one to get."""
         wf: Dict[str, Any] = self.get_workflow(
-            label_selector=label_selector, namespace=namespace,
+            name=name, label_selector=label_selector, namespace=namespace,
         )
 
         return wf["status"]
