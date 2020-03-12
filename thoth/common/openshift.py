@@ -693,23 +693,13 @@ class OpenShift:
             raise ConfigurationError(
                 "Infra namespace is required in order to list solvers"
             )
-        label_selector = "template=solver"
 
-        if not self.use_argo:
-            label_selector = "template=solver-workload-operator"
+        cm = self.get_configmap("thoth", namespace=self.infra_namespace)
+        solvers = [s.strip() for s in cm["data"].get("solvers", "").splitlines()]
+        if not solvers:
+            _LOGGER.warning("No solvers found in thoth ConfigMap")
 
-        response = self.ocp_client.resources.get(
-            api_version="template.openshift.io/v1", kind="Template", name="templates"
-        ).get(namespace=self.infra_namespace, label_selector=label_selector)
-        _LOGGER.debug(
-            "OpenShift response for getting solver template: %r", response.to_dict()
-        )
-        self._raise_on_invalid_response_size(response)
-        return [
-            obj["metadata"]["labels"]["solver-type"]
-            for obj in response.to_dict()["items"][0]["objects"]
-            if "solver-type" in obj["metadata"]["labels"]
-        ]
+        return solvers
 
     def schedule_all_solvers(
         self,
