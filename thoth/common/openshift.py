@@ -646,215 +646,46 @@ class OpenShift:
         result: str = response["metadata"]["name"]
         return result
 
-    def create_inspection_imagestream(self, inspection_id: str) -> str:
-        """Create imagestream for Amun."""
-        if not self.amun_infra_namespace:
-            raise ConfigurationError(
-                "Amun infra namespace is required in order to create Amun inspection imagestreams"
-            )
-
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to create inspection image stream without Amun inspection namespace being set"
-            )
-
-        template = self._get_template(
-            "template=amun-inspection-imagestream", self.amun_infra_namespace
-        )
-
-        self.set_template_parameters(template, AMUN_INSPECTION_ID=inspection_id)
-        template = self.oc_process(self.amun_infra_namespace, template)
-        imagestream = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=imagestream["apiVersion"], kind=imagestream["kind"]
-        ).create(body=imagestream, namespace=self.amun_inspection_namespace)
-
-        response = response.to_dict()
-        _LOGGER.debug("OpenShift response for creating Amun ImageStream: %r", response)
-
-        result: str = response["metadata"]["name"]
-        return result
-
-    def schedule_inspection_build(
-        self, parameters: Dict[str, Any], inspection_id: str, use_hw_template: bool
+    def schedule_inspection(
+        self,
+        dockerfile: str,
+        specification: Dict[str, Any],
+        target: str,
+        parameters: Dict[str, Any],
     ) -> str:
-        """Schedule inspection build."""
+        """Schedule an inspection run."""
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
-                "Unable to schedule inspection build without Amun inspection namespace being set"
+                "Unable to schedule inspection without Amun inspection namespace being set."
             )
 
-        return self._schedule_workload(
-            run_method_name=self.run_inspection_build.__name__,
-            template_method_name=self.get_inspection_build_template.__name__,
-            template_method_parameters={
-                "parameters": parameters,
-                "use_hw_template": use_hw_template,
+        inspection_id = self.generate_id(prefix="inspection", identifier=specification.get("identifier"))
+
+        template_parameters = dict(parameters)
+        template_parameters["AMUN_INSPECTION_ID"] = inspection_id
+        template_parameters["AMUN_GENERATED_DOCKERFILE"] = dockerfile
+        template_parameters["AMUN_CPU"] = specification["build"]["requests"]["cpu"]
+        template_parameters["AMUN_MEMORY"] = specification["build"]["requests"]["memory"]
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+        workflow_parameters["dockerfile"] = dockerfile
+        workflow_parameters["specification"] = json.dumps(specification)
+        workflow_parameters["target"] = target
+
+        if "allowed_failures" in specification:
+            workflow_parameters["allowed-failures"] = specification["allowed_failures"]
+        if "batch_size" in specification:
+            workflow_parameters["batch-size"] = specification["batch_size"]
+        if "parallelism" in specification:
+            workflow_parameters["parallelism"] = specification["parallelism"]
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_inspection_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
             },
-            namespace=self.amun_inspection_namespace,
-            labels={"component": "amun-inspection-build", "inspection": inspection_id},
-            job_id=inspection_id + "-build",
         )
-
-    def get_inspection_build_template(
-        self, use_hw_template: bool, parameters: Dict[str, str]
-    ) -> Dict[str, Any]:
-        """Get inspection buildconfig that should be run."""
-        if not self.amun_infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required in order to create inspection imagestreams"
-            )
-
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to create inspection buildconfig without Amun inspection namespace being set"
-            )
-
-        if use_hw_template:
-            label_selector = "template=amun-inspection-buildconfig-with-cpu"
-        else:
-            label_selector = "template=amun-inspection-buildconfig"
-
-        template = self._get_template(label_selector, self.amun_infra_namespace)
-
-        self.set_template_parameters(template, **parameters)
-
-        template = self.oc_process(self.amun_inspection_namespace, template)
-        return template
-
-    def run_inspection_build(self, template: Dict[str, Any]) -> str:
-        """Run the inspection build."""
-        buildconfig = template["objects"][0]
-        response = self.ocp_client.resources.get(
-            api_version=buildconfig["apiVersion"], kind=buildconfig["kind"]
-        ).create(body=buildconfig, namespace=self.amun_inspection_namespace)
-
-        _LOGGER.debug(
-            "OpenShift response for creating Amun BuildConfig: %r", response.to_dict()
-        )
-        result: str = response.metadata.name
-        return result
-
-    def schedule_inspection_job(
-        self,
-        inspection_id: str,
-        parameters: Dict[str, str],
-        use_hw_template: bool,
-        cpu_requests: str,
-        memory_requests: str,
-        infra_namespace: Optional[str] = None,
-        registry: Optional[str] = None,
-    ) -> str:
-        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to schedule inspection job without Amun inspection namespace being set"
-            )
-
-        parameters = locals()
-        parameters.pop("self", None)
-        parameters.pop("inspection_id", None)
-
-        return self._schedule_workload(
-            run_method_name=self.run_inspection_job.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_inspection_job_template.__name__,
-            template_method_parameters={
-                "use_hw_template": use_hw_template,
-                "cpu_requests": cpu_requests,
-                "memory_requests": memory_requests,
-            },
-            job_id=inspection_id,
-            namespace=self.amun_inspection_namespace,
-            labels={"component": "amun-inspection"},
-        )
-
-    def run_inspection_job(
-        self,
-        parameters: Dict[str, str],
-        template: Optional[Dict[str, Any]] = None,
-        *,
-        use_hw_template: bool = False,
-        cpu_requests: Optional[str] = None,
-        memory_requests: Optional[str] = None,
-        infra_namespace: Optional[str] = None,
-        registry: Optional[str] = None,
-    ) -> str:
-        """Create the actual inspection job."""
-        if self.amun_infra_namespace is None:
-            raise ConfigurationError(
-                "Amun infra namespace is required in order to create inspection job"
-            )
-
-        if self.amun_inspection_namespace is None:
-            raise ConfigurationError(
-                "Amun inspection namespace is required in order to create inspection job"
-            )
-
-        # Fill in required fields for image pulling.
-        parameters["THOTH_INFRA_NAMESPACE"] = (
-            infra_namespace or self.amun_infra_namespace
-        )
-        if registry:
-            parameters["THOTH_REGISTRY"] = registry
-
-        template = template or self.get_inspection_job_template(
-            use_hw_template=use_hw_template,
-            cpu_requests=cpu_requests,
-            memory_requests=memory_requests,
-        )
-        self.set_template_parameters(template, **parameters)
-
-        template = self.oc_process(self.amun_inspection_namespace, template)
-        job = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=job["apiVersion"], kind=job["kind"]
-        ).create(body=job, namespace=self.amun_inspection_namespace)
-
-        _LOGGER.debug(
-            "OpenShift response for creating Amun Job: %r", response.to_dict()
-        )
-        result: str = response.metadata.name
-        return result
-
-    def get_inspection_job_template(
-        self,
-        *,
-        use_hw_template: bool,
-        cpu_requests: Optional[str] = None,
-        memory_requests: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """Get template for an inspection job."""
-        if not self.amun_inspection_namespace:
-            raise ConfigurationError(
-                "Unable to create inspection job without Amun inspection namespace being set"
-            )
-
-        if use_hw_template:
-            label_selector = "template=amun-inspection-job-with-cpu"
-        else:
-            label_selector = "template=amun-inspection-job"
-
-        template = self._get_template(label_selector, self.amun_infra_namespace)
-
-        # We explicitly set template CPU and memory here so that we can schedule based
-        # on resources needed in the workload-operator. We cannot do this as a partial oc process,
-        # so we explicitly modify template here (other parameters are about to be expanded later).
-        container_spec = template["objects"][0]["spec"]["template"]["spec"][
-            "containers"
-        ][0]
-
-        if cpu_requests:
-            container_spec["resources"]["limits"]["cpu"] = cpu_requests
-            container_spec["resources"]["requests"]["cpu"] = cpu_requests
-
-        if memory_requests:
-            container_spec["resources"]["limits"]["memory"] = memory_requests
-            container_spec["resources"]["requests"]["memory"] = memory_requests
-
-        return template
 
     def get_solver_names(self) -> List[str]:
         """Retrieve name of solvers available in installation."""
@@ -988,7 +819,7 @@ class OpenShift:
             'THOTH_SOLVER_INDEXES': ",".join(indexes) if indexes else ""
         }
 
-        workflow_parameters = self._assign_workflow_parameters()
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver_workflow,
@@ -1275,12 +1106,19 @@ class OpenShift:
         return workflow(**parameters)
 
     @staticmethod
-    def generate_id(prefix: Optional[str] = None) -> str:
+    def generate_id(prefix: Optional[str] = None, identifier: Optional[str] = None) -> str:
         """Generate an identifier."""
+        # A very first method used 'generatedName' in ImageStream configuration,
+        # but it looks like there is a bug in OpenShift as it did not generated any
+        # name and failed with regexp issues (that were not related to the
+        # generateName configuration).
+        if prefix and identifier:
+            return ("%s-%s-" + "%08x") % (prefix, identifier, random.getrandbits(32))
+
         if prefix:
             return prefix + "-%08x" % random.getrandbits(32)
-        else:
-            return "-%08x" % random.getrandbits(32)
+
+        return "-%08x" % random.getrandbits(32)
 
     def schedule_dependency_monkey(
         self,
@@ -1677,7 +1515,7 @@ class OpenShift:
                 "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
             ] = limit_latest_versions
 
-        workflow_parameters = self._assign_workflow_parameters()
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_adviser_workflow,
@@ -1687,8 +1525,8 @@ class OpenShift:
             },
         )
 
-    def _assign_workflow_parameters(self) -> Dict[str, Any]:
-        """Check and assign workflow parameters for different services."""
+    def _assign_workflow_parameters_for_ceph(self) -> Dict[str, Any]:
+        """Check and assign workflow parameters for different services to interact with Ceph."""
         workflow_parameters = {
             "ceph_bucket_prefix": os.environ["THOTH_CEPH_BUCKET_PREFIX"],
             "ceph_bucket_name": os.environ["THOTH_CEPH_BUCKET"],
