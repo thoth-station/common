@@ -225,6 +225,9 @@ class WorkflowManager:
 
             wf.spec.arguments.parameters = new_parameters
 
+        # Set the ID to the name that we can track it easily later on
+        wf.metadata.name = wf.id
+
         if not getattr(wf, "validated", True):
             _LOGGER.debug(
                 "The Workflow has not been previously validated."
