@@ -106,10 +106,10 @@
         },
         "kubernetes": {
             "hashes": [
-                "sha256:3770a496663396ad1def665eeadb947b3f45217a08b64b10c01a57e981ac8592",
-                "sha256:a6dee02a1b39ea4bb9c4c2cc415ea0ada33d8ea0a920f7d4fb6d166989dcac01"
+                "sha256:85a767d04f17d6d317374b6c35e09eb168a6bfd9276f0b3177cc206376bad968",
+                "sha256:9aa4f34431a442dda856bafc959bcf296cb5802f370361604c440093c702b17c"
             ],
-            "version": "==10.0.1"
+            "version": "==10.1.0"
         },
         "markupsafe": {
             "hashes": [
@@ -151,10 +151,10 @@
         },
         "mock": {
             "hashes": [
-                "sha256:2a572b715f09dd2f0a583d8aeb5bb67d7ed7a8fd31d193cf1227a99c16a67bc3",
-                "sha256:5e48d216809f6f393987ed56920305d8f3c647e6ed35407c1ff2ecb88a9e1151"
+                "sha256:3f9b2c0196c60d21838f307f5825a7b86b678cedc58ab9e50a8988187b4d81e0",
+                "sha256:dd33eb70232b6118298d516bbcecd26704689c386594f0f3c4f13867b2c56f72"
             ],
-            "version": "==4.0.1"
+            "version": "==4.0.2"
         },
         "oauthlib": {
             "hashes": [
@@ -165,10 +165,10 @@
         },
         "openshift": {
             "hashes": [
-                "sha256:10868c5697c7610e1d18d62118f1bf2096d35789fa9790c89285947a93545a8a"
+                "sha256:d8462c4bc3eaaa5a11623d6d67048c3e0b16558fa23675ffd85157d66696ff39"
             ],
             "index": "pypi",
-            "version": "==0.10.2"
+            "version": "==0.10.3"
         },
         "pyasn1": {
             "hashes": [
