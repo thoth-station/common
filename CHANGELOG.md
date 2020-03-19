@@ -2765,3 +2765,27 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.10.11 (2020-03-10T19:09:12)
 
+
+## Release 0.10.12 (2020-03-19T10:45:30)
+* remove unused env variables
+* Add empty env template
+* :pushpin: Automatic update of dependency pytest from 5.3.5 to 5.4.1
+* :pushpin: Automatic update of dependency pytest-mypy from 0.5.0 to 0.6.0
+* :pushpin: Automatic update of dependency pyyaml from 5.3 to 3.13
+* :pushpin: Automatic update of dependency openshift from 0.10.2 to 0.10.3
+* Remove again lines
+* Reintroduce wf id
+* Adjust solver workflows ID
+* Fix issue with returning None instead of workflow id
+* Add warning
+* Modify logic of get_solver_names not to depend on Openshift template
+* Removed unnecessary assignment
+* Fix multiple spaces after operator
+* Refactor get_workflow
+* Allow to get_workflow by name
+* Do not implicitly modify Workflow name
+* Return adviser_id instead of workflow_id
+* Move env variables to right place
+* Remove old methods to schedule inspections
+* Introduce Schedule inspection method in Openshift Class
+* :pushpin: Automatic update of dependency mypy from 0.761 to 0.770
