@@ -2789,3 +2789,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Remove old methods to schedule inspections
 * Introduce Schedule inspection method in Openshift Class
 * :pushpin: Automatic update of dependency mypy from 0.761 to 0.770
+
+## Release 0.11.0 (2020-03-24T21:18:42)
+* Implement structured logging for cluster deployments
+* add re_run metadata for qeb-hwt app
+* Increase mypy timeout
+* :pushpin: Automatic update of dependency sentry-sdk from 0.14.2 to 0.14.3
