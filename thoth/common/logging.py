@@ -26,6 +26,7 @@ from typing import Optional
 from typing import List
 from typing import Dict
 
+from jsonformatter import JsonFormatter
 from sentry_sdk import init as sentry_sdk_init  # type: ignore
 from sentry_sdk.integrations.logging import ignore_logger
 import daiquiri
@@ -39,6 +40,24 @@ _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
 _IGNORED_EXCEPTIONS = []
 _LOGGER = logging.getLogger(__name__)
+_JSON_LOGGING_FORMAT = {
+    "name": "name",
+    "levelno": "levelno",
+    "levelname": "levelname",
+    "pathname": "pathname",
+    "filename": "filename",
+    "module": "module",
+    "lineno": "lineno",
+    "funcname": "funcName",
+    "created": "created",
+    "asctime": "asctime",
+    "msecs": "msecs",
+    "relative_created": "relativeCreated",
+    # "thread": "thread",
+    # "thread_name": "threadName",
+    "process": "process",
+    "message": "message"
+}
 
 
 def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]) -> None:
@@ -199,23 +218,28 @@ def init_logging(
     Optionally you can specify prefix of the logging environment variable
     determining logging configuration via env vars (defaults to THOTH_LOG_).
     """
-    # TODO: JSON in deployments?
-    # deployed_to_cluster = bool(int(os.getenv('THOTH_CLUSTER_DEPLOYMENT', '0')))
+    if not os.getenv("OPENSHIFT_BUILD_NAME") or int(os.getenv("THOTH_LOGGING_NO_JSON", 0)):
+        # Running outside the cluster or forced not to use structured logging.
+        formatter = daiquiri.formatter.ColorFormatter(
+            fmt="%(asctime)s %(process)3d %(color)s%(levelname)-8.8s %(name)s:"
+            "%(lineno)d: %(message)s%(color_stop)s"
+        )
 
-    formatter = daiquiri.formatter.ColorFormatter(
-        fmt="%(asctime)s %(process)3d %(color)s%(levelname)-8.8s %(name)s:"
-        "%(lineno)d: %(message)s%(color_stop)s"
-    )
+        # Always log in UTC to be consistent with team members all over the world.
+        formatter.converter = time.gmtime
 
-    # Always log in UTC to be consistent with team members all over the world.
-    formatter.converter = time.gmtime
+        daiquiri.setup(
+            level=logging.INFO,
+            outputs=(
+                daiquiri.output.Stream(formatter=formatter),
+            ),
+        )
+    else:
+        handler = logging.StreamHandler()
+        formatter = JsonFormatter(_JSON_LOGGING_FORMAT)
+        handler.setFormatter(formatter)
+        logging.getLogger().addHandler(handler)
 
-    daiquiri.setup(
-        level=logging.INFO,
-        outputs=(
-            daiquiri.output.Stream(formatter=formatter),
-        ),
-    )
     root_logger = logging.getLogger("thoth.common")
     environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
 
