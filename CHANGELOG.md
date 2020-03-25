@@ -3468,3 +3468,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix requirements parsing
 * Stopping bots
 * Remove TODO for bot creating issues
+
+## Release 0.12.3 (2020-03-25T23:07:40)
+* We don't use threads, do not log info about them
+* Remove warning produced by jsonformatter
+* Removed coala bear
