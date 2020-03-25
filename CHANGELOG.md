@@ -3463,3 +3463,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.12.1 (2020-03-25T11:45:18)
 * added the missing jsonformatter
+
+## Release 0.12.2 (2020-03-25T19:10:07)
+* Fix requirements parsing
+* Stopping bots
+* Remove TODO for bot creating issues
