@@ -14,6 +14,7 @@ attrs = "*"
 pyyaml = "*"
 attrdict = "*"
 flexmock = "*"
+jsonformatter = "*"
 
 [dev-packages]
 pytest = "*"

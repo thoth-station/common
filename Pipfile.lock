@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5a37b6404f6d80aaba4052797bf39275586503c0bd2ce63666647432dce13422"
+            "sha256": "9999414f42145034dc64117b7e625214492915bf101f01e85b83f53d57c8f9a6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -103,6 +103,13 @@
                 "sha256:b0eaf100007721b5c16c1fc1eecb87409464edc10469ddc9a22a27a99123be49"
             ],
             "version": "==2.11.1"
+        },
+        "jsonformatter": {
+            "hashes": [
+                "sha256:e4bbbb1a79013d2f4b1d249fbed755ade679fd03af9a40de8e45148cde3d21af"
+            ],
+            "index": "pypi",
+            "version": "==0.1.4"
         },
         "kubernetes": {
             "hashes": [
@@ -770,10 +777,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:87831f1070534b636fea2241dd66f3afe37ac9041bcca6d0af3215cdcfbf7d82",
-                "sha256:f3128d882383c503003130389bf892856341c1da12c881ae24d6358c82561b55"
+                "sha256:6f4c2882a943d20714076679f8dcc5675e953d6c29bfea3bc5d08bb6cdea5d36",
+                "sha256:cb1dab893f9e39b3e68d9118c555dcd86526d531c128c3f72e1551939723b72f"
             ],
-            "version": "==20.0.13"
+            "version": "==20.0.14"
         },
         "wcwidth": {
             "hashes": [
