@@ -54,8 +54,8 @@ _JSON_LOGGING_FORMAT = OrderedDict([
     ("asctime", "asctime"),
     ("msecs", "msecs"),
     ("relative_created", "relativeCreated"),
-    ("thread", "thread"),
-    ("thread_name", "threadName"),
+    # ("thread", "thread"),
+    # ("thread_name", "threadName"),
     ("process", "process"),
     ("message", "message"),
 ])
