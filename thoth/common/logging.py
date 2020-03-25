@@ -22,6 +22,7 @@ import sys
 import logging
 import socket
 import time
+from collections import OrderedDict
 from typing import Optional
 from typing import List
 from typing import Dict
@@ -40,24 +41,24 @@ _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
 _IGNORED_EXCEPTIONS = []
 _LOGGER = logging.getLogger(__name__)
-_JSON_LOGGING_FORMAT = {
-    "name": "name",
-    "levelno": "levelno",
-    "levelname": "levelname",
-    "pathname": "pathname",
-    "filename": "filename",
-    "module": "module",
-    "lineno": "lineno",
-    "funcname": "funcName",
-    "created": "created",
-    "asctime": "asctime",
-    "msecs": "msecs",
-    "relative_created": "relativeCreated",
-    # "thread": "thread",
-    # "thread_name": "threadName",
-    "process": "process",
-    "message": "message"
-}
+_JSON_LOGGING_FORMAT = OrderedDict([
+    ("name", "name"),
+    ("levelno", "levelno"),
+    ("levelname", "levelname"),
+    ("pathname", "pathname"),
+    ("filename", "filename"),
+    ("module", "module"),
+    ("lineno", "lineno"),
+    ("funcname", "funcName"),
+    ("created", "created"),
+    ("asctime", "asctime"),
+    ("msecs", "msecs"),
+    ("relative_created", "relativeCreated"),
+    ("thread", "thread"),
+    ("thread_name", "threadName"),
+    ("process", "process"),
+    ("message", "message"),
+])
 
 
 def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]) -> None:
