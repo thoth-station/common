@@ -47,6 +47,17 @@ by a colon, an example:
 
         THOTH_ADJUST_LOGGING="flask:WARNING,alembic.migrations:ERROR"
 
+Structured logging
+==================
+
+The library will automatically detect when it is running inside an OpenShift
+cluster (based on ``OPENSHIFT_BUILD_NAME`` environment variable that is
+inserted into the container if build the container was built in an OpenShift
+cluster), In such case, the library will setup structured logging suitable for
+automated logs aggregation (e.g. automated logs aggregation using the ELK
+stack). This behavior can be suppressed by setting environment variable
+``THOTH_LOGGING_NO_JSON=1``.
+
 Ignoring reports from a logger
 ==============================
 
