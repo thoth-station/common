@@ -3460,3 +3460,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.12.1 (2020-03-25T11:45:18)
+* added the missing jsonformatter
