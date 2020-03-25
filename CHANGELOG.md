@@ -108,7 +108,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Initial dependency lock
 * Fix over-intended block
 * Remove Pipfile.lock for initial lock from Kebechet
-* Add TODO comment based on review
+* Add TO.DO comment based on review
 * Allow passing configuration via env vars
 * Place all the OpenShift related logic at one place
 * Automatic update of dependency pytest-timeout from 1.3.1 to 1.3.2
@@ -3463,3 +3463,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.12.1 (2020-03-25T11:45:18)
 * added the missing jsonformatter
+
+## Release 0.12.2 (2020-03-25T19:10:07)
+* Fix requirements parsing
+* Stopping bots
+* Remove TODO for bot creating issues
