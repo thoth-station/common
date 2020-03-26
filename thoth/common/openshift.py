@@ -1986,7 +1986,7 @@ class OpenShift:
         if not self.use_argo:
             _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
 
-        workflow_id = self.generate_id()
+        workflow_id = self.generate_id("qeb-hwt")
         template_parameters = {
             'WORKFLOW_ID': workflow_id,
             'GITHUB_EVENT_TYPE': github_event_type,
