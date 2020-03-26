@@ -3473,3 +3473,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * We don't use threads, do not log info about them
 * Remove warning produced by jsonformatter
 * Removed coala bear
+
+## Release 0.12.4 (2020-03-26T18:05:02)
+* Adjust id for qeb-hwt workflow
+* Force JSON logger for all registered loggers
