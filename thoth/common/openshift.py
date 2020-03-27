@@ -1437,6 +1437,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1474,6 +1475,7 @@ class OpenShift:
             ]
 
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
+        template_parameters["THOTH_ADVISER_DEV"] = "1" if dev else "0"
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
             "requirements"
         ]
@@ -1541,6 +1543,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1587,6 +1590,7 @@ class OpenShift:
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
+            "THOTH_ADVISER_DEV": "1" if dev else "0",
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
