@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9999414f42145034dc64117b7e625214492915bf101f01e85b83f53d57c8f9a6"
+            "sha256": "5b9eb84fa267fd4f95926c2d9098c99a1da8655ac30a2e4d03af7097229a8017"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -85,10 +85,10 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:4fddaf62bcfc3b9cc1bb2062130937a25ebe781b8eb15beec217c160b8cabb68",
-                "sha256:ec172006e626bb90f6069e9358c373bc991a15da6cc55276986d9ecd29235b15"
+                "sha256:016924388770b7e66c7e9ade1c4c3144ee88812d79697fd6c0dad9abdfcda2fd",
+                "sha256:01d686448f57d3bc027726474faa1aa650ba333bedb392e06938b0add8ec8d3a"
             ],
-            "version": "==1.11.3"
+            "version": "==1.12.0"
         },
         "idna": {
             "hashes": [
@@ -113,10 +113,11 @@
         },
         "kubernetes": {
             "hashes": [
-                "sha256:85a767d04f17d6d317374b6c35e09eb168a6bfd9276f0b3177cc206376bad968",
-                "sha256:9aa4f34431a442dda856bafc959bcf296cb5802f370361604c440093c702b17c"
+                "sha256:0e24771ceb63ae18ab0d6a7b31e208a0ace7941adae785260840b123888f706c",
+                "sha256:70bff95703a09f0a67473a22d13be36a158ab6e8facc59e64454a26b14690908"
             ],
-            "version": "==10.1.0"
+            "index": "pypi",
+            "version": "==10.0.0"
         },
         "markupsafe": {
             "hashes": [
@@ -485,11 +486,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:06f5b3a99029c7134207dd882428a66992a9de2bef7c2b699b5641f9886c3302",
-                "sha256:b97607a1a18a5100839aec1dc26a1ea17ee0d93b20b0f008d80a5a050afb200b"
+                "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f",
+                "sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"
             ],
             "markers": "python_version < '3.8'",
-            "version": "==1.5.0"
+            "version": "==1.6.0"
         },
         "importlib-resources": {
             "hashes": [
@@ -777,10 +778,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:6f4c2882a943d20714076679f8dcc5675e953d6c29bfea3bc5d08bb6cdea5d36",
-                "sha256:cb1dab893f9e39b3e68d9118c555dcd86526d531c128c3f72e1551939723b72f"
+                "sha256:4e399f48c6b71228bf79f5febd27e3bbb753d9d5905776a86667bc61ab628a25",
+                "sha256:9e81279f4a9d16d1c0654a127c2c86e5bca2073585341691882c1e66e31ef8a5"
             ],
-            "version": "==20.0.14"
+            "version": "==20.0.15"
         },
         "wcwidth": {
             "hashes": [
