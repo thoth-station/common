@@ -248,7 +248,6 @@ def init_logging(
                 continue
             logger.filters.clear()
             logger.handlers.clear()
-            logger.level = logging.NOTSET
             logger.propagate = True
         logging._releaseLock()
 
@@ -256,7 +255,8 @@ def init_logging(
         formatter = JsonFormatter(_JSON_LOGGING_FORMAT)
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.WARNING)
+        logging.getLogger().propagate = False
 
     root_logger = logging.getLogger("thoth.common")
     environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
