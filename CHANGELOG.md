@@ -3483,3 +3483,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Delete Pipfile.lock
 * Lock down kubernetes version to 0.10.0 due to CVE-2017-18342
 * Propagate THOTH_ADVISER_DEV parameter to adviser runs
+
+## Release 0.12.6 (2020-04-01T17:23:29)
+* Set default loglevel to WARNING
+* Lazily initialize the WorkflowManager
