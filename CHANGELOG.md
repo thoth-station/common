@@ -3487,3 +3487,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.12.6 (2020-04-01T17:23:29)
 * Set default loglevel to WARNING
 * Lazily initialize the WorkflowManager
+
+## Release 0.12.7 (2020-04-07T18:04:21)
+* Correct default and typo
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.0 to 0.6.1
