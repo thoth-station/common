@@ -3473,3 +3473,17 @@ Starting with this release we have a Zuul-CI pipeline that:
 * We don't use threads, do not log info about them
 * Remove warning produced by jsonformatter
 * Removed coala bear
+
+## Release 0.12.4 (2020-03-26T18:05:02)
+* Adjust id for qeb-hwt workflow
+* Force JSON logger for all registered loggers
+
+## Release 0.12.5 (2020-03-31T22:43:49)
+* Initial dependency lock
+* Delete Pipfile.lock
+* Lock down kubernetes version to 0.10.0 due to CVE-2017-18342
+* Propagate THOTH_ADVISER_DEV parameter to adviser runs
+
+## Release 0.12.6 (2020-04-01T17:23:29)
+* Set default loglevel to WARNING
+* Lazily initialize the WorkflowManager

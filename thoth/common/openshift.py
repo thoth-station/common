@@ -146,14 +146,8 @@ class OpenShift:
                 "TLS verification when communicating with k8s/okd master is disabled"
             )
 
-        self.use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
-
-        self.workflow_manager = None
-        if self.use_argo:
-            _LOGGER.info("Using Argo Workflow to run jobs")
-            from .workflows import WorkflowManager
-
-            self.workflow_manager = WorkflowManager(openshift=self)
+        self._use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
+        self._workflow_manager = None
 
     @property
     def token(self) -> str:
@@ -168,6 +162,32 @@ class OpenShift:
                 ]["value"].split(" ")[1]
 
         return self._token
+
+    @property
+    def use_argo(self) -> bool:
+        """Return whether Argo Workflows are currently enabled."""
+        return self._use_argo
+
+    @use_argo.setter
+    def use_argo(self, enable: bool):
+        """Set whether Argo Workflows are enabled."""
+        if enable:
+            _LOGGER.debug("Argo Workflows enabled")
+        else:
+            _LOGGER.debug("Argo Workflows disabled")
+
+        self._use_argo = enable
+
+    @property
+    def workflow_manager(self):
+        """Return WorkflowManager instance.
+
+        This property lazily initializes the WorkflowManager.
+        """
+        if self._workflow_manager is None:
+            from .workflows import WorkflowManager
+            self._workflow_manager = WorkflowManager(openshift=self)
+        return self._workflow_manager
 
     @staticmethod
     def _set_env_var(template: Dict[str, Any], **env_var: str) -> None:
@@ -654,6 +674,8 @@ class OpenShift:
         parameters: Dict[str, Any],
     ) -> str:
         """Schedule an inspection run."""
+        if not self.use_argo:
+            _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
                 "Unable to schedule inspection without Amun inspection namespace being set."
@@ -1437,6 +1459,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1474,6 +1497,7 @@ class OpenShift:
             ]
 
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
+        template_parameters["THOTH_ADVISER_DEV"] = "1" if dev else "0"
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
             "requirements"
         ]
@@ -1543,6 +1567,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
@@ -1589,6 +1614,7 @@ class OpenShift:
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
+            "THOTH_ADVISER_DEV": "1" if dev else "0",
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
@@ -1988,7 +2014,7 @@ class OpenShift:
         if not self.use_argo:
             _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
 
-        workflow_id = self.generate_id()
+        workflow_id = self.generate_id("qeb-hwt")
         template_parameters = {
             'WORKFLOW_ID': workflow_id,
             'GITHUB_EVENT_TYPE': github_event_type,

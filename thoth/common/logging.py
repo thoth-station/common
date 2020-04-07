@@ -43,10 +43,10 @@ _IGNORED_EXCEPTIONS = []
 _LOGGER = logging.getLogger(__name__)
 _JSON_LOGGING_FORMAT = OrderedDict([
     ("name", "name"),
-    ("levelno", "levelno"),
+    # ("levelno", "levelno"),
     ("levelname", "levelname"),
-    ("pathname", "pathname"),
-    ("filename", "filename"),
+    # ("pathname", "pathname"),
+    # ("filename", "filename"),
     ("module", "module"),
     ("lineno", "lineno"),
     ("funcname", "funcName"),
@@ -236,10 +236,27 @@ def init_logging(
             ),
         )
     else:
+        # The most straightforward way for setting up all the loggers (werkzeug, flask, gunicorn) is to
+        # discard their default configuration and force them to use JSON logger configured for the root logger.
+        logging._acquireLock()
+        for logger in logging.Logger.manager.loggerDict.values():
+            if not isinstance(logger, logging.Logger):
+                continue
+            if logger.name == "gunicorn.access":
+                # We configure access log in gunicorn config file, see API deployment
+                # configuration and gunicorn.conf.py file.
+                continue
+            logger.filters.clear()
+            logger.handlers.clear()
+            logger.propagate = True
+        logging._releaseLock()
+
         handler = logging.StreamHandler()
         formatter = JsonFormatter(_JSON_LOGGING_FORMAT)
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
+        logging.getLogger().setLevel(logging.WARNING)
+        logging.getLogger().propagate = False
 
     root_logger = logging.getLogger("thoth.common")
     environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
