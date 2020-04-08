@@ -3491,3 +3491,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.12.7 (2020-04-07T18:04:21)
 * Correct default and typo
 * :pushpin: Automatic update of dependency pytest-mypy from 0.6.0 to 0.6.1
+
+## Release 0.12.8 (2020-04-08T15:44:57)
+* :nut_and_bolt: provide imagestream name while processing template
