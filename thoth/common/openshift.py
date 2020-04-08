@@ -689,7 +689,6 @@ class OpenShift:
         template_parameters = dict(parameters)
         template_parameters["THOTH_INFRA_NAMESPACE"] = self.infra_namespace
         template_parameters["AMUN_INSPECTION_ID"] = inspection_id
-        template_parameters["AMUN_GENERATED_DOCKERFILE"] = dockerfile
         template_parameters["AMUN_BUILD_CPU"] = specification["build"]["requests"]["cpu"]
         template_parameters["AMUN_BUILD_MEMORY"] = specification["build"]["requests"]["memory"]
         template_parameters["AMUN_RUN_CPU"] = specification["run"]["requests"]["cpu"]
