@@ -700,12 +700,8 @@ class OpenShift:
         workflow_parameters["specification"] = json.dumps(specification)
         workflow_parameters["target"] = target
 
-        if "allowed_failures" in specification:
-            workflow_parameters["allowed-failures"] = specification["allowed_failures"]
         if "batch_size" in specification:
             workflow_parameters["batch-size"] = specification["batch_size"]
-        if "parallelism" in specification:
-            workflow_parameters["parallelism"] = specification["parallelism"]
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_inspection_workflow,
