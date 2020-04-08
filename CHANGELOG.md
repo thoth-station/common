@@ -3494,3 +3494,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.12.8 (2020-04-08T15:44:57)
 * :nut_and_bolt: provide imagestream name while processing template
+
+## Release 0.12.9 (2020-04-08T21:51:02)
+* Remove assignment of the Dockerfile
+* Remove parallelism and allowed failures configuration
+* Propagate requests and limits for inspection run and build
