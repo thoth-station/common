@@ -488,9 +488,7 @@ class OpenShift:
         if not len(response.get("items", [])):
             raise NotFoundException(f"Job with the given id {job_id} was not found")
 
-        result: List[str] = [
-            pod["metadata"]["name"] for pod in response["items"]
-        ]
+        result: List[str] = [pod["metadata"]["name"] for pod in response["items"]]
 
         return result
 
@@ -517,15 +515,15 @@ class OpenShift:
 
     def get_image_streams(self, namespace: str, label_selector: str) -> Dict[str, Any]:
         """Get all image streams in a namespace and select them by label."""
-        v1_image_streams = self.ocp_client.resources.get(api_version="image.openshift.io/v1", kind="ImageStream")
+        v1_image_streams = self.ocp_client.resources.get(
+            api_version="image.openshift.io/v1", kind="ImageStream"
+        )
         result: Dict[str, Any] = v1_image_streams.get(
             label_selector=label_selector, namespace=namespace
         )
         return result
 
-    def get_job_status(
-        self, job_id: str, namespace: str
-    ) -> Dict[str, Any]:
+    def get_job_status(self, job_id: str, namespace: str) -> Dict[str, Any]:
         """Get status of a Job and Pods created by the Job.
 
         :raises: NotFoundError if no Job of such name is found in the namespace
@@ -537,7 +535,9 @@ class OpenShift:
 
         job_status: Dict[str, Any] = {}
         try:
-            resources = self.ocp_client.resources.get(api_version="batch/v1", kind="Job")
+            resources = self.ocp_client.resources.get(
+                api_version="batch/v1", kind="Job"
+            )
 
             job: Dict[str, Any] = resources.get(name=job_id, namespace=namespace)
             for k, v in job["status"].items():
@@ -566,8 +566,7 @@ class OpenShift:
 
         pod_ids: List[str] = self._get_pod_ids_from_job(job_id, namespace)
         pods: List[Dict[str, Any]] = [
-            self.get_pod_status_report(p, namespace)
-            for p in pod_ids
+            self.get_pod_status_report(p, namespace) for p in pod_ids
         ]
 
         report["pods"] = pods
@@ -675,19 +674,26 @@ class OpenShift:
     ) -> str:
         """Schedule an inspection run."""
         if not self.use_argo:
-            _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
                 "Unable to schedule inspection without Amun inspection namespace being set."
             )
 
-        inspection_id = self.generate_id(prefix="inspection", identifier=specification.get("identifier"))
+        inspection_id = self.generate_id(
+            prefix="inspection", identifier=specification.get("identifier")
+        )
 
         template_parameters = dict(parameters)
+        template_parameters["THOTH_INFRA_NAMESPACE"] = self.infra_namespace
         template_parameters["AMUN_INSPECTION_ID"] = inspection_id
         template_parameters["AMUN_GENERATED_DOCKERFILE"] = dockerfile
         template_parameters["AMUN_CPU"] = specification["build"]["requests"]["cpu"]
-        template_parameters["AMUN_MEMORY"] = specification["build"]["requests"]["memory"]
+        template_parameters["AMUN_MEMORY"] = specification["build"]["requests"][
+            "memory"
+        ]
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
@@ -758,7 +764,7 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None
+        template: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Run solver or all solver to solve the given requirements."""
         if self.middletier_namespace is None:
@@ -771,6 +777,7 @@ class OpenShift:
         job_id = job_id or self.generate_id(solver)
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
             THOTH_SOLVER_NO_TRANSITIVE=int(not transitive),
             THOTH_SOLVER_PACKAGES=packages.replace("\n", "\\n"),
             THOTH_SOLVER_INDEXES=",".join(indexes) if indexes else "",
@@ -825,11 +832,12 @@ class OpenShift:
         workflow_id = job_id or self.generate_id(solver)
 
         template_parameters = {
-            'THOTH_SOLVER_WORKFLOW_ID': workflow_id,
-            'THOTH_SOLVER_NAME': solver,
-            'THOTH_SOLVER_PACKAGES': packages.replace("\n", "\\n"),
-            'THOTH_SOLVER_NO_TRANSITIVE': int(not transitive),
-            'THOTH_SOLVER_INDEXES': ",".join(indexes) if indexes else ""
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
+            "THOTH_SOLVER_WORKFLOW_ID": workflow_id,
+            "THOTH_SOLVER_NAME": solver,
+            "THOTH_SOLVER_PACKAGES": packages.replace("\n", "\\n"),
+            "THOTH_SOLVER_NO_TRANSITIVE": int(not transitive),
+            "THOTH_SOLVER_INDEXES": ",".join(indexes) if indexes else "",
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
@@ -934,6 +942,7 @@ class OpenShift:
 
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_PROJECT_NAME=self.infra_namespace,
             THOTH_LOG_PACKAGE_EXTRACT="DEBUG" if debug else "INFO",
             THOTH_ANALYZED_IMAGE=image,
             THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
@@ -1027,6 +1036,7 @@ class OpenShift:
 
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_PROJECT_NAME=self.infra_namespace,
             THOTH_PACKAGE_ANALYZER_PACKAGE_NAME=package_name,
             THOTH_PACKAGE_ANALYZER_PACKAGE_VERSION=package_version,
             THOTH_PACKAGE_ANALYZER_INDEX_URL=index_url,
@@ -1119,7 +1129,9 @@ class OpenShift:
         return workflow(**parameters)
 
     @staticmethod
-    def generate_id(prefix: Optional[str] = None, identifier: Optional[str] = None) -> str:
+    def generate_id(
+        prefix: Optional[str] = None, identifier: Optional[str] = None
+    ) -> str:
         """Generate an identifier."""
         # A very first method used 'generatedName' in ImageStream configuration,
         # but it looks like there is a bug in OpenShift as it did not generated any
@@ -1200,6 +1212,7 @@ class OpenShift:
 
         job_id = job_id or self.generate_id("dependency-monkey")
         parameters = {
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
             "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
@@ -1286,6 +1299,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("build-analyze")
 
         parameters = {
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
             "THOTH_BUILD_ANALYZER_JOB_ID": job_id,
@@ -1352,6 +1366,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("build-report")
 
         parameters = {
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
             "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-report"),
@@ -1418,6 +1433,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("build-dependencies")
 
         parameters = {
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_BUILD_LOG_DOC_ID": document_id,
             "THOTH_REPORT_OUTPUT": output,
             "THOTH_BUILD_ANALYZER_JOB_ID": job_id,
@@ -1467,7 +1483,7 @@ class OpenShift:
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
-        re_run_adviser_id: Optional[str] = None
+        re_run_adviser_id: Optional[str] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1492,10 +1508,10 @@ class OpenShift:
         template_parameters = {}
 
         if application_stack.get("requirements_lock"):
-            template_parameters["THOTH_ADVISER_REQUIREMENTS_LOCKED"] = application_stack[
-                "requirements_lock"
-            ]
-
+            template_parameters[
+                "THOTH_ADVISER_REQUIREMENTS_LOCKED"
+            ] = application_stack["requirements_lock"]
+        template_parameters["IMAGE_STREAM_NAMESPACE"] = self.infra_namespace
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
         template_parameters["THOTH_ADVISER_DEV"] = "1" if dev else "0"
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
@@ -1503,9 +1519,9 @@ class OpenShift:
         ]
         template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
         template_parameters["THOTH_LOG_ADVISER"] = "DEBUG" if debug else "INFO"
-        template_parameters["THOTH_ADVISER_REQUIREMENTS_FORMAT"] = application_stack.get(
-                "requirements_format", "pipenv"
-            )
+        template_parameters[
+            "THOTH_ADVISER_REQUIREMENTS_FORMAT"
+        ] = application_stack.get("requirements_format", "pipenv")
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
         template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
             runtime_environment
@@ -1519,7 +1535,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "is_s2i": is_s2i,
-                "re_run_adviser_id": re_run_adviser_id
+                "re_run_adviser_id": re_run_adviser_id,
             }
         )
 
@@ -1550,7 +1566,7 @@ class OpenShift:
             "ceph_bucket_prefix": os.environ["THOTH_CEPH_BUCKET_PREFIX"],
             "ceph_bucket_name": os.environ["THOTH_CEPH_BUCKET"],
             "ceph_host": urlparse(os.environ["THOTH_S3_ENDPOINT_URL"]).netloc,
-            "deployment_name": os.environ["THOTH_DEPLOYMENT_NAME"]
+            "deployment_name": os.environ["THOTH_DEPLOYMENT_NAME"],
         }
 
         return workflow_parameters
@@ -1588,6 +1604,7 @@ class OpenShift:
         job_id = job_id or self.generate_id("adviser")
 
         parameters = {
+            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_ADVISER_REQUIREMENTS": application_stack.pop("requirements").replace(
                 "\n", "\\n"
             ),
@@ -1610,7 +1627,7 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "is_s2i": is_s2i,
-                    "re_run_adviser_id": re_run_adviser_id
+                    "re_run_adviser_id": re_run_adviser_id,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -1705,6 +1722,7 @@ class OpenShift:
         )
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
             THOTH_ADVISER_REQUIREMENTS=requirements,
             THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
             THOTH_ADVISER_OUTPUT=output,
@@ -1948,6 +1966,7 @@ class OpenShift:
         template = template or self.get_graph_sync_template()
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
             THOTH_SYNC_DOCUMENT_ID=document_id,
             THOTH_JOB_ID=job_id or self.generate_id(graph_sync_type),
             THOTH_FORCE_SYNC=force_sync,
@@ -2008,23 +2027,25 @@ class OpenShift:
         github_head_repo_url: str,
         origin: str,
         revision: str,
-        host: str
+        host: str,
     ) -> str:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
-            _LOGGER.warning("No legacy implementation that would use workload operator, using Argo workflows..")
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
 
         workflow_id = self.generate_id("qeb-hwt")
         template_parameters = {
-            'WORKFLOW_ID': workflow_id,
-            'GITHUB_EVENT_TYPE': github_event_type,
-            'GITHUB_CHECK_RUN_ID': str(github_check_run_id),
-            'GITHUB_INSTALLATION_ID': str(github_installation_id),
-            'GITHUB_BASE_REPO_URL': github_base_repo_url,
-            'GITHUB_HEAD_REPO_URL': github_head_repo_url,
-            'ORIGIN': origin,
-            'REVISION': revision,
-            'THOTH_HOST': host
+            "WORKFLOW_ID": workflow_id,
+            "GITHUB_EVENT_TYPE": github_event_type,
+            "GITHUB_CHECK_RUN_ID": str(github_check_run_id),
+            "GITHUB_INSTALLATION_ID": str(github_installation_id),
+            "GITHUB_BASE_REPO_URL": github_base_repo_url,
+            "GITHUB_HEAD_REPO_URL": github_head_repo_url,
+            "ORIGIN": origin,
+            "REVISION": revision,
+            "THOTH_HOST": host,
         }
 
         return self._schedule_workflow(
@@ -2076,6 +2097,7 @@ class OpenShift:
         template = template or self.get_kebechet_template()
         self.set_template_parameters(
             template,
+            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
             KEBECHET_SUBCOMMAND="run-url",
             KEBECHET_VERBOSE=verbose,
             KEBECHET_REPO_URL=url,
@@ -2469,7 +2491,10 @@ class OpenShift:
         return jobs_status_count
 
     def get_workflow(
-        self, name: str = None, label_selector: str = None, namespace: Optional[str] = None
+        self,
+        name: str = None,
+        label_selector: str = None,
+        namespace: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get Workflow from a namespace, use one of name or label_selector to identify which one to get."""
         wf: Dict[str, Any]
@@ -2482,10 +2507,10 @@ class OpenShift:
 
             try:
                 response = self.ocp_client.resources.get(
-                    api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
-                ).get(
-                    namespace=namespace or self.infra_namespace, name=name
-                )
+                    api_version="argoproj.io/v1alpha1",
+                    kind="Workflow",
+                    name="workflows",
+                ).get(namespace=namespace or self.infra_namespace, name=name)
                 _LOGGER.debug(
                     "OpenShift response for getting template by name %r: %r",
                     name,
@@ -2501,9 +2526,12 @@ class OpenShift:
         elif label_selector:
             try:
                 response = self.ocp_client.resources.get(
-                    api_version="argoproj.io/v1alpha1", kind="Workflow", name="workflows"
+                    api_version="argoproj.io/v1alpha1",
+                    kind="Workflow",
+                    name="workflows",
                 ).get(
-                    namespace=namespace or self.infra_namespace, label_selector=label_selector
+                    namespace=namespace or self.infra_namespace,
+                    label_selector=label_selector,
                 )
                 _LOGGER.debug(
                     "OpenShift response for getting template by label_selector %r: %r",
@@ -2525,7 +2553,10 @@ class OpenShift:
         return wf
 
     def get_workflow_status(
-        self, name: str = None, label_selector: str = None, namespace: Optional[str] = None
+        self,
+        name: str = None,
+        label_selector: str = None,
+        namespace: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get a Workflow status, use one of name or label_selector to identify which one to get."""
         wf: Dict[str, Any] = self.get_workflow(
