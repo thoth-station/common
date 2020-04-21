@@ -43,6 +43,7 @@ class RuntimeEnvironment:
     python_version = attr.ib(type=str, default=None)
     cuda_version = attr.ib(type=str, default=None)
     name = attr.ib(type=str, default=None)
+    platform = attr.ib(type=str, default=None)
 
     @classmethod
     def load(cls, content: Optional[str] = None) -> "RuntimeEnvironment":
@@ -67,6 +68,7 @@ class RuntimeEnvironment:
         python_version = dict_.pop("python_version", None)
         cuda_version = dict_.pop("cuda_version", None)
         name = dict_.pop("name", None)
+        platform = dict_.pop("platform", None)
 
         for key, value in dict_.items():
             _LOGGER.warning(
@@ -81,6 +83,7 @@ class RuntimeEnvironment:
             python_version=python_version,
             cuda_version=cuda_version,
             name=name,
+            platform=platform,
         )
 
         if instance.operating_system.version and not instance.operating_system.name:
@@ -125,6 +128,7 @@ class RuntimeEnvironment:
             self.operating_system.name,
             self.operating_system.version,
             self.python_version,
+            self.platform,
         )
         return all(
             i is not None for i in runtime_environment
