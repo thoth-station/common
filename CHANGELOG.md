@@ -3499,3 +3499,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Remove assignment of the Dockerfile
 * Remove parallelism and allowed failures configuration
 * Propagate requests and limits for inspection run and build
+
+## Release 0.12.10 (2020-04-22T09:13:56)
+* Provide platform in Thoth's runtime environment config option
