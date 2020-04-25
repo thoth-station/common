@@ -3502,3 +3502,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.12.10 (2020-04-22T09:13:56)
 * Provide platform in Thoth's runtime environment config option
+
+## Release 0.13.0 (2020-04-25T06:23:51)
+* Added workflow functions
