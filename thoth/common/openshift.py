@@ -2053,7 +2053,7 @@ class OpenShift:
 
     def schedule_kebechet_workflow(
         self,
-        webhook_payload: str
+        webhook_payload: Dict[str, Any]
     ) -> str:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
         if not self.use_argo:
@@ -2064,7 +2064,7 @@ class OpenShift:
         workflow_id = self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
-            "WEBHOOK_PAYLOAD": webhook_payload
+            "WEBHOOK_PAYLOAD": json.dumps(webhook_payload)
         }
 
         return self._schedule_workflow(
