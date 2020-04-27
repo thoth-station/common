@@ -2064,7 +2064,7 @@ class OpenShift:
         workflow_id = self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
-            "WEBHOOK_PAYLOAD": webhook_payload
+            "WEBHOOK_PAYLOAD": json.dumps(webhook_payload)
         }
 
         return self._schedule_workflow(
