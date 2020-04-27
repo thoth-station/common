@@ -3505,3 +3505,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.13.0 (2020-04-25T06:23:51)
 * Added workflow functions
+
+## Release 0.13.1 (2020-04-27T17:45:04)
+* Renamed to kebechet
+* :pushpin: Automatic update of dependency pylint from 2.4.4 to 2.5.0
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.1 to 0.6.2
