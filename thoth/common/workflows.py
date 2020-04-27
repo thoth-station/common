@@ -352,7 +352,7 @@ class WorkflowManager:
 
         workflow_id: str = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
-            label_selector="template=kebechet-job",
+            label_selector="template=kebechet",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
             workflow_namespace=self.openshift.backend_namespace,
