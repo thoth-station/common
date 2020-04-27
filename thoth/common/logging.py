@@ -246,6 +246,16 @@ def init_logging(
                 # We configure access log in gunicorn config file, see API deployment
                 # configuration and gunicorn.conf.py file.
                 continue
+            if logger.name == "requests.packages.urllib3":
+                # set logger handler to stdout
+                stdout_handler = logging.StreamHandler(sys.stdout)
+                logger.addHandler(stdout_handler)
+
+                # for now use json logging format which is used elsewhere
+                formatter = JsonFormatter(_JSON_LOGGING_FORMAT)
+                logger.setFormatter(formatter)
+                continue
+
             logger.filters.clear()
             logger.handlers.clear()
             logger.propagate = True
