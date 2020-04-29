@@ -244,14 +244,14 @@ class WorkflowManager:
 
         workflow_info["phase"] = workflow['status']['phase']
 
-        tasks_names = self._collect_template_ref(templates=workflow['spec']['templates'])
+        tasks_names = self._collect_tasks_names(templates=workflow['spec']['templates'])
         nodes = self._collect_workflows_tasks_info(nodes=workflow['status']['nodes'], tasks_names=tasks_names)
         workflow_info["nodes"] = nodes
 
         return workflow_info
 
     @staticmethod
-    def _collect_template_ref(templates: List[dict]):
+    def _collect_tasks_names(templates: List[dict]):
         """Collect tasks names from Workflow template."""
         tasks_names = []
 
