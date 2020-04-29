@@ -106,10 +106,10 @@
         },
         "jsonformatter": {
             "hashes": [
-                "sha256:e4bbbb1a79013d2f4b1d249fbed755ade679fd03af9a40de8e45148cde3d21af"
+                "sha256:6eedd8a8a940f3254d7be2d1d1bde3f1644f675e11971490d80815f31db84c33"
             ],
             "index": "pypi",
-            "version": "==0.1.4"
+            "version": "==0.2.1"
         },
         "kubernetes": {
             "hashes": [
@@ -214,10 +214,10 @@
         },
         "pytz": {
             "hashes": [
-                "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d",
-                "sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"
+                "sha256:a494d53b6d39c3c6e44c3bec237336e14305e4f29bbf800b599253057fbb79ed",
+                "sha256:c35965d010ce31b23eeb663ed3cc8c906275d6be1a34393a1d73a41febf4a048"
             ],
-            "version": "==2019.3"
+            "version": "==2020.1"
         },
         "pyyaml": {
             "hashes": [
