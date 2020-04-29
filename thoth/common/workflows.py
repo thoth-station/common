@@ -188,82 +188,87 @@ class WorkflowManager:
         template = self.openshift.oc_process(namespace, template)
         return template
 
-    def get_workflow(
-        self, namespace: str, name: str,
-    ) -> Dict[str, Any]:
+    def get_workflow(self, namespace: str, name: str) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
         response = self.api.get_namespaced_workflow(namespace=namespace, name=name)
         return response.to_dict()
 
     def get_workflows(
-        self,
-        namespace: str,
-        label_selector: str,
+        self, namespace: str, *, label_selector: Optional[str] = None
     ) -> Dict[str, Any]:
         """Get Workflows in namespace."""
-        response = self.api.list_namespaced_workflows(namespace=namespace, label_selector=label_selector)
+        parameters = locals()
+        parameters.pop("self")
+        if not label_selector:
+            parameters.pop("label_selector")
+        response = self.api.list_namespaced_workflows(**parameters)
         return response.to_dict()
 
-    def get_workflow_info(
-        self, namespace: str, name: str,
-    ) -> Dict[str, Any]:
+    def get_workflow_info(self, namespace: str, name: str) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
         workflow = self.get_workflow(namespace=namespace, name=name)
         workflow_main = self._collect_workflow_info(workflow=workflow)
-        return workflow_main
+        return {workflow_main["name"]: workflow_main}
 
     def get_workflows_info(
-        self, label_selector: str, namespace: str
+        self, namespace: str, *, label_selector: Optional[str] = None
     ) -> Dict[str, Any]:
         """Get workflows info from a specific namespace."""
-        workflows = self.get_workflows(namespace=namespace, label_selector=label_selector)
+        workflows = self.get_workflows(
+            namespace=namespace, label_selector=label_selector
+        )
         workflow_data = {}
         for workflow in workflows["items"]:
 
             workflow_main = self._collect_workflow_info(workflow=workflow)
 
-            workflow_data[workflow['metadata']['name']] = workflow_main
+            workflow_data[workflow["metadata"]["name"]] = workflow_main
 
         return workflow_data
 
-    def _collect_workflow_info(self, workflow: dict) -> Dict[str, Any]::
+    def _collect_workflow_info(self, workflow: Dict[str, Any]) -> Dict[str, Any]:
         """Collect Workflow info."""
-        workflow_info = {}
-        workflow_info["name"] = workflow['metadata']['name']
-
-        started_at = workflow['status']['started_at']
-        workflow_info["started_at"] = started_at
-
-        finished_at = workflow['status']['finished_at']
-        workflow_info["finished_at"] = finished_at
+        started_at = workflow["status"]["started_at"]
+        finished_at = workflow["status"]["finished_at"]
 
         duration = None
         if started_at and finished_at:
             duration = (finished_at - started_at).total_seconds()
-        workflow_info["duration"] = duration
 
-        workflow_info["phase"] = workflow['status']['phase']
+        tasks_names = self._collect_tasks_names(templates=workflow["spec"]["templates"])
+        nodes = self._collect_workflows_tasks_info(
+            nodes=workflow["status"]["nodes"], tasks_names=tasks_names
+        )
 
-        tasks_names = self._collect_tasks_names(templates=workflow['spec']['templates'])
-        nodes = self._collect_workflows_tasks_info(nodes=workflow['status']['nodes'], tasks_names=tasks_names)
-        workflow_info["nodes"] = nodes
+        workflow_info = {
+            "name": workflow["metadata"]["name"],
+            "labels": workflow["metadata"]["labels"],
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "duration": duration,
+            "phase": workflow["status"]["phase"],
+            "nodes": nodes,
+        }
 
         return workflow_info
 
     @staticmethod
-    def _collect_tasks_names(templates: List[dict]) -> Dict[str, Any]::
+    def _collect_tasks_names(templates: List[dict]) -> Dict[str, Any]:
         """Collect tasks names from Workflow template."""
         tasks_names = []
 
         for template in templates:
             # TODO: Extend to other structures beside dag and consider also steps
-            if 'dag' in template.keys():
-                for task in template['dag']['tasks']:
-                    tasks_names.append(task['name'])
+            if "dag" in template.keys():
+                if template["dag"]:
+                    for task in template["dag"]["tasks"]:
+                        tasks_names.append(task["name"])
         return tasks_names
 
     @staticmethod
-    def _collect_workflows_tasks_info(nodes: dict, tasks_names: List[str]) -> Dict[str, Any]::
+    def _collect_workflows_tasks_info(
+        nodes: Dict[str, Any], tasks_names: List[str]
+    ) -> Dict[str, Any]:
         """Collect info about tasks in the Workflow."""
         nodes_info = {}
         if not nodes:
@@ -271,72 +276,117 @@ class WorkflowManager:
 
         for pod_id, node in nodes.items():
 
-            if node['display_name'] in tasks_names:
-                nodes_info[pod_id] = {}
-                nodes_info[pod_id]['pod_id'] = pod_id
-                nodes_info[pod_id]['display_name'] = node['display_name']
-
-                started_at = node['started_at']
-                nodes_info[pod_id]["started_at"] = started_at
-
-                finished_at = node['finished_at']
-                nodes_info[pod_id]["finished_at"] = finished_at
-
+            if node["display_name"] in tasks_names:
                 duration = None
-                if started_at and finished_at:
-                    duration = (finished_at - started_at).total_seconds()
-                nodes_info[pod_id]["duration"] = duration
+                if node["started_at"] and node["finished_at"]:
+                    duration = (
+                        node["finished_at"] - node["started_at"]
+                    ).total_seconds()
 
-                nodes_info[pod_id]['phase'] = node['phase']
-                nodes_info[pod_id]['message'] = node['message']
+                nodes_info[pod_id] = {
+                    "pod_id": pod_id,
+                    "display_name": node["display_name"],
+                    "started_at": node["started_at"],
+                    "finished_at": node["finished_at"],
+                    "duration": duration,
+                    "phase": node["phase"],
+                    "message": node["message"],
+                }
 
         return nodes_info
 
-    def get_workflows_and_tasks_status(
-        self, label_selector: str, namespace: str
-    ) -> Dict[str, Any]::
-        """Get workflows and tasks status from a specific namespace."""
-        workflows_info = self.get_workflows_info(namespace=namespace, label_selector=label_selector)
-        workflows_status = {}
-        task_status = {}
-        for workflow_id, workflow_data in workflows_info.items():
-            workflow_phase = workflow_data['phase']
-            workflows_status = self._update_workflows_status(workflows_status, workflow_phase)
-            nodes = workflow_data['nodes']
-            task_status = self._update_tasks_status(task_status, nodes)
+    def get_workflow_and_tasks_status(
+        self, namespace: str, name: str
+    ) -> Dict[str, Any]:
+        """Get workflow and tasks status from a specific namespace."""
+        workflow_info = self.get_workflow_info(namespace=namespace, name=name)
+        return self._analyze_workflows_info(workflow_info)
 
-        return workflows_status, task_status
+    def get_workflows_and_tasks_status(
+        self, namespace: str, label_selector: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Get workflows and tasks status from a specific namespace."""
+        workflows_info = self.get_workflows_info(
+            namespace=namespace, label_selector=label_selector
+        )
+        return self._analyze_workflows_info(workflows_info)
+
+    def _analyze_workflows_info(self, workflows_info: Dict[str, Any]):
+        """Analyze workflows info."""
+        workflows_status = {}
+        for workflow_id, workflow_data in workflows_info.items():
+            workflow_phase = workflow_data["phase"]
+            labels = workflow_data["labels"]
+            workflow_type = self._check_component_label(
+                workflow_id=workflow_id, labels=labels
+            )
+            nodes = workflow_data["nodes"]
+            workflows_status = self._update_workflows_status(
+                workflows_status=workflows_status,
+                workflow_type=workflow_type,
+                workflow_phase=workflow_phase,
+                nodes=nodes,
+            )
+        return workflows_status
 
     @staticmethod
-    def _update_workflows_status(workflows_status: dict, workflow_phase: str):
-        """Update workflows status collection."""
-        if workflow_phase:
-            if workflow_phase not in workflows_status.keys():
-                workflows_status[workflow_phase] = 1
-            else:
-                workflows_status[workflow_phase] += 1
+    def _check_component_label(workflow_id: str, labels: Dict[str, Any]) -> str:
+        """Check if component label is present in order to know which component is running in the workflow."""
+        workflow_type = [label for key, label in labels.items() if key == "component"]
+        if workflow_type:
+            workflow_type = workflow_type[0]
         else:
-            if 'Unknown' not in workflows_status.keys():
-                workflows_status['Unknown'] = 1
+            workflow_type = "missing_component_label"
+            _LOGGER.warning(f"Missing component label for workflow: {workflow_id}")
+
+        return workflow_type
+
+    def _update_workflows_status(
+        self,
+        workflows_status: Dict[str, Any],
+        workflow_type: str,
+        workflow_phase: str,
+        nodes: Optional[Dict[str, Any]],
+    ):
+        """Update workflows status collection."""
+        if workflow_type not in workflows_status:
+            workflows_status[workflow_type] = {
+                "component": workflow_type,
+                "status": {},
+                "tasks": {},
+            }
+
+        if workflow_phase:
+            if workflow_phase not in workflows_status[workflow_type]["status"].keys():
+                workflows_status[workflow_type]["status"][workflow_phase] = 1
             else:
-                workflows_status['Unknown'] += 1
+                workflows_status[workflow_type]["status"][workflow_phase] += 1
+        else:
+            if "Unknown" not in workflows_status[workflow_type]["status"].keys():
+                workflows_status[workflow_type]["status"]["Unknown"] = 1
+            else:
+                workflows_status[workflow_type]["status"]["Unknown"] += 1
+
+        workflows_status[workflow_type]["tasks"] = self._update_tasks_status(
+            workflows_status[workflow_type]["tasks"], nodes
+        )
 
         return workflows_status
 
     @staticmethod
-    def _update_tasks_status(task_status: dict, nodes: dict) -> Dict[str, Any]::
+    def _update_tasks_status(task_status: dict, nodes: dict) -> Dict[str, Any]:
         """Update tasks status collection."""
         if not nodes:
             return task_status
 
         for pod_id, pod_data in nodes.items():
-            task_name = pod_data['display_name']
+            task_name = pod_data["display_name"]
             if task_name not in task_status.keys():
                 task_status[task_name] = {}
-                pod_phase = pod_data['phase']
+                pod_phase = pod_data["phase"]
                 task_status[task_name][pod_phase] = 1
             else:
-                pod_phase = pod_data['phase']
+                pod_phase = pod_data["phase"]
                 if pod_phase not in task_status[task_name].keys():
                     task_status[task_name][pod_phase] = 1
                 else:
