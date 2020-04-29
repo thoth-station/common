@@ -3510,3 +3510,10 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Renamed to kebechet
 * :pushpin: Automatic update of dependency pylint from 2.4.4 to 2.5.0
 * :pushpin: Automatic update of dependency pytest-mypy from 0.6.1 to 0.6.2
+
+## Release 0.13.2 (2020-04-29T22:33:40)
+* :pushpin: Automatic update of dependency jsonformatter from 0.1.4 to 0.2.1
+* Add status analysis and make label selector optional
+* Little adjustments
+* Adjust name of method
+* New methods to monitor Argo workflows
