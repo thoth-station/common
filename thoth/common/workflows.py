@@ -188,6 +188,162 @@ class WorkflowManager:
         template = self.openshift.oc_process(namespace, template)
         return template
 
+    def get_workflow(
+        self, namespace: str, name: str,
+    ):
+        """Get Workflow in namespace by name."""
+        response = self.api.get_namespaced_workflow(namespace=namespace, name=name)
+        return response.to_dict()
+
+    def get_workflows(
+        self,
+        namespace: str,
+        label_selector: str,
+    ) -> dict:
+        """Get Workflows in namespace."""
+        response = self.api.list_namespaced_workflows(namespace=namespace, label_selector=label_selector)
+        return response.to_dict()
+
+    def get_workflow_info(
+        self, namespace: str, name: str,
+    ):
+        """Get Workflow in namespace by name."""
+        workflow = self.get_workflow(namespace=namespace, name=name)
+        workflow_main = self._collect_workflow_info(workflow=workflow)
+        return workflow_main
+
+    def get_workflows_info(
+        self, label_selector: str, namespace: str
+    ) -> Dict[str, int]:
+        """Get workflows info from a specific namespace."""
+        workflows = self.get_workflows(namespace=namespace, label_selector=label_selector)
+        workflow_data = {}
+        for workflow in workflows["items"]:
+
+            workflow_main = self._collect_workflow_info(workflow=workflow)
+            
+            workflow_data[workflow['metadata']['name']] = workflow_main
+
+        return workflow_data
+
+    def _collect_workflow_info(self, workflow: dict) -> dict:
+        """Collect Workflow info."""
+        workflow_info = {}
+        workflow_info["name"] = workflow['metadata']['name']
+
+        started_at = workflow['status']['started_at']
+        workflow_info["started_at"] = started_at
+
+        finished_at = workflow['status']['finished_at']
+        workflow_info["finished_at"] = finished_at
+
+        duration = None
+        if started_at and finished_at:
+            duration = (finished_at - started_at).total_seconds()
+        workflow_info["duration"] = duration
+
+        workflow_info["phase"] = workflow['status']['phase']
+
+        tasks_names = self._collect_template_ref(templates=workflow['spec']['templates'])
+        nodes = self._collect_workflows_tasks_info(nodes=workflow['status']['nodes'], tasks_names=tasks_names)
+        workflow_info["nodes"] = nodes
+
+        return workflow_info
+
+    @staticmethod
+    def _collect_template_ref(templates: List[dict]):
+        """Collect tasks names from Workflow template."""
+        tasks_names = []
+
+        for template in templates:
+            # TODO: Extend to other structures beside dag and consider also steps
+            if 'dag' in template.keys():
+                for task in template['dag']['tasks']:
+                    tasks_names.append(task['name'])
+        return tasks_names
+
+    @staticmethod
+    def _collect_workflows_tasks_info(nodes: dict, tasks_names: List[str]) -> dict:
+        """Collect info about tasks in the Workflow."""
+        nodes_info = {}
+        if not nodes:
+            return nodes_info
+
+        for pod_id, node in nodes.items():
+            
+            if node['display_name'] in tasks_names:
+                nodes_info[pod_id] = {}
+                nodes_info[pod_id]['pod_id'] = pod_id
+                nodes_info[pod_id]['display_name'] = node['display_name']
+            
+                started_at = node['started_at']
+                nodes_info[pod_id]["started_at"] = started_at
+
+                finished_at = node['finished_at']
+                nodes_info[pod_id]["finished_at"] = finished_at
+
+                duration = None
+                if started_at and finished_at:
+                    duration = (finished_at - started_at).total_seconds()
+                nodes_info[pod_id]["duration"] = duration
+
+                nodes_info[pod_id]['phase'] = node['phase']
+                nodes_info[pod_id]['message'] = node['message']
+
+        return nodes_info
+
+    def get_workflows_and_tasks_status(
+        self, label_selector: str, namespace: str
+    ) -> Dict[str, int]:
+        """Get workflows and tasks status from a specific namespace."""
+        workflows_info = self.get_workflows_info(namespace=namespace, label_selector=label_selector)
+        workflows_status = {}
+        task_status = {}
+        for workflow_id, workflow_data in workflows_info.items():
+            workflow_phase = workflow_data['phase']
+            workflows_status = self._update_workflows_status(workflows_status, workflow_phase)
+            nodes = workflow_data['nodes']
+            task_status = self._update_tasks_status(task_status, nodes)
+        
+        return workflows_status, task_status
+
+    @staticmethod
+    def _update_workflows_status(workflows_status: dict, workflow_phase: str):
+        """Update workflows status collection."""
+        if workflow_phase:
+            if workflow_phase not in workflows_status.keys():
+                workflows_status[workflow_phase] = 1
+            else:
+                workflows_status[workflow_phase] += 1
+        else:
+            if 'Unknown' not in workflows_status.keys():
+                workflows_status['Unknown'] = 1
+            else:
+                workflows_status['Unknown'] += 1
+
+        return workflows_status
+
+    @staticmethod
+    def _update_tasks_status(task_status: dict, nodes: dict):
+        """Update tasks status collection."""
+        if not nodes:
+            return task_status
+
+        for pod_id, pod_data  in nodes.items():
+            task_name = pod_data['display_name']
+            if task_name not in task_status.keys():
+                task_status[task_name] = {}
+                pod_phase = pod_data['phase']
+                task_status[task_name][pod_phase] = 1
+            else:
+                pod_phase = pod_data['phase']
+                if pod_phase not in task_status[task_name].keys():
+                    task_status[task_name][pod_phase] = 1
+                else:
+                    task_status[task_name][pod_phase] += 1
+
+        return task_status
+
     def submit_workflow(
         self,
         namespace: str,
