@@ -190,7 +190,7 @@ class WorkflowManager:
 
     def get_workflow(
         self, namespace: str, name: str,
-    ):
+    ) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
         response = self.api.get_namespaced_workflow(namespace=namespace, name=name)
         return response.to_dict()
@@ -199,14 +199,14 @@ class WorkflowManager:
         self,
         namespace: str,
         label_selector: str,
-    ) -> dict:
+    ) -> Dict[str, Any]:
         """Get Workflows in namespace."""
         response = self.api.list_namespaced_workflows(namespace=namespace, label_selector=label_selector)
         return response.to_dict()
 
     def get_workflow_info(
         self, namespace: str, name: str,
-    ):
+    ) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
         workflow = self.get_workflow(namespace=namespace, name=name)
         workflow_main = self._collect_workflow_info(workflow=workflow)
@@ -214,19 +214,19 @@ class WorkflowManager:
 
     def get_workflows_info(
         self, label_selector: str, namespace: str
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]:
         """Get workflows info from a specific namespace."""
         workflows = self.get_workflows(namespace=namespace, label_selector=label_selector)
         workflow_data = {}
         for workflow in workflows["items"]:
 
             workflow_main = self._collect_workflow_info(workflow=workflow)
-            
+
             workflow_data[workflow['metadata']['name']] = workflow_main
 
         return workflow_data
 
-    def _collect_workflow_info(self, workflow: dict) -> dict:
+    def _collect_workflow_info(self, workflow: dict) -> Dict[str, Any]::
         """Collect Workflow info."""
         workflow_info = {}
         workflow_info["name"] = workflow['metadata']['name']
@@ -251,7 +251,7 @@ class WorkflowManager:
         return workflow_info
 
     @staticmethod
-    def _collect_tasks_names(templates: List[dict]):
+    def _collect_tasks_names(templates: List[dict]) -> Dict[str, Any]::
         """Collect tasks names from Workflow template."""
         tasks_names = []
 
@@ -263,19 +263,19 @@ class WorkflowManager:
         return tasks_names
 
     @staticmethod
-    def _collect_workflows_tasks_info(nodes: dict, tasks_names: List[str]) -> dict:
+    def _collect_workflows_tasks_info(nodes: dict, tasks_names: List[str]) -> Dict[str, Any]::
         """Collect info about tasks in the Workflow."""
         nodes_info = {}
         if not nodes:
             return nodes_info
 
         for pod_id, node in nodes.items():
-            
+
             if node['display_name'] in tasks_names:
                 nodes_info[pod_id] = {}
                 nodes_info[pod_id]['pod_id'] = pod_id
                 nodes_info[pod_id]['display_name'] = node['display_name']
-            
+
                 started_at = node['started_at']
                 nodes_info[pod_id]["started_at"] = started_at
 
@@ -294,7 +294,7 @@ class WorkflowManager:
 
     def get_workflows_and_tasks_status(
         self, label_selector: str, namespace: str
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]::
         """Get workflows and tasks status from a specific namespace."""
         workflows_info = self.get_workflows_info(namespace=namespace, label_selector=label_selector)
         workflows_status = {}
@@ -304,7 +304,7 @@ class WorkflowManager:
             workflows_status = self._update_workflows_status(workflows_status, workflow_phase)
             nodes = workflow_data['nodes']
             task_status = self._update_tasks_status(task_status, nodes)
-        
+
         return workflows_status, task_status
 
     @staticmethod
@@ -324,12 +324,12 @@ class WorkflowManager:
         return workflows_status
 
     @staticmethod
-    def _update_tasks_status(task_status: dict, nodes: dict):
+    def _update_tasks_status(task_status: dict, nodes: dict) -> Dict[str, Any]::
         """Update tasks status collection."""
         if not nodes:
             return task_status
 
-        for pod_id, pod_data  in nodes.items():
+        for pod_id, pod_data in nodes.items():
             task_name = pod_data['display_name']
             if task_name not in task_status.keys():
                 task_status[task_name] = {}
