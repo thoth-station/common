@@ -3499,3 +3499,21 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Remove assignment of the Dockerfile
 * Remove parallelism and allowed failures configuration
 * Propagate requests and limits for inspection run and build
+
+## Release 0.12.10 (2020-04-22T09:13:56)
+* Provide platform in Thoth's runtime environment config option
+
+## Release 0.13.0 (2020-04-25T06:23:51)
+* Added workflow functions
+
+## Release 0.13.1 (2020-04-27T17:45:04)
+* Renamed to kebechet
+* :pushpin: Automatic update of dependency pylint from 2.4.4 to 2.5.0
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.1 to 0.6.2
+
+## Release 0.13.2 (2020-04-29T22:33:40)
+* :pushpin: Automatic update of dependency jsonformatter from 0.1.4 to 0.2.1
+* Add status analysis and make label selector optional
+* Little adjustments
+* Adjust name of method
+* New methods to monitor Argo workflows

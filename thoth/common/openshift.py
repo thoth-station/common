@@ -2051,6 +2051,30 @@ class OpenShift:
             },
         )
 
+    def schedule_kebechet_workflow(
+        self,
+        webhook_payload: Dict[str, Any]
+    ) -> str:
+        """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
+
+        workflow_id = self.generate_id("kebechet-job")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "WEBHOOK_PAYLOAD": json.dumps(webhook_payload)
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_kebechet_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
     def schedule_kebechet_run_results(
         self,
         url: str,
