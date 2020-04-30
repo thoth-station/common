@@ -70,7 +70,7 @@ class RuntimeEnvironment:
 
         for key, value in dict_.items():
             _LOGGER.warning(
-                "Unknown configuration entry in the configuration file %s with value %s",
+                "Unknown configuration entry in the configuration file %r with value %r",
                 key,
                 value
             )
