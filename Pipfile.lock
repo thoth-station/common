@@ -106,10 +106,10 @@
         },
         "jsonformatter": {
             "hashes": [
-                "sha256:6eedd8a8a940f3254d7be2d1d1bde3f1644f675e11971490d80815f31db84c33"
+                "sha256:47ae99535d5559d76ecc22c11cd18457002f3e65528dee1987a3dd3a9715124a"
             ],
             "index": "pypi",
-            "version": "==0.2.1"
+            "version": "==0.2.2"
         },
         "kubernetes": {
             "hashes": [
