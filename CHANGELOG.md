@@ -3517,3 +3517,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Little adjustments
 * Adjust name of method
 * New methods to monitor Argo workflows
+
+## Release 0.13.3 (2020-05-01T16:33:33)
+* all the github standard templates
+* :pushpin: Automatic dependency re-locking
+* :pushpin: Automatic dependency re-locking
+* Quote unknown configuration entries
