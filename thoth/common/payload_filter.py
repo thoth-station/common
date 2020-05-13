@@ -64,7 +64,7 @@ class PayloadProcess:
                         f"For event type - {event}, we don't support action - {action}"
                     )
                     return None
-                # This is needed for advanced usage like change of application permission. 
+                # This is needed for advanced usage like change of application permission.
                 if event == "installation":
                     _LOGGER.info(
                             f"For event type - {event}, we don't support action - {action}"
