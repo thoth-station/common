@@ -1470,6 +1470,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        is_kebechet: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1530,6 +1531,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "is_s2i": is_s2i,
+                "is_kebechet": is_kebechet,
                 "re_run_adviser_id": re_run_adviser_id,
             }
         )
@@ -1578,6 +1580,7 @@ class OpenShift:
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         is_s2i: Optional[bool] = None,
+        is_kebechet: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1622,6 +1625,7 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "is_s2i": is_s2i,
+                    "is_kebechet": is_kebechet,
                     "re_run_adviser_id": re_run_adviser_id,
                 }
             ),
