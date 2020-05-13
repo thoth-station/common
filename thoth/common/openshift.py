@@ -27,6 +27,7 @@ import urllib3
 import time
 
 from urllib.parse import urlparse
+from thoth.common.payload_filter import PayloadProcess
 
 from typing import Any
 from typing import Dict
@@ -2060,7 +2061,10 @@ class OpenShift:
             _LOGGER.warning(
                 "No legacy implementation that would use workload operator, using Argo workflows.."
             )
-
+        # Handle installation events and check if webhooks are relevant to Kebechet.
+        preprocess_payload = PayloadProcess().process(webhook_payload=webhook_payload)
+        if preprocess_payload is None:
+            return
         workflow_id = self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
