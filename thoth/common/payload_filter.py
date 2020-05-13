@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Payload Filer.
+Payload Filter.
 
 Payload filter handles installation and remove events for a Kebechet workflow.
 And also filters the webhooks that Kebechet doesn't support to prevent unnecessary workflows.
