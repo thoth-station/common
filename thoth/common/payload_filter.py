@@ -59,18 +59,17 @@ class PayloadProcess:
             if event in _EVENT_TYPES:
                 # We ignore issues, PR actions like reopened, closed.
                 action = payload.get("action")
-                if action not in _SUPPORTED_ACTIONS:
-                    _LOGGER.info(
-                        f"For event type - {event}, we don't support action - {action}"
-                    )
-                    return None
                 # This is needed for advanced usage like change of application permission.
                 if event == "installation":
                     _LOGGER.info(
                             f"For event type - {event}, we don't support action - {action}"
                         )
                     return None
-
+                if action not in _SUPPORTED_ACTIONS:
+                    _LOGGER.info(
+                        f"For event type - {event}, we don't support action - {action}"
+                    )
+                    return None
         return webhook_payload
 
     def _install_event(self):
