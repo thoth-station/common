@@ -27,7 +27,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 _SUPPORTED_ACTIONS = ["opened", "edited"]
-_EVENT_TYPES = ["issues", "pull_request"]
+_EVENT_TYPES = ["issues", "pull_request", "installation"]
 
 
 class PayloadProcess:
@@ -63,6 +63,12 @@ class PayloadProcess:
                     _LOGGER.info(
                         f"For event type - {event}, we don't support action - {action}"
                     )
+                    return None
+                # This is needed for advanced usage like change of application permission. 
+                if event == "installation":
+                    _LOGGER.info(
+                            f"For event type - {event}, we don't support action - {action}"
+                        )
                     return None
 
         return webhook_payload
