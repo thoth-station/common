@@ -1471,7 +1471,7 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,  # TODO: Remove is_s2i parameter everywhere (substitude by source_type) 
+        is_s2i: Optional[bool] = None,  # TODO: Remove is_s2i parameter everywhere (substitute: source_type)
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
