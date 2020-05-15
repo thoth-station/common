@@ -43,6 +43,8 @@ from .helpers import (
     _get_incluster_token_file,
     _get_incluster_ca_file,
 )
+from .enums import ThothAdviserIntegrationEnum
+
 
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
@@ -1469,7 +1471,7 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,
+        is_s2i: Optional[bool] = None,  # TODO: Remove is_s2i parameter everywhere (substitude by source_type) 
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1479,6 +1481,7 @@ class OpenShift:
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
+        source_type: Optional[ThothAdviserIntegrationEnum] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1531,6 +1534,7 @@ class OpenShift:
                 "origin": origin,
                 "is_s2i": is_s2i,
                 "re_run_adviser_id": re_run_adviser_id,
+                "source_type": source_type
             }
         )
 
@@ -1588,6 +1592,7 @@ class OpenShift:
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         template: Optional[Dict[str, Any]] = None,
+        source_type: Optional[ThothAdviserIntegrationEnum] = None,
     ) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -1623,6 +1628,7 @@ class OpenShift:
                     "origin": origin,
                     "is_s2i": is_s2i,
                     "re_run_adviser_id": re_run_adviser_id,
+                    "source_type": source_type
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
