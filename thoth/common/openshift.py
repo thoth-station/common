@@ -719,10 +719,10 @@ class OpenShift:
                 "Infra namespace is required in order to list solvers"
             )
 
-        cm = self.get_configmap("thoth", namespace=self.infra_namespace)
+        cm = self.get_configmap("solvers", namespace=self.infra_namespace)
         solvers = [s.strip() for s in cm["data"].get("solvers", "").splitlines()]
         if not solvers:
-            _LOGGER.warning("No solvers found in thoth ConfigMap")
+            _LOGGER.warning("No solvers found in solvers ConfigMap")
 
         return solvers
 
