@@ -17,7 +17,7 @@
 
 """Enum types used for Thoth adviser integrations."""
 
-from enum import Enum
+from enum import Enum, auto
 
 
 class ThothAdviserIntegrationEnum(Enum):
