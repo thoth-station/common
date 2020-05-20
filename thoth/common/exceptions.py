@@ -39,4 +39,3 @@ class NotKnownThothIntegration(ThothCommonException):
 
 class QebHwtInputsMissing(ThothCommonException):
     """An exception raised if there are inputs missing for QebHwt Github App."""
-
