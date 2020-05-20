@@ -1534,8 +1534,6 @@ class OpenShift:
             runtime_environment
         )
 
-        _check_thoth_integrations(source_type=source_type)
-
         template_parameters["THOTH_ADVISER_METADATA"] = json.dumps(
             {
                 "github_event_type": github_event_type,
