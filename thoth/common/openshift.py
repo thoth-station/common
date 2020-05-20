@@ -1471,7 +1471,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,  # TODO: Remove is_s2i parameter everywhere (substitute: source_type)
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1532,7 +1531,6 @@ class OpenShift:
                 "github_installation_id": github_installation_id,
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
-                "is_s2i": is_s2i,
                 "re_run_adviser_id": re_run_adviser_id,
                 "source_type": source_type
             }
@@ -1581,7 +1579,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1626,7 +1623,6 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
-                    "is_s2i": is_s2i,
                     "re_run_adviser_id": re_run_adviser_id,
                     "source_type": source_type
                 }
