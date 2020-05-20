@@ -1461,12 +1461,26 @@ class OpenShift:
         return self._get_template("template=build-dependencies")
 
     @staticmethod
-    def _verify_thoth_integration(source_type: str):
+    def _verify_thoth_integration(source_type: Optional[str]):
         """Verify if Thoth integration exists."""
-        integrations = [i.name for i in ThothAdviserIntegrationEnum]
+        if source_type not in ThothAdviserIntegrationEnum.__members__ and source_type is not None:
+            raise NotKnownThothIntegration(
+                f"This integration {source_type} is not provided \
+                    in Thoth: {ThothAdviserIntegrationEnum.__members__.keys()}"
+                )
 
-        if source_type not in integrations:
-            raise NotKnownThothIntegration(f"This integration {source_type} is not provided in Thoth: {integrations}")
+    @staticmethod
+    def verify_github_app_inputs(
+        github_event_type: Optional[int],
+        github_check_run_id: Optional[int],
+        github_installation_id: Optional[str],
+        github_base_repo_url: Optional[str],
+        origin: Optional[str],
+    ) -> bool:
+        """Verify if Thoth GitHub App integration inputs are correct."""
+        parameters = locals()
+        if not all(parameters.values()):
+            raise QebHwtInputsMissing(f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}")
 
     def schedule_adviser(
         self,
@@ -1497,6 +1511,9 @@ class OpenShift:
             )
 
         _verify_thoth_integration(source_type=source_type)
+
+        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
+            _verify_github_app_inputs()
 
         if not self.use_argo:
             job_id = job_id or self.generate_id("adviser")
@@ -1608,6 +1625,9 @@ class OpenShift:
             )
 
         _verify_thoth_integration(source_type=source_type)
+
+        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
+            _verify_github_app_inputs()
 
         template = template or self.get_adviser_template()
         job_id = job_id or self.generate_id("adviser")
