@@ -1513,7 +1513,13 @@ class OpenShift:
         _verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs()
+            _verify_github_app_inputs(
+                github_event_type=github_event_type,
+                github_check_run_id=github_check_run_id,
+                github_installation_id=github_installation_id,
+                github_base_repo_url=github_base_repo_url,
+                origin=origin,
+            )
 
         if not self.use_argo:
             job_id = job_id or self.generate_id("adviser")
@@ -1627,7 +1633,13 @@ class OpenShift:
         _verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs()
+            _verify_github_app_inputs(
+                github_event_type=github_event_type,
+                github_check_run_id=github_check_run_id,
+                github_installation_id=github_installation_id,
+                github_base_repo_url=github_base_repo_url,
+                origin=origin,
+            )
 
         template = template or self.get_adviser_template()
         job_id = job_id or self.generate_id("adviser")
