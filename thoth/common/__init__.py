@@ -20,6 +20,7 @@
 from .config import HardwareInformation
 from .config import OperatingSystem
 from .config import RuntimeEnvironment
+from .enums import ThothAdviserIntegrationEnum
 from .helpers import cwd
 from .helpers import datetime2datetime_str
 from .helpers import datetime_str2timestamp
@@ -50,6 +51,7 @@ __all__ = [
     "parse_datetime",
     "RuntimeEnvironment",
     "SafeJSONEncoder",
+    "ThothAdviserIntegrationEnum",
     "Workflow"
     "WorkflowManager"
     "timestamp2datetime",
