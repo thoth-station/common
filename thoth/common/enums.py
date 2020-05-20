@@ -23,8 +23,8 @@ from enum import Enum
 class ThothAdviserIntegrationEnum(Enum):
     """Class for Thoth Adviser integrations."""
 
-    cli = "cli"
-    kebechet = "kebechet"
-    s2i = "s2i"
-    github_app = "github_app"
-    jypyter_notebook = "jypyter_notebook"
+    CLI = auto()
+    KEBECHET = auto()
+    S2I = auto()
+    GITHUB_APP = auto()
+    JUPYTER_NOTEBOOK = auto()
