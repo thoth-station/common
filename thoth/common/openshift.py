@@ -1460,6 +1460,14 @@ class OpenShift:
 
         return self._get_template("template=build-dependencies")
 
+    @staticmethod
+    def _verify_thoth_integration(source_type: str):
+        """Verify if Thoth integration exists."""
+        integrations = [i.name for i in ThothAdviserIntegrationEnum]
+
+        if source_type not in integrations:
+            raise NotKnownThothIntegration(f"This integration {source_type} is not provided in Thoth: {integrations}")
+
     def schedule_adviser(
         self,
         application_stack: Dict[Any, Any],
@@ -1471,7 +1479,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,  # TODO: Remove is_s2i parameter everywhere (substitute: source_type)
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1488,6 +1495,8 @@ class OpenShift:
             raise ConfigurationError(
                 "Unable to schedule adviser without backend namespace being set"
             )
+
+        _verify_thoth_integration(source_type=source_type)
 
         if not self.use_argo:
             job_id = job_id or self.generate_id("adviser")
@@ -1532,7 +1541,6 @@ class OpenShift:
                 "github_installation_id": github_installation_id,
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
-                "is_s2i": is_s2i,
                 "re_run_adviser_id": re_run_adviser_id,
                 "source_type": source_type
             }
@@ -1581,7 +1589,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1599,6 +1606,8 @@ class OpenShift:
             raise ConfigurationError(
                 "Running adviser requires backend namespace configuration"
             )
+
+        _verify_thoth_integration(source_type=source_type)
 
         template = template or self.get_adviser_template()
         job_id = job_id or self.generate_id("adviser")
@@ -1626,7 +1635,6 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
-                    "is_s2i": is_s2i,
                     "re_run_adviser_id": re_run_adviser_id,
                     "source_type": source_type
                 }
