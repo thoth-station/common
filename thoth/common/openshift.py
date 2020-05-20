@@ -1463,7 +1463,7 @@ class OpenShift:
     @staticmethod
     def _verify_thoth_integration(source_type: str):
         """Verify if Thoth integration exists."""
-        integrations = [i.value for i in ThothAdviserIntegrationEnum]
+        integrations = [i.name for i in ThothAdviserIntegrationEnum]
 
         if source_type not in integrations:
             raise NotKnownThothIntegration(f"This integration {source_type} is not provided in Thoth: {integrations}")
