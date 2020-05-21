@@ -23,6 +23,9 @@ And also filters the webhooks that Kebechet doesn't support to prevent unnecessa
 """
 
 import logging
+from thoth.storages import GraphDatabase
+from typing import Dict
+from typing import List
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +54,10 @@ class PayloadProcess:
             )
             if event == "integration_installation_repositories":
                 if payload.get("action") == "added":
-                    self._install_event()
+                    self._install_event(payload.get("repositories_added"))
                     return None
                 elif payload.get("action") == "removed":
-                    self._remove_event()
+                    self._remove_event(payload.get("repositories_removed"))
                     return None
             if event in _EVENT_TYPES:
                 # We ignore issues, PR actions like reopened, closed.
@@ -62,8 +65,8 @@ class PayloadProcess:
                 # This is needed for advanced usage like change of application permission.
                 if event == "installation":
                     _LOGGER.info(
-                            f"For event type - {event}, we don't support action - {action}"
-                        )
+                        f"For event type - {event}, we don't support action - {action}"
+                    )
                     return None
                 if action not in _SUPPORTED_ACTIONS:
                     _LOGGER.info(
@@ -72,10 +75,30 @@ class PayloadProcess:
                     return None
         return webhook_payload
 
-    def _install_event(self):
+    def _install_event(self, install_repos: List[dict]) -> None:
         """Handle Github App install webhooks."""
-        pass
+        graph = GraphDatabase()
+        graph.connect()
+        repos_not_installed = []
+        for repo in install_repos:
+            try:
+                status = graph.create_github_app_installation(slug=repo.get("full_name"), repo_name=repo.get(
+                    "name"), private=repo.get("private"), installation_id=repo.get("id"))
+                if not status:
+                    repos_not_installed.add(repo)
+        if len(repos_not_installed):
+            _LOGGER.error(
+                f"Installed repo's were not added to the database. The complete list - {repos_not_installed}")
+        else:
+            _LOGGER.info(
+                f"Installed repositories have been sucessfully added. Count - {len(install_repos)}")
 
-    def _remove_event(self):
+    def _remove_event(self, uninstall_repos: List[dict]) -> None:
         """Handle Github App remove webhooks."""
-        pass
+        graph = GraphDatabase()
+        graph.connect()
+        for repo in uninstall_repos:
+            status = graph.update_kebechet_github_installations_on_is_active(
+                slug=repo.get("full_name"))
+            if not status:
+                _LOGGER.error(f"Failed to deactivate repo - {repo}")

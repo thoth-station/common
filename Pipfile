@@ -16,6 +16,7 @@ pyyaml = ">=3.12"
 attrdict = "*"
 flexmock = "*"
 jsonformatter = "*"
+thoth-storages = "*"
 
 [dev-packages]
 pytest = "*"
