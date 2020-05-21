@@ -44,6 +44,8 @@ from .helpers import (
     _get_incluster_token_file,
     _get_incluster_ca_file,
 )
+from .enums import ThothAdviserIntegrationEnum
+
 
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
@@ -718,10 +720,10 @@ class OpenShift:
                 "Infra namespace is required in order to list solvers"
             )
 
-        cm = self.get_configmap("thoth", namespace=self.infra_namespace)
+        cm = self.get_configmap("solvers", namespace=self.infra_namespace)
         solvers = [s.strip() for s in cm["data"].get("solvers", "").splitlines()]
         if not solvers:
-            _LOGGER.warning("No solvers found in thoth ConfigMap")
+            _LOGGER.warning("No solvers found in solvers ConfigMap")
 
         return solvers
 
@@ -1459,6 +1461,28 @@ class OpenShift:
 
         return self._get_template("template=build-dependencies")
 
+    @staticmethod
+    def _verify_thoth_integration(source_type: Optional[str]):
+        """Verify if Thoth integration exists."""
+        if source_type not in ThothAdviserIntegrationEnum.__members__ and source_type is not None:
+            raise NotKnownThothIntegration(
+                f"This integration {source_type} is not provided \
+                    in Thoth: {ThothAdviserIntegrationEnum.__members__.keys()}"
+                )
+
+    @staticmethod
+    def verify_github_app_inputs(
+        github_event_type: Optional[int],
+        github_check_run_id: Optional[int],
+        github_installation_id: Optional[str],
+        github_base_repo_url: Optional[str],
+        origin: Optional[str],
+    ) -> bool:
+        """Verify if Thoth GitHub App integration inputs are correct."""
+        parameters = locals()
+        if not all(parameters.values()):
+            raise QebHwtInputsMissing(f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}")
+
     def schedule_adviser(
         self,
         application_stack: Dict[Any, Any],
@@ -1470,7 +1494,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1480,11 +1503,23 @@ class OpenShift:
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
+        source_type: Optional[ThothAdviserIntegrationEnum] = None,
     ) -> str:
         """Schedule an adviser run."""
         if not self.backend_namespace:
             raise ConfigurationError(
                 "Unable to schedule adviser without backend namespace being set"
+            )
+
+        _verify_thoth_integration(source_type=source_type)
+
+        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
+            _verify_github_app_inputs(
+                github_event_type=github_event_type,
+                github_check_run_id=github_check_run_id,
+                github_installation_id=github_installation_id,
+                github_base_repo_url=github_base_repo_url,
+                origin=origin,
             )
 
         if not self.use_argo:
@@ -1530,8 +1565,8 @@ class OpenShift:
                 "github_installation_id": github_installation_id,
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
-                "is_s2i": is_s2i,
                 "re_run_adviser_id": re_run_adviser_id,
+                "source_type": source_type
             }
         )
 
@@ -1578,7 +1613,6 @@ class OpenShift:
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
-        is_s2i: Optional[bool] = None,
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
@@ -1589,11 +1623,23 @@ class OpenShift:
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         template: Optional[Dict[str, Any]] = None,
+        source_type: Optional[ThothAdviserIntegrationEnum] = None,
     ) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
             raise ConfigurationError(
                 "Running adviser requires backend namespace configuration"
+            )
+
+        _verify_thoth_integration(source_type=source_type)
+
+        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
+            _verify_github_app_inputs(
+                github_event_type=github_event_type,
+                github_check_run_id=github_check_run_id,
+                github_installation_id=github_installation_id,
+                github_base_repo_url=github_base_repo_url,
+                origin=origin,
             )
 
         template = template or self.get_adviser_template()
@@ -1622,8 +1668,8 @@ class OpenShift:
                     "github_installation_id": github_installation_id,
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
-                    "is_s2i": is_s2i,
                     "re_run_adviser_id": re_run_adviser_id,
+                    "source_type": source_type
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,

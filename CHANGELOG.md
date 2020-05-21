@@ -3523,3 +3523,23 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic dependency re-locking
 * :pushpin: Automatic dependency re-locking
 * Quote unknown configuration entries
+
+## Release 0.13.4 (2020-05-21T08:05:50)
+* Add missing parameters
+* Correct docstring
+* New check method for Qeb-HWt inputs
+* remove method
+* Use name
+* Add check for Thoth integration
+* Add exception for integrations
+* import auto
+* Add exception for integrations
+* Use solvers ConfigMap
+* remove is_s2i flag
+* Adjust enums
+* Add enum to init
+* Add TODO
+* Add source type for Thoth adviser integrations
+* :pushpin: Automatic update of dependency sentry-sdk from 0.14.3 to 0.14.4
+* :pushpin: Automatic update of dependency pytest from 5.4.1 to 5.4.2
+* :pushpin: Automatic update of dependency pylint from 2.5.0 to 2.5.2
