@@ -86,6 +86,8 @@ class PayloadProcess:
                     "name"), private=repo.get("private"), installation_id=repo.get("id"))
                 if not status:
                     repos_not_installed.add(repo)
+            except Exception as exc:
+                _LOGGER.error(f"The repo couldn't be added to the database. Repo details - {repo}")
         if len(repos_not_installed):
             _LOGGER.error(
                 f"Installed repo's were not added to the database. The complete list - {repos_not_installed}")
