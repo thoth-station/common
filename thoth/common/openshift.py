@@ -230,7 +230,7 @@ class OpenShift:
             "python_version": python_version,
         }
 
-    def define_solver_from_runtime_environment(
+    def obtain_solver_from_runtime_environment(
         self, runtime_environment: Dict[str, Any]
     ) -> Optional[str]:
         """Define solver from runtime_environment."""
