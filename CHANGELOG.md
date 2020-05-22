@@ -3543,3 +3543,6 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.14.3 to 0.14.4
 * :pushpin: Automatic update of dependency pytest from 5.4.1 to 5.4.2
 * :pushpin: Automatic update of dependency pylint from 2.5.0 to 2.5.2
+
+## Release 0.13.5 (2020-05-22T10:57:15)
+* Introduce logic for solver
