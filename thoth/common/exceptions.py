@@ -39,3 +39,7 @@ class NotKnownThothIntegration(ThothCommonException):
 
 class QebHwtInputsMissing(ThothCommonException):
     """An exception raised if there are inputs missing for QebHwt Github App."""
+
+
+class SolverNameParseError(ThothCommonException):
+    """Raised if unable to determine solver information out of solver name run."""

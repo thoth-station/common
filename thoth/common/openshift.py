@@ -38,6 +38,7 @@ from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
+from .exceptions import SolverNameParseError
 from .helpers import (
     get_service_account_token,
     _get_incluster_token_file,
@@ -190,6 +191,70 @@ class OpenShift:
             from .workflows import WorkflowManager
             self._workflow_manager = WorkflowManager(openshift=self)
         return self._workflow_manager
+
+    @staticmethod
+    def normalize_os_version(os_name: Optional[str], os_version: Optional[str]) -> Optional[str]:
+        """Normalize operating system version based on operating system used."""
+        if os_name is None or os_version is None or os_name.lower() != "rhel":
+            return os_version
+
+        # Discard any minor release, if present.
+        return os_version.split(".", maxsplit=1)[0]
+
+    @classmethod
+    def parse_python_solver_name(cls, solver_name: str) -> dict:
+        """Parse os and Python identifiers encoded into solver name."""
+        if solver_name.startswith("solver-"):
+            solver_identifiers = solver_name[len("solver-"):]
+        else:
+            raise SolverNameParseError(f"Solver name has to start with 'solver-' prefix: {solver_name!r}")
+
+        parts = solver_identifiers.split("-")
+        if len(parts) != 3:
+            raise SolverNameParseError(
+                "Solver should be in a form of 'solver-<os_name>-<os_version>-<python_version>, "
+                f"solver name {solver_name!r} does not correspond to this naming schema"
+            )
+
+        python_version = parts[2]
+        if python_version.startswith("py"):
+            python_version = python_version[len("py"):]
+        else:
+            raise SolverNameParseError(
+                f"Python version encoded into Python solver name does not start with 'py' prefix: {solver_name!r}"
+            )
+
+        python_version = ".".join(list(python_version))
+        return {
+            "os_name": parts[0],
+            "os_version": cls.normalize_os_version(parts[0], parts[1]),
+            "python_version": python_version,
+        }
+
+    def define_solver_from_runtime_environment(
+        runtime_environment: Dict[str, Any]
+    ) -> Optional[str]:
+        """Define solver from runtime_environment."""
+        solver = None
+        operating_system = runtime_environment.get("operating_system", {})
+
+        if not operating_system:
+            return solver
+
+        os_name = runtime_environment["operating_system"].get("name")
+        os_version = self.normalize_os_version(
+            operating_system.get("name"),
+            operating_system.get("version")
+        )
+        python_version = runtime_environment.get("python_version")
+
+        if not os_name or not os_version:
+            return solver
+
+        solver = f"solver-{os_name}-{os_version}-py{python_version.replace('.', '')}"
+        solver = self.parse_python_solver_name(solver)
+
+        return solver
 
     @staticmethod
     def _set_env_var(template: Dict[str, Any], **env_var: str) -> None:
