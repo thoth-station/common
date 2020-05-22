@@ -3546,3 +3546,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 
 ## Release 0.13.5 (2020-05-22T10:57:15)
 * Introduce logic for solver
+
+## Release 0.13.6 (2020-05-22T13:56:08)
+* rename method
+* Missing self
