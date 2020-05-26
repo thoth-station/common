@@ -178,20 +178,27 @@ class WorkflowManager:
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
     def get_workflow_template(
-        self, namespace: str, label_selector: str, *, parameters: Dict[str, str]
-    ):
+        self,
+        namespace: str,
+        label_selector: str,
+        *,
+        parameters: Optional[Dict[str, str]],
+    ) -> Dict[str, Any]:
         """Get Workflow template."""
         template = self.openshift._get_template(label_selector, namespace=namespace)
 
-        self.openshift.set_template_parameters(template, **parameters)
+        if parameters:
+            self.openshift.set_template_parameters(template, **parameters)
 
         template = self.openshift.oc_process(namespace, template)
         return template
 
     def get_workflow(self, namespace: str, name: str) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
-        response = self.api.get_namespaced_workflow(namespace=namespace, name=name)
-        return response.to_dict()
+        response: Dict[str, Any] = self.api.get_namespaced_workflow(
+            namespace=namespace, name=name
+        ).to_dict()
+        return response
 
     def get_workflows(
         self, namespace: str, *, label_selector: Optional[str] = None
@@ -201,8 +208,10 @@ class WorkflowManager:
         parameters.pop("self")
         if not label_selector:
             parameters.pop("label_selector")
-        response = self.api.list_namespaced_workflows(**parameters)
-        return response.to_dict()
+        response: Dict[str, Any] = self.api.list_namespaced_workflows(
+            **parameters
+        ).to_dict()
+        return response
 
     def get_workflow_info(self, namespace: str, name: str) -> Dict[str, Any]:
         """Get Workflow in namespace by name."""
@@ -253,7 +262,7 @@ class WorkflowManager:
         return workflow_info
 
     @staticmethod
-    def _collect_tasks_names(templates: List[dict]) -> Dict[str, Any]:
+    def _collect_tasks_names(templates: List[Dict[str, Any]]) -> List[str]:
         """Collect tasks names from Workflow template."""
         tasks_names = []
 
@@ -270,7 +279,7 @@ class WorkflowManager:
         nodes: Dict[str, Any], tasks_names: List[str]
     ) -> Dict[str, Any]:
         """Collect info about tasks in the Workflow."""
-        nodes_info = {}
+        nodes_info: Dict[str, Any] = {}
         if not nodes:
             return nodes_info
 
@@ -311,9 +320,9 @@ class WorkflowManager:
         )
         return self._analyze_workflows_info(workflows_info)
 
-    def _analyze_workflows_info(self, workflows_info: Dict[str, Any]):
+    def _analyze_workflows_info(self, workflows_info: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze workflows info."""
-        workflows_status = {}
+        workflows_status: Dict[str, Any] = {}
         for workflow_id, workflow_data in workflows_info.items():
             workflow_phase = workflow_data["phase"]
             labels = workflow_data["labels"]
@@ -334,12 +343,12 @@ class WorkflowManager:
         """Check if component label is present in order to know which component is running in the workflow."""
         workflow_type = [label for key, label in labels.items() if key == "component"]
         if workflow_type:
-            workflow_type = workflow_type[0]
+            to_ret: str = workflow_type[0]
         else:
-            workflow_type = "missing_component_label"
+            to_ret = "missing_component_label"
             _LOGGER.warning(f"Missing component label for workflow: {workflow_id}")
 
-        return workflow_type
+        return to_ret
 
     def _update_workflows_status(
         self,
@@ -347,7 +356,7 @@ class WorkflowManager:
         workflow_type: str,
         workflow_phase: str,
         nodes: Optional[Dict[str, Any]],
-    ):
+    ) -> Dict[str, Any]:
         """Update workflows status collection."""
         if workflow_type not in workflows_status:
             workflows_status[workflow_type] = {
@@ -374,7 +383,9 @@ class WorkflowManager:
         return workflows_status
 
     @staticmethod
-    def _update_tasks_status(task_status: dict, nodes: dict) -> Dict[str, Any]:
+    def _update_tasks_status(
+        task_status: Dict[str, Any], nodes: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Update tasks status collection."""
         if not nodes:
             return task_status
@@ -401,7 +412,7 @@ class WorkflowManager:
         *,
         parameters: Optional[Dict[str, str]] = None,
         validate: bool = True,
-    ) -> str:
+    ) -> Union[str, None]:
         """Submit an Argo Workflow to a given namespace.
 
         :returns: Workflow ID
@@ -443,7 +454,7 @@ class WorkflowManager:
         _LOGGER.debug(f"Submitting workflow: {body}")
 
         # submit the workflow
-        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(
+        created: models.V1alpha1Workflow = self.api.create_namespaced_workflow(  # noqa
             namespace, body
         )
 
@@ -457,7 +468,7 @@ class WorkflowManager:
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
         workflow_namespace: Optional[str] = None,
-    ) -> str:
+    ) -> Union[str, None]:
         """Retrieve and Submit Workflow from an OpenShift template.
 
         :param namespace: namespace to lookup the template in
@@ -488,7 +499,7 @@ class WorkflowManager:
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
         use_hw_template: bool = False,
-    ) -> str:
+    ) -> Optional[str]:
         """Submit the Inspection Workflow."""
         if not self.openshift.amun_infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
@@ -504,9 +515,11 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        template_parameters["THOTH_INFRA_NAMESPACE"] = self.openshift.amun_infra_namespace
+        template_parameters[
+            "THOTH_INFRA_NAMESPACE"
+        ] = self.openshift.amun_infra_namespace
 
-        workflow_id: str = self.submit_workflow_from_template(
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.amun_infra_namespace,
             label_selector,
             template_parameters=template_parameters,
@@ -520,7 +533,7 @@ class WorkflowManager:
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Submit Adviser Workflow."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
@@ -531,7 +544,7 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        workflow_id: str = self.submit_workflow_from_template(
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=adviser",
             template_parameters=template_parameters,
@@ -545,7 +558,7 @@ class WorkflowManager:
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Submit Kebechet Workflow."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
@@ -556,7 +569,7 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        workflow_id: str = self.submit_workflow_from_template(
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=kebechet",
             template_parameters=template_parameters,
@@ -570,7 +583,7 @@ class WorkflowManager:
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Submit Solver Workflow."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
@@ -581,7 +594,7 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        workflow_id: str = self.submit_workflow_from_template(
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=solver",
             template_parameters=template_parameters,
@@ -595,7 +608,7 @@ class WorkflowManager:
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Submit Thamos Advise Workflow for Qeb-Hwt GitHub App."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
@@ -606,7 +619,7 @@ class WorkflowManager:
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
-        workflow_id: str = self.submit_workflow_from_template(
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
             label_selector="template=qeb-hwt",
             template_parameters=template_parameters,

@@ -43,12 +43,19 @@ class ConfigEntryBase:
             constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)
 
         for key, value in dict_.items():
-            _LOGGER.warning("Unsupported %s configuration option %r with value %r", cls._TYPE, key, value)
+            _LOGGER.warning(
+                "Unsupported %s configuration option %r with value %r",
+                cls._TYPE,
+                key,
+                value,
+            )
 
         instance = cls(**constructor_kwargs)  # type: ignore
         return instance
 
-    def to_dict(self, without_none: bool = False) -> Dict[str, Optional[Union[str, int]]]:
+    def to_dict(
+        self, without_none: bool = False
+    ) -> Dict[str, Optional[Union[str, int]]]:
         """Convert runtime environment object representation to a dict."""
         # We do not support nested items here.
         if without_none:

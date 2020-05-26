@@ -74,12 +74,14 @@ class RuntimeEnvironment:
             _LOGGER.warning(
                 "Unknown configuration entry in the configuration file %r with value %r",
                 key,
-                value
+                value,
             )
 
         instance = cls(
             hardware=HardwareInformation.from_dict(hardware),  # type: ignore
-            operating_system=OperatingSystem.from_dict(operating_system),  # type: ignore
+            operating_system=OperatingSystem.from_dict(
+                operating_system
+            ),  # type: ignore
             python_version=python_version,
             cuda_version=cuda_version,
             name=name,
@@ -130,6 +132,4 @@ class RuntimeEnvironment:
             self.python_version,
             self.platform,
         )
-        return all(
-            i is not None for i in runtime_environment
-        )
+        return all(i is not None for i in runtime_environment)

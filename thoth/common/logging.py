@@ -26,9 +26,11 @@ from collections import OrderedDict
 from typing import Optional
 from typing import List
 from typing import Dict
+from typing import Tuple
+from typing import Any
 
 from jsonformatter import JsonFormatter
-from sentry_sdk import init as sentry_sdk_init  # type: ignore
+from sentry_sdk import init as sentry_sdk_init
 from sentry_sdk.integrations.logging import ignore_logger
 import daiquiri
 import daiquiri.formatter
@@ -39,29 +41,33 @@ _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
-_IGNORED_EXCEPTIONS = []
+_IGNORED_EXCEPTIONS: List[Tuple[str, str]] = []
 _LOGGER = logging.getLogger(__name__)
-_JSON_LOGGING_FORMAT = OrderedDict([
-    ("name", "name"),
-    # ("levelno", "levelno"),
-    ("levelname", "levelname"),
-    # ("pathname", "pathname"),
-    # ("filename", "filename"),
-    ("module", "module"),
-    ("lineno", "lineno"),
-    ("funcname", "funcName"),
-    ("created", "created"),
-    ("asctime", "asctime"),
-    ("msecs", "msecs"),
-    ("relative_created", "relativeCreated"),
-    # ("thread", "thread"),
-    # ("thread_name", "threadName"),
-    ("process", "process"),
-    ("message", "message"),
-])
+_JSON_LOGGING_FORMAT = OrderedDict(
+    [
+        ("name", "name"),
+        # ("levelno", "levelno"),
+        ("levelname", "levelname"),
+        # ("pathname", "pathname"),
+        # ("filename", "filename"),
+        ("module", "module"),
+        ("lineno", "lineno"),
+        ("funcname", "funcName"),
+        ("created", "created"),
+        ("asctime", "asctime"),
+        ("msecs", "msecs"),
+        ("relative_created", "relativeCreated"),
+        # ("thread", "thread"),
+        # ("thread_name", "threadName"),
+        ("process", "process"),
+        ("message", "message"),
+    ]
+)
 
 
-def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]) -> None:
+def _init_log_levels(
+    logging_env_var_start: str, logging_configuration: Optional[Dict[str, str]]
+) -> None:
     """Initialize log level based on configuration or env variables."""
     env_logging_conf = {
         key: val
@@ -70,7 +76,7 @@ def _init_log_levels(logging_env_var_start: str, logging_configuration: Optional
     }
 
     for logger, level in env_logging_conf.items():
-        logger = "thoth." + logger[len(logging_env_var_start):].lower().replace(
+        logger = "thoth." + logger[len(logging_env_var_start) :].lower().replace(
             "__", "."
         )
         level = getattr(logging, level)
@@ -104,7 +110,7 @@ def _logging_adjust() -> None:
         if len(entry) != 2:
             _LOGGER.warning(
                 "Skipping adjustment of logging for entry %r: invalid configuration entry provided",
-                item
+                item,
             )
             continue
 
@@ -114,7 +120,7 @@ def _logging_adjust() -> None:
             _LOGGER.warning(
                 "Skipping adjustment for entry %r: invalid log-level %r specified",
                 item,
-                level
+                level,
             )
             continue
 
@@ -126,7 +132,7 @@ def _get_sentry_integrations() -> List[object]:
     """Get integrations for Sentry based on installed packages."""
     integrations = []
     try:
-        import flask
+        import flask  # noqa
     except ImportError:
         pass
     else:
@@ -140,7 +146,7 @@ def _get_sentry_integrations() -> List[object]:
             _LOGGER.debug("Flask integration for Sentry enabled")
 
     try:
-        import sqlalchemy
+        import sqlalchemy  # noqa
     except ImportError:
         pass
     else:
@@ -155,14 +161,16 @@ def _get_sentry_integrations() -> List[object]:
     if sys.version_info >= (3, 7):
         # Available only for python 3.7+
         try:
-            import aiohttp
+            import aiohttp  # noqa
         except ImportError:
             pass
         else:
             try:
                 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
             except ImportError as exc:
-                _LOGGER.warning("Cannot import Sentry AIOHTTP integration: %s", str(exc))
+                _LOGGER.warning(
+                    "Cannot import Sentry AIOHTTP integration: %s", str(exc)
+                )
             else:
                 integrations.append(AioHttpIntegration())
                 _LOGGER.debug("AIOHTTP integration for Sentry enabled")
@@ -170,30 +178,33 @@ def _get_sentry_integrations() -> List[object]:
     return integrations
 
 
-def before_send_handler(event, hint):
+def before_send_handler(
+    event: Dict[str, Any], hint: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
     """Filter the errors caught before sending to Sentry.
 
     This function ignores the exceptions passed in as a environment variable in a comma separated manner.
     """
     if len(_IGNORED_EXCEPTIONS) == 0:
         return event
-    if 'exc_info' in hint:
-        exc_type, exc_value, tb = hint['exc_info']
+    if "exc_info" in hint:
+        exc_type, exc_value, tb = hint["exc_info"]
         for exception in _IGNORED_EXCEPTIONS:
             module, name = exception
             if module == getattr(exc_type, "__module__") and name == exc_type.__name__:
                 return None
-    elif 'log_record' in hint:
-        log_record = hint['log_record'].name
+    elif "log_record" in hint:
+        log_record = hint["log_record"].name
         for exception in _IGNORED_EXCEPTIONS:
-            exp_signature = '.'.join(exception)
-            if exp_signature == log_record['name']:
+            exp_signature = ".".join(exception)
+            if exp_signature == log_record["name"]:
                 return None
     return event
 
 
 def init_logging(
-    logging_configuration: Optional[Dict[str, str]] = None, logging_env_var_start: Optional[str] = None
+    logging_configuration: Optional[Dict[str, str]] = None,
+    logging_env_var_start: Optional[str] = None,
 ) -> None:
     """Initialize Thoth's logging - respects all namespaces.
 
@@ -203,13 +214,13 @@ def init_logging(
 
     >>> import os
     >>> os.environ['THOTH_LOG_SOLVER']
-    WARNING
+    > WARNING
 
     You can also specify more closely which sub-module logging you are configuring - submodules are separated with
     double dash:
 
     >>> os.environ['THOTH_LOG_SOLVER__PYTHON']
-    DEBUG
+    > DEBUG
 
     You can also use arguments explicitly that override configuration in env variables (a shorthand for
     standard logging functionality):
@@ -219,7 +230,9 @@ def init_logging(
     Optionally you can specify prefix of the logging environment variable
     determining logging configuration via env vars (defaults to THOTH_LOG_).
     """
-    if not os.getenv("OPENSHIFT_BUILD_NAME") or int(os.getenv("THOTH_LOGGING_NO_JSON", 0)):
+    if not os.getenv("OPENSHIFT_BUILD_NAME") or int(
+        os.getenv("THOTH_LOGGING_NO_JSON", 0)
+    ):
         # Running outside the cluster or forced not to use structured logging.
         formatter = daiquiri.formatter.ColorFormatter(
             fmt="%(asctime)s %(process)3d %(color)s%(levelname)-8.8s %(name)s:"
@@ -230,16 +243,13 @@ def init_logging(
         formatter.converter = time.gmtime
 
         daiquiri.setup(
-            level=logging.INFO,
-            outputs=(
-                daiquiri.output.Stream(formatter=formatter),
-            ),
+            level=logging.INFO, outputs=(daiquiri.output.Stream(formatter=formatter),)
         )
     else:
         # The most straightforward way for setting up all the loggers (werkzeug, flask, gunicorn) is to
         # discard their default configuration and force them to use JSON logger configured for the root logger.
-        logging._acquireLock()
-        for logger in logging.Logger.manager.loggerDict.values():
+        logging._acquireLock()  # type: ignore
+        for logger in logging.Logger.manager.loggerDict.values():  # type: ignore
             if not isinstance(logger, logging.Logger):
                 continue
             if logger.name == "gunicorn.access":
@@ -249,7 +259,7 @@ def init_logging(
             logger.filters.clear()
             logger.handlers.clear()
             logger.propagate = True
-        logging._releaseLock()
+        logging._releaseLock()  # type: ignore
 
         handler = logging.StreamHandler()
         formatter = JsonFormatter(_JSON_LOGGING_FORMAT)
@@ -281,15 +291,17 @@ def init_logging(
 
     ignored_exceptions = os.getenv("THOTH_SENTRY_IGNORE_EXCEPTION")
     if ignored_exceptions:
-        exceptions_split = ignored_exceptions.split(',')
+        exceptions_split = ignored_exceptions.split(",")
         for exception in exceptions_split:
-            exception_parts = exception.rsplit('.', maxsplit=1)
+            exception_parts = exception.rsplit(".", maxsplit=1)
             if len(exception_parts) == 2:
                 exc_module, exc_name = exception_parts
                 _IGNORED_EXCEPTIONS.append((exc_module, exc_name))
             else:
                 root_logger.error(
-                    "The following configuration for ignoring exception couldn't be parsed: %r ", exception)
+                    "The following configuration for ignoring exception couldn't be parsed: %r ",
+                    exception,
+                )
 
     if _SENTRY_DSN:
         try:
@@ -298,10 +310,14 @@ def init_logging(
                 "Setting up logging to a Sentry instance %r, environment %r and integrations %r",
                 _SENTRY_DSN.rsplit("@", maxsplit=1)[1],
                 environment,
-                [integration.__class__.__name__ for integration in integrations]
+                [integration.__class__.__name__ for integration in integrations],
             )
-            sentry_sdk_init(_SENTRY_DSN, environment=environment, integrations=integrations,
-                            before_send=before_send_handler)
+            sentry_sdk_init(
+                _SENTRY_DSN,
+                environment=environment,
+                integrations=integrations,
+                before_send=before_send_handler,
+            )
         except Exception:
             root_logger.exception(
                 "Failed to initialize logging to Sentry instance, check configuration"
@@ -326,7 +342,7 @@ def init_logging(
                 address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT))
             )
             root_logger.addHandler(syslog_handler)
-        except socket.gaierror as exc:
+        except socket.gaierror:
             root_logger.exception(
                 f"RSYSLOG_HOST and RSYSLOG_PORT have been set but {_RSYSLOG_HOST}:{_RSYSLOG_PORT} cannot be reached"
             )

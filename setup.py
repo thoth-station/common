@@ -15,26 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""Setup for thoth-common."""
+
 import os
 import sys
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
+from setuptools.command.test import test as TestCommand  # noqa
 from pathlib import Path
 
 
-def get_install_requires():
-    with open('requirements.txt', 'r') as requirements_file:
+def _get_install_requires():
+    with open("requirements.txt", "r") as requirements_file:
         return [req for req in requirements_file.readlines() if req]
 
 
-def get_version():
-    with open(os.path.join('thoth', 'common', '__init__.py')) as f:
+def _get_version():
+    with open(os.path.join("thoth", "common", "__init__.py")) as f:
         content = f.readlines()
 
     for line in content:
-        if line.startswith('__version__ ='):
+        if line.startswith("__version__ ="):
             # dirty, remove trailing and leading chars
-            return line.split(' = ')[1][1:-2]
+            return line.split(" = ")[1][1:-2]
     raise ValueError("No version identifier found")
 
 
@@ -54,21 +56,23 @@ class Test(TestCommand):
         "tests/",
     ]
 
-    user_options = [
-        ('pytest-args=', 'a', "Arguments to pass into py.test")
-    ]
+    user_options = [("pytest-args=", "a", "Arguments to pass into py.test")]
 
     def initialize_options(self):
+        """Initialize command options."""
         super().initialize_options()
         self.pytest_args = None
 
     def finalize_options(self):
+        """Finalize command options."""
         super().finalize_options()
         self.test_args = []
         self.test_suite = True
 
     def run_tests(self):
+        """Run pytests."""
         import pytest
+
         passed_args = list(self._IMPLICIT_PYTEST_ARGS)
 
         if self.pytest_args:
@@ -78,27 +82,24 @@ class Test(TestCommand):
         sys.exit(pytest.main(passed_args))
 
 
-VERSION = get_version()
+VERSION = _get_version()
 setup(
-    name='thoth-common',
+    name="thoth-common",
     version=VERSION,
-    description='Shared code logic in the project Thoth.',
-    long_description=Path('README.rst').read_text(),
-    author='Fridolin Pokorny',
-    author_email='fridolin@redhat.com',
-    license='GPLv3+',
-    packages=[
-        'thoth.common',
-        'thoth.common.config',
-    ],
-    package_data={'thoth.common':  ['py.typed']},
+    description="Shared code logic in the project Thoth.",
+    long_description=Path("README.rst").read_text(),
+    author="Fridolin Pokorny",
+    author_email="fridolin@redhat.com",
+    license="GPLv3+",
+    packages=["thoth.common", "thoth.common.config"],
+    package_data={"thoth.common": ["py.typed"]},
     zip_safe=False,
-    cmdclass={'test': Test},
-    install_requires=get_install_requires(),
+    cmdclass={"test": Test},
+    install_requires=_get_install_requires(),
     command_options={
-        'build_sphinx': {
-            'version': ('setup.py', VERSION),
-            'release': ('setup.py', VERSION),
+        "build_sphinx": {
+            "version": ("setup.py", VERSION),
+            "release": ("setup.py", VERSION),
         }
-    }
+    },
 )

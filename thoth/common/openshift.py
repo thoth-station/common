@@ -24,7 +24,6 @@ import typing
 import json
 import random
 import urllib3
-import time
 
 from urllib.parse import urlparse
 
@@ -35,6 +34,8 @@ from typing import Optional
 from typing import Tuple
 
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
+from .exceptions import NotKnownThothIntegration
+from .exceptions import QebHwtInputsMissing
 
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -45,6 +46,7 @@ from .helpers import (
     _get_incluster_ca_file,
 )
 from .enums import ThothAdviserIntegrationEnum
+from .workflows import WorkflowManager
 
 
 urllib3.disable_warnings()
@@ -150,7 +152,7 @@ class OpenShift:
             )
 
         self._use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
-        self._workflow_manager = None
+        self._workflow_manager: Optional[WorkflowManager] = None
 
     @property
     def token(self) -> str:
@@ -172,7 +174,7 @@ class OpenShift:
         return self._use_argo
 
     @use_argo.setter
-    def use_argo(self, enable: bool):
+    def use_argo(self, enable: bool) -> None:
         """Set whether Argo Workflows are enabled."""
         if enable:
             _LOGGER.debug("Argo Workflows enabled")
@@ -182,18 +184,19 @@ class OpenShift:
         self._use_argo = enable
 
     @property
-    def workflow_manager(self):
+    def workflow_manager(self) -> WorkflowManager:
         """Return WorkflowManager instance.
 
         This property lazily initializes the WorkflowManager.
         """
         if self._workflow_manager is None:
-            from .workflows import WorkflowManager
             self._workflow_manager = WorkflowManager(openshift=self)
         return self._workflow_manager
 
     @staticmethod
-    def normalize_os_version(os_name: Optional[str], os_version: Optional[str]) -> Optional[str]:
+    def normalize_os_version(
+        os_name: Optional[str], os_version: Optional[str]
+    ) -> Optional[str]:
         """Normalize operating system version based on operating system used."""
         if os_name is None or os_version is None or os_name.lower() != "rhel":
             return os_version
@@ -201,12 +204,14 @@ class OpenShift:
         # Discard any minor release, if present.
         return os_version.split(".", maxsplit=1)[0]
 
-    def parse_python_solver_name(self, solver_name: str) -> dict:
+    def parse_python_solver_name(self, solver_name: str) -> Dict[str, Any]:
         """Parse os and Python identifiers encoded into solver name."""
         if solver_name.startswith("solver-"):
-            solver_identifiers = solver_name[len("solver-"):]
+            solver_identifiers = solver_name[len("solver-") :]
         else:
-            raise SolverNameParseError(f"Solver name has to start with 'solver-' prefix: {solver_name!r}")
+            raise SolverNameParseError(
+                f"Solver name has to start with 'solver-' prefix: {solver_name!r}"
+            )
 
         parts = solver_identifiers.split("-")
         if len(parts) != 3:
@@ -217,7 +222,7 @@ class OpenShift:
 
         python_version = parts[2]
         if python_version.startswith("py"):
-            python_version = python_version[len("py"):]
+            python_version = python_version[len("py") :]
         else:
             raise SolverNameParseError(
                 f"Python version encoded into Python solver name does not start with 'py' prefix: {solver_name!r}"
@@ -242,15 +247,20 @@ class OpenShift:
 
         os_name = runtime_environment["operating_system"].get("name")
         os_version = self.normalize_os_version(
-            operating_system.get("name"),
-            operating_system.get("version")
+            operating_system.get("name"), operating_system.get("version")
         )
         python_version = runtime_environment.get("python_version")
 
         if not os_name or not os_version:
             return solver
 
-        solver = f"solver-{os_name}-{os_version}-py{python_version.replace('.', '')}"
+        if python_version is not None:
+            solver = (
+                f"solver-{os_name}-{os_version}-py{python_version.replace('.', '')}"
+            )
+        else:
+            solver = f"solver-{os_name}-{os_version}"
+
         self.parse_python_solver_name(solver)
 
         return solver
@@ -475,7 +485,7 @@ class OpenShift:
     @staticmethod
     def _status_report(status: Dict[str, Dict[str, str]]) -> Dict[str, Optional[str]]:
         """Construct status response for API response from master API response."""
-        _TRANSLATION_TABLE = {
+        _TRANSLATION_TABLE = {  # noqa
             "exitCode": "exit_code",
             "finishedAt": "finished_at",
             "reason": "reason",
@@ -497,7 +507,7 @@ class OpenShift:
         for key, value in status[state].items():
             if key == "containerID":
                 value = (
-                    value[len("docker://"):]
+                    value[len("docker://") :]
                     if value.startswith("docker://")
                     else value
                 )
@@ -594,7 +604,7 @@ class OpenShift:
 
         :raises: NotFoundError if no Job of such name is found in the namespace
         """
-        _TRANSLATION_TABLE = {
+        _TRANSLATION_TABLE = {  # noqa
             "startTime": "started_at",
             "completionTime": "finished_at",
         }
@@ -737,7 +747,7 @@ class OpenShift:
         specification: Dict[str, Any],
         target: str,
         parameters: Dict[str, Any],
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule an inspection run."""
         if not self.use_argo:
             _LOGGER.warning(
@@ -755,10 +765,16 @@ class OpenShift:
         template_parameters = dict(parameters)
         template_parameters["THOTH_INFRA_NAMESPACE"] = self.infra_namespace
         template_parameters["AMUN_INSPECTION_ID"] = inspection_id
-        template_parameters["AMUN_BUILD_CPU"] = specification["build"]["requests"]["cpu"]
-        template_parameters["AMUN_BUILD_MEMORY"] = specification["build"]["requests"]["memory"]
+        template_parameters["AMUN_BUILD_CPU"] = specification["build"]["requests"][
+            "cpu"
+        ]
+        template_parameters["AMUN_BUILD_MEMORY"] = specification["build"]["requests"][
+            "memory"
+        ]
         template_parameters["AMUN_RUN_CPU"] = specification["run"]["requests"]["cpu"]
-        template_parameters["AMUN_RUN_MEMORY"] = specification["run"]["requests"]["memory"]
+        template_parameters["AMUN_RUN_MEMORY"] = specification["run"]["requests"][
+            "memory"
+        ]
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
@@ -810,8 +826,8 @@ class OpenShift:
                 debug=debug,
                 transitive=transitive,
             )
-
-            solver_ids.append(solver_id)
+            if solver_id is not None:
+                solver_ids.append(solver_id)
 
         return solver_ids
 
@@ -869,7 +885,7 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule the given solver."""
         if not self.middletier_namespace:
             raise ConfigurationError(
@@ -1185,7 +1201,9 @@ class OpenShift:
 
         return job_id
 
-    def _schedule_workflow(self, workflow: typing.Callable, parameters: dict) -> str:
+    def _schedule_workflow(
+        self, workflow: typing.Callable[..., Optional[str]], parameters: Dict[str, Any]
+    ) -> Optional[str]:
         """Schedule an Argo Workflow."""
         return workflow(**parameters)
 
@@ -1276,9 +1294,9 @@ class OpenShift:
             "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
             "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
-            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
-                runtime_environment
-            ),
+            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
+            if runtime_environment is None
+            else json.dumps(runtime_environment),
             "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
             "THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT": stack_output or "-",
             "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
@@ -1525,26 +1543,31 @@ class OpenShift:
         return self._get_template("template=build-dependencies")
 
     @staticmethod
-    def _verify_thoth_integration(source_type: Optional[str]):
+    def _verify_thoth_integration(source_type: Optional[str]) -> None:
         """Verify if Thoth integration exists."""
-        if source_type not in ThothAdviserIntegrationEnum.__members__ and source_type is not None:
+        if (
+            source_type not in ThothAdviserIntegrationEnum.__members__
+            and source_type is not None
+        ):
             raise NotKnownThothIntegration(
                 f"This integration {source_type} is not provided \
                     in Thoth: {ThothAdviserIntegrationEnum.__members__.keys()}"
-                )
+            )
 
     @staticmethod
     def verify_github_app_inputs(
-        github_event_type: Optional[int],
+        github_event_type: Optional[str],
         github_check_run_id: Optional[int],
-        github_installation_id: Optional[str],
+        github_installation_id: Optional[int],
         github_base_repo_url: Optional[str],
         origin: Optional[str],
-    ) -> bool:
+    ) -> None:
         """Verify if Thoth GitHub App integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
-            raise QebHwtInputsMissing(f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}")
+            raise QebHwtInputsMissing(
+                f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}"
+            )
 
     def schedule_adviser(
         self,
@@ -1567,17 +1590,18 @@ class OpenShift:
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         source_type: Optional[ThothAdviserIntegrationEnum] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
             raise ConfigurationError(
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        _verify_thoth_integration(source_type=source_type)
+        if source_type is not None:
+            OpenShift._verify_thoth_integration(source_type=source_type.name)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs(
+            OpenShift.verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
@@ -1629,7 +1653,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "re_run_adviser_id": re_run_adviser_id,
-                "source_type": source_type
+                "source_type": source_type,
             }
         )
 
@@ -1694,10 +1718,11 @@ class OpenShift:
                 "Running adviser requires backend namespace configuration"
             )
 
-        _verify_thoth_integration(source_type=source_type)
+        if source_type is not None:
+            OpenShift._verify_thoth_integration(source_type=source_type.name)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs(
+            OpenShift.verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
@@ -1708,7 +1733,7 @@ class OpenShift:
         template = template or self.get_adviser_template()
         job_id = job_id or self.generate_id("adviser")
 
-        parameters = {
+        parameters: Dict[str, Any] = {
             "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_ADVISER_REQUIREMENTS": application_stack.pop("requirements").replace(
                 "\n", "\\n"
@@ -1720,9 +1745,9 @@ class OpenShift:
                 "requirements_format", "pipenv"
             ),
             "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.lower(),
-            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None if runtime_environment is None else json.dumps(
-                runtime_environment
-            ),
+            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
+            if runtime_environment is None
+            else json.dumps(runtime_environment),
             "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
             "THOTH_ADVISER_METADATA": json.dumps(
                 {
@@ -1732,7 +1757,7 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type
+                    "source_type": source_type,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2133,7 +2158,7 @@ class OpenShift:
         origin: str,
         revision: str,
         host: str,
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
         if not self.use_argo:
             _LOGGER.warning(
@@ -2162,9 +2187,8 @@ class OpenShift:
         )
 
     def schedule_kebechet_workflow(
-        self,
-        webhook_payload: Dict[str, Any]
-    ) -> str:
+        self, webhook_payload: Dict[str, Any]
+    ) -> Optional[str]:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
         if not self.use_argo:
             _LOGGER.warning(
@@ -2174,7 +2198,7 @@ class OpenShift:
         workflow_id = self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
-            "WEBHOOK_PAYLOAD": json.dumps(webhook_payload)
+            "WEBHOOK_PAYLOAD": json.dumps(webhook_payload),
         }
 
         return self._schedule_workflow(
@@ -2621,8 +2645,8 @@ class OpenShift:
 
     def get_workflow(
         self,
-        name: str = None,
-        label_selector: str = None,
+        name: Optional[str] = None,
+        label_selector: Optional[str] = None,
         namespace: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get Workflow from a namespace, use one of name or label_selector to identify which one to get."""
@@ -2683,13 +2707,13 @@ class OpenShift:
 
     def get_workflow_status(
         self,
-        name: str = None,
-        label_selector: str = None,
+        name: Optional[str] = None,
+        label_selector: Optional[str] = None,
         namespace: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Get a Workflow status, use one of name or label_selector to identify which one to get."""
         wf: Dict[str, Any] = self.get_workflow(
-            name=name, label_selector=label_selector, namespace=namespace,
+            name=name, label_selector=label_selector, namespace=namespace
         )
-
-        return wf["status"]
+        to_ret: Dict[str, Any] = wf["status"]
+        return to_ret
