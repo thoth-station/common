@@ -46,8 +46,11 @@ from .helpers import (
     _get_incluster_ca_file,
 )
 from .enums import ThothAdviserIntegrationEnum
-from .workflows import WorkflowManager
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .workflows import WorkflowManager
 
 urllib3.disable_warnings()
 _LOGGER = logging.getLogger(__name__)
@@ -190,6 +193,8 @@ class OpenShift:
         This property lazily initializes the WorkflowManager.
         """
         if self._workflow_manager is None:
+            from .workflows import WorkflowManager
+
             self._workflow_manager = WorkflowManager(openshift=self)
         return self._workflow_manager
 
