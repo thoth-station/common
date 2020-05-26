@@ -79,9 +79,9 @@ class RuntimeEnvironment:
 
         instance = cls(
             hardware=HardwareInformation.from_dict(hardware),  # type: ignore
-            operating_system=OperatingSystem.from_dict(
+            operating_system=OperatingSystem.from_dict(  # type: ignore
                 operating_system
-            ),  # type: ignore
+            ),
             python_version=python_version,
             cuda_version=cuda_version,
             name=name,
