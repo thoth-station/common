@@ -1574,10 +1574,10 @@ class OpenShift:
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        _verify_thoth_integration(source_type=source_type)
+        self._verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs(
+            self._verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
@@ -1694,10 +1694,10 @@ class OpenShift:
                 "Running adviser requires backend namespace configuration"
             )
 
-        _verify_thoth_integration(source_type=source_type)
+        self._verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            _verify_github_app_inputs(
+            self._verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
