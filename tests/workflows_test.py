@@ -24,7 +24,7 @@ from flexmock import flexmock
 
 from thoth.common import Workflow  # type: ignore
 
-from .base import CommonTestCase
+from .base_test import CommonTestCase
 
 
 @pytest.fixture  # type: ignore
