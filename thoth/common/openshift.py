@@ -793,8 +793,8 @@ class OpenShift:
     def schedule_all_solvers(
         self,
         packages: str,
-        output: str,
         *,
+        output: Optional[str] = None,
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = False,
@@ -862,9 +862,9 @@ class OpenShift:
     def schedule_solver(
         self,
         packages: str,
-        output: str,
         solver: str,
         *,
+        output: Optional[str] = None,
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = True,
