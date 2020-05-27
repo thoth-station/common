@@ -155,7 +155,7 @@ class OpenShift:
             )
 
         self._use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
-        self._workflow_manager: Optional[WorkflowManager] = None
+        self._workflow_manager: Optional["WorkflowManager"] = None
 
     @property
     def token(self) -> str:
@@ -187,7 +187,9 @@ class OpenShift:
         self._use_argo = enable
 
     @property
-    def workflow_manager(self) -> WorkflowManager:
+    def workflow_manager(
+        self
+    ) -> "WorkflowManager":  # by using a string here we create a forward reference
         """Return WorkflowManager instance.
 
         This property lazily initializes the WorkflowManager.
