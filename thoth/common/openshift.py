@@ -1525,7 +1525,7 @@ class OpenShift:
         return self._get_template("template=build-dependencies")
 
     @staticmethod
-    def _verify_thoth_integration(source_type: Optional[str]):
+    def verify_thoth_integration(source_type: Optional[str]):
         """Verify if Thoth integration exists."""
         if source_type not in ThothAdviserIntegrationEnum.__members__ and source_type is not None:
             raise NotKnownThothIntegration(
@@ -1535,9 +1535,9 @@ class OpenShift:
 
     @staticmethod
     def verify_github_app_inputs(
-        github_event_type: Optional[int],
+        github_event_type: Optional[str],
         github_check_run_id: Optional[int],
-        github_installation_id: Optional[str],
+        github_installation_id: Optional[int],
         github_base_repo_url: Optional[str],
         origin: Optional[str],
     ) -> bool:
@@ -1574,10 +1574,10 @@ class OpenShift:
                 "Unable to schedule adviser without backend namespace being set"
             )
 
-        self._verify_thoth_integration(source_type=source_type)
+        self.verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            self._verify_github_app_inputs(
+            self.verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
@@ -1694,10 +1694,10 @@ class OpenShift:
                 "Running adviser requires backend namespace configuration"
             )
 
-        self._verify_thoth_integration(source_type=source_type)
+        self.verify_thoth_integration(source_type=source_type)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            self._verify_github_app_inputs(
+            self.verify_github_app_inputs(
                 github_event_type=github_event_type,
                 github_check_run_id=github_check_run_id,
                 github_installation_id=github_installation_id,
