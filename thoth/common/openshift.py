@@ -36,7 +36,7 @@ from typing import Tuple
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 from .exceptions import NotKnownThothIntegration
 from .exceptions import QebHwtInputsMissing
-
+from .exceptions import KebechetInputsMissing
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .exceptions import SolverNameParseError
@@ -1576,6 +1576,39 @@ class OpenShift:
                 f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}"
             )
 
+    @staticmethod
+    def verify_kebechet_inputs(
+        origin: Optional[str],
+    ) -> None:
+        """Verify if Thoth Kebechet integration inputs are correct."""
+        parameters = locals()
+        if not all(parameters.values()):
+            raise KebechetInputsMissing(f"Not all inputs to schedule Kebechet are provided: {parameters}")
+
+    def verify_integration_inputs(
+        self,
+        source_type: ThothAdviserIntegrationEnum,
+        github_event_type: Optional[str] = None,
+        github_check_run_id: Optional[int] = None,
+        github_installation_id: Optional[int] = None,
+        github_base_repo_url: Optional[str] = None,
+        origin: Optional[str] = None,
+    ) -> None:
+        """Verify if inputs for registered Thoth integrations are correct."""
+        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
+            self.verify_github_app_inputs(
+                github_event_type=github_event_type,
+                github_check_run_id=github_check_run_id,
+                github_installation_id=github_installation_id,
+                github_base_repo_url=github_base_repo_url,
+                origin=origin,
+            )
+
+        if source_type is ThothAdviserIntegrationEnum.KEBECHET:
+            self.verify_kebechet_inputs(
+                origin=origin,
+            )
+
     def schedule_adviser(
         self,
         application_stack: Dict[Any, Any],
@@ -1607,14 +1640,14 @@ class OpenShift:
         if source_type is not None:
             self._verify_thoth_integration(source_type=source_type.name)
 
-        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            self.verify_github_app_inputs(
-                github_event_type=github_event_type,
-                github_check_run_id=github_check_run_id,
-                github_installation_id=github_installation_id,
-                github_base_repo_url=github_base_repo_url,
-                origin=origin,
-            )
+        self.verify_integration_inputs(
+            source_type=source_type,
+            github_event_type=github_event_type,
+            github_check_run_id=github_check_run_id,
+            github_installation_id=github_installation_id,
+            github_base_repo_url=github_base_repo_url,
+            origin=origin,
+        )
 
         if not self.use_argo:
             job_id = job_id or self.generate_id("adviser")
@@ -1728,14 +1761,14 @@ class OpenShift:
         if source_type is not None:
             self._verify_thoth_integration(source_type=source_type.name)
 
-        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            self.verify_github_app_inputs(
-                github_event_type=github_event_type,
-                github_check_run_id=github_check_run_id,
-                github_installation_id=github_installation_id,
-                github_base_repo_url=github_base_repo_url,
-                origin=origin,
-            )
+        self.verify_integration_inputs(
+            source_type=source_type,
+            github_event_type=github_event_type,
+            github_check_run_id=github_check_run_id,
+            github_installation_id=github_installation_id,
+            github_base_repo_url=github_base_repo_url,
+            origin=origin,
+        )
 
         template = template or self.get_adviser_template()
         job_id = job_id or self.generate_id("adviser")
