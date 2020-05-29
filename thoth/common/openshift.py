@@ -39,6 +39,7 @@ from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .exceptions import SolverNameParseError
+from .exceptions import QebHwtInputsMissing
 from .helpers import (
     get_service_account_token,
     _get_incluster_token_file,
@@ -1540,7 +1541,7 @@ class OpenShift:
         github_installation_id: Optional[int],
         github_base_repo_url: Optional[str],
         origin: Optional[str],
-    ) -> bool:
+    ) -> None:
         """Verify if Thoth GitHub App integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
