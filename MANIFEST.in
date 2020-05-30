@@ -1,2 +1,12 @@
 include requirements.txt
-
+include LICENSE
+include OWNERS
+include *.md
+include *.template
+exclude Pipfile*
+recursive-include docs *.html
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include tests *.py
+recursive-include tests *.yaml
+global-exclude *.py[cod]
