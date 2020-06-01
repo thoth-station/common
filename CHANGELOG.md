@@ -3554,3 +3554,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.13.7 (2020-05-26T08:14:33)
 * Missing self in methods
 * :pushpin: Automatic update of dependency pytest-cov from 2.8.1 to 2.9.0
+
+## Release 0.13.8 (2020-05-29T11:17:38)
+* add missing import
+* adjust config
+* Be consistent
+* only change pre-commit config
