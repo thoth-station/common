@@ -24,7 +24,7 @@ from flexmock import flexmock
 
 from thoth.common import Workflow  # type: ignore
 
-from .base import CommonTestCase
+from .base_test import CommonTestCase
 
 
 @pytest.fixture  # type: ignore
@@ -49,7 +49,9 @@ class TestWorkflows(CommonTestCase):
     def test_from_url(self, url: str) -> None:
         """Test `Workflow.from_url` methods."""
         fake_response = type(
-            "Response", (), {"text": self._WORKFLOW_FILE.read_text(), "raise_for_status": lambda: None}
+            "Response",
+            (),
+            {"text": self._WORKFLOW_FILE.read_text(), "raise_for_status": lambda: None},
         )
         flexmock(requests).should_receive("get").and_return(fake_response)
 

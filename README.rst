@@ -84,4 +84,4 @@ the comma-separated list of exception classes to be ignored when reporting to Se
   THOTH_SENTRY_IGNORE_EXCEPTION="connexion.decorators.validation,builtins.ValueError"
 
 Remember all builtin exception classes need to be specified as in the same manner as
-ValueError is specified above. 
+ValueError is specified above.

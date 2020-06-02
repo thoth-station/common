@@ -52,7 +52,7 @@ __all__ = [
     "RuntimeEnvironment",
     "SafeJSONEncoder",
     "ThothAdviserIntegrationEnum",
-    "Workflow"
-    "WorkflowManager"
+    "Workflow",
+    "WorkflowManager",
     "timestamp2datetime",
 ]
