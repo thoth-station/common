@@ -40,7 +40,6 @@ from .exceptions import QebHwtInputsMissing
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .exceptions import SolverNameParseError
-from .exceptions import QebHwtInputsMissing
 from .helpers import (
     get_service_account_token,
     _get_incluster_token_file,
@@ -1606,7 +1605,7 @@ class OpenShift:
             )
 
         if source_type is not None:
-            self.verify_thoth_integration(source_type=source_type)
+            self._verify_thoth_integration(source_type=source_type.name)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
             self.verify_github_app_inputs(
@@ -1727,7 +1726,7 @@ class OpenShift:
             )
 
         if source_type is not None:
-            self.verify_thoth_integration(source_type=source_type)
+            self._verify_thoth_integration(source_type=source_type.name)
 
         if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
             self.verify_github_app_inputs(
