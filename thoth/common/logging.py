@@ -307,9 +307,12 @@ def init_logging(
     if _SENTRY_DSN:
         sentry_sdk_init_kwargs = {}
         try:
-            import flask
+            import flask  # noqa: F401
+
             sentry_sdk_init_kwargs["traces_sample_rate"] = _SENTRY_TRACES_SAMPLE_RATE
-            root_logger.info("Setting Sentry's traces sample rate to %f", _SENTRY_TRACES_SAMPLE_RATE)
+            root_logger.info(
+                "Setting Sentry's traces sample rate to %f", _SENTRY_TRACES_SAMPLE_RATE
+            )
         except ImportError:
             pass
 
