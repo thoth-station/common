@@ -2325,6 +2325,68 @@ class OpenShift:
 
         return self._get_template("template=kebechet")
 
+    def schedule_si_bandit(
+        self,
+        python_package_name: str,
+        python_package_version: str,
+        python_package_index: str = "https://pypi.org/simple",
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a bandit security indicator run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule si-bandit without backend namespace being set"
+            )
+
+        si_bandit_id = job_id or self.generate_id("si-bandit")
+        template_parameters = {}
+        template_parameters["THOTH_SI_BANDIT_JOB_ID"] = si_bandit_id
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_NAME"] = python_package_name
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_VERSION"] = python_package_version
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_INDEX"] = python_package_index
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_adviser_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
+    def schedule_si_cloc(
+        self,
+        python_package_name: str,
+        python_package_version: str,
+        python_package_index: str = "https://pypi.org/simple",
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a cloc security indicator run."""
+        if not self.backend_namespace:
+            raise ConfigurationError(
+                "Unable to schedule si-cloc without backend namespace being set"
+            )
+
+        si_bandit_id = job_id or self.generate_id("si-cloc")
+        template_parameters = {}
+        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_bandit_id
+        template_parameters["THOTH_SI_CLOC_PACKAGE_NAME"] = python_package_name
+        template_parameters["THOTH_SI_CLOC_PACKAGE_VERSION"] = python_package_version
+        template_parameters["THOTH_SI_CLOC_PACKAGE_INDEX"] = python_package_index
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_adviser_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
     def _raise_on_invalid_response_size(self, response: Any) -> None:
         """Expect that there is only one object type for the given item."""
         if len(response.items) != 1:
