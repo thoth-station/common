@@ -2334,9 +2334,9 @@ class OpenShift:
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule a bandit security indicator run."""
-        if not self.backend_namespace:
+        if not self.middletier_namespace:
             raise ConfigurationError(
-                "Unable to schedule si-bandit without backend namespace being set"
+                "Unable to schedule si-bandit without middletier namespace being set"
             )
 
         si_bandit_id = job_id or self.generate_id("si-bandit")
@@ -2349,7 +2349,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_adviser_workflow,
+            workflow=self.workflow_manager.submit_si_bandit_workflow,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -2365,14 +2365,14 @@ class OpenShift:
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule a cloc security indicator run."""
-        if not self.backend_namespace:
+        if not self.middletier_namespace:
             raise ConfigurationError(
-                "Unable to schedule si-cloc without backend namespace being set"
+                "Unable to schedule si-cloc without middletier namespace being set"
             )
 
-        si_bandit_id = job_id or self.generate_id("si-cloc")
+        si_cloc_id = job_id or self.generate_id("si-cloc")
         template_parameters = {}
-        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_bandit_id
+        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_cloc_id
         template_parameters["THOTH_SI_CLOC_PACKAGE_NAME"] = python_package_name
         template_parameters["THOTH_SI_CLOC_PACKAGE_VERSION"] = python_package_version
         template_parameters["THOTH_SI_CLOC_PACKAGE_INDEX"] = python_package_index
@@ -2380,7 +2380,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_adviser_workflow,
+            workflow=self.workflow_manager.submit_si_cloc_workflow,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,

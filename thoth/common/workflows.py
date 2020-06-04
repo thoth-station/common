@@ -638,8 +638,8 @@ class WorkflowManager:
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
-        if not self.openshift.backend_namespace:
-            raise ConfigurationError("Backend namespace was not provided.")
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
@@ -649,7 +649,7 @@ class WorkflowManager:
             label_selector="template=si-bandit",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.backend_namespace,
+            workflow_namespace=self.openshift.middletier_namespace,
         )
 
         return workflow_id
@@ -663,8 +663,8 @@ class WorkflowManager:
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
-        if not self.openshift.backend_namespace:
-            raise ConfigurationError("Backend namespace was not provided.")
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
@@ -674,7 +674,7 @@ class WorkflowManager:
             label_selector="template=si-cloc",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.backend_namespace,
+            workflow_namespace=self.openshift.middletier_namespace,
         )
 
         return workflow_id
