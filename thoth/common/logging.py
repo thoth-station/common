@@ -41,6 +41,7 @@ _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
+_SENTRY_TRACES_SAMPLE_RATE = 0.25
 _IGNORED_EXCEPTIONS: List[Tuple[str, str]] = []
 _LOGGER = logging.getLogger(__name__)
 _JSON_LOGGING_FORMAT = OrderedDict(
@@ -304,6 +305,14 @@ def init_logging(
                 )
 
     if _SENTRY_DSN:
+        sentry_sdk_init_kwargs = {}
+        try:
+            import flask
+            sentry_sdk_init_kwargs["traces_sample_rate"] = _SENTRY_TRACES_SAMPLE_RATE
+            root_logger.info("Setting Sentry's traces sample rate to %f", _SENTRY_TRACES_SAMPLE_RATE)
+        except ImportError:
+            pass
+
         try:
             integrations = _get_sentry_integrations()
             root_logger.info(
@@ -317,6 +326,7 @@ def init_logging(
                 environment=environment,
                 integrations=integrations,
                 before_send=before_send_handler,
+                **sentry_sdk_init_kwargs,
             )
         except Exception:
             root_logger.exception(
