@@ -188,7 +188,7 @@ class OpenShift:
 
     @property
     def workflow_manager(
-        self
+        self,
     ) -> "WorkflowManager":  # by using a string here we create a forward reference
         """Return WorkflowManager instance.
 
