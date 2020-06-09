@@ -2360,7 +2360,7 @@ class OpenShift:
         self,
         python_package_name: str,
         python_package_version: str,
-        python_package_index: str = "https://pypi.org/simple",
+        python_package_index: str,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
