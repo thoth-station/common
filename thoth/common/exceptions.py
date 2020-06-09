@@ -41,5 +41,9 @@ class QebHwtInputsMissing(ThothCommonException):
     """An exception raised if there are inputs missing for QebHwt Github App."""
 
 
+class KebechetInputsMissing(ThothCommonException):
+    """An exception raised if there are inputs missing for Kebechet."""
+
+
 class SolverNameParseError(ThothCommonException):
     """Raised if unable to determine solver information out of solver name run."""
