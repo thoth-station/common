@@ -1577,17 +1577,17 @@ class OpenShift:
             )
 
     @staticmethod
-    def verify_kebechet_inputs(
-        origin: Optional[str],
-    ) -> None:
+    def verify_kebechet_inputs(origin: Optional[str],) -> None:
         """Verify if Thoth Kebechet integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
-            raise KebechetInputsMissing(f"Not all inputs to schedule Kebechet are provided: {parameters}")
+            raise KebechetInputsMissing(
+                f"Not all inputs to schedule Kebechet are provided: {parameters}"
+            )
 
     def verify_integration_inputs(
         self,
-        source_type: ThothAdviserIntegrationEnum,
+        source_type: Optional[ThothAdviserIntegrationEnum],
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
@@ -1605,9 +1605,7 @@ class OpenShift:
             )
 
         if source_type is ThothAdviserIntegrationEnum.KEBECHET:
-            self.verify_kebechet_inputs(
-                origin=origin,
-            )
+            self.verify_kebechet_inputs(origin=origin,)
 
     def schedule_adviser(
         self,
