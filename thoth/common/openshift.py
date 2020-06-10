@@ -1587,7 +1587,7 @@ class OpenShift:
 
     def verify_integration_inputs(
         self,
-        source_type: ThothAdviserIntegrationEnum,
+        source_type: Optional[ThothAdviserIntegrationEnum],
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
