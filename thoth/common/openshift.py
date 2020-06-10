@@ -2239,7 +2239,7 @@ class OpenShift:
                 "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
-        workflow_id = f'{repository.replace("/","")}-{self.generate_id("srcopsmetrics-workflow")}'
+        workflow_id = self.generate_id("srcopsmetrics")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "REPOSITORY": repository,
