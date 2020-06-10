@@ -1577,13 +1577,13 @@ class OpenShift:
             )
 
     @staticmethod
-    def verify_kebechet_inputs(
-        origin: Optional[str],
-    ) -> None:
+    def verify_kebechet_inputs(origin: Optional[str],) -> None:
         """Verify if Thoth Kebechet integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
-            raise KebechetInputsMissing(f"Not all inputs to schedule Kebechet are provided: {parameters}")
+            raise KebechetInputsMissing(
+                f"Not all inputs to schedule Kebechet are provided: {parameters}"
+            )
 
     def verify_integration_inputs(
         self,
@@ -1605,9 +1605,7 @@ class OpenShift:
             )
 
         if source_type is ThothAdviserIntegrationEnum.KEBECHET:
-            self.verify_kebechet_inputs(
-                origin=origin,
-            )
+            self.verify_kebechet_inputs(origin=origin,)
 
     def schedule_adviser(
         self,
@@ -1797,7 +1795,9 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type.name if source_type is not None else None,
+                    "source_type": source_type.name
+                    if source_type is not None
+                    else None,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2226,10 +2226,7 @@ class OpenShift:
             },
         )
 
-    def schedule_srcopsmetrics_workflow(
-        self,
-        repository: str,
-    ) -> Optional[str]:
+    def schedule_srcopsmetrics_workflow(self, repository: str,) -> Optional[str]:
         """Schedule SrcOpsMetrics Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
