@@ -2239,7 +2239,7 @@ class OpenShift:
         workflow_id = f'{repository_fullname}-{self.generate_id("srcopsmetrics-workflow")}'
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
-            "REPOSITORIES": repository_fullname,
+            "REPOSITORY": repository_fullname,
         }
 
         return self._schedule_workflow(
