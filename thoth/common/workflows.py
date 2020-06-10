@@ -629,7 +629,6 @@ class WorkflowManager:
 
         return workflow_id
 
-
     def submit_srcopsmetrics_workflow(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
@@ -639,8 +638,8 @@ class WorkflowManager:
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
-        if not self.openshift.backend_namespace:
-            raise ConfigurationError("Backend namespace was not provided.")
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
