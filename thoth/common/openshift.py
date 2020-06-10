@@ -1797,7 +1797,7 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type,
+                    "source_type": source_type.name if source_type is not None else None,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
