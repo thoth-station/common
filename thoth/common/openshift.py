@@ -2226,6 +2226,33 @@ class OpenShift:
             },
         )
 
+    def schedule_srcopsmetrics_workflow(
+        self,
+        repository: str,
+    ) -> Optional[str]:
+        """Schedule SrcOpsMetrics Workflow.
+
+        :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
+        """
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
+
+        workflow_id = self.generate_id("srcopsmetrics")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "REPOSITORY": repository,
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_srcopsmetrics_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
     def schedule_kebechet_workflow(
         self, webhook_payload: Dict[str, Any]
     ) -> Optional[str]:
