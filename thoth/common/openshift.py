@@ -1795,7 +1795,9 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type,
+                    "source_type": source_type.name
+                    if source_type is not None
+                    else None,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2224,10 +2226,7 @@ class OpenShift:
             },
         )
 
-    def schedule_srcopsmetrics_workflow(
-        self,
-        repository: str,
-    ) -> Optional[str]:
+    def schedule_srcopsmetrics_workflow(self, repository: str,) -> Optional[str]:
         """Schedule SrcOpsMetrics Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
