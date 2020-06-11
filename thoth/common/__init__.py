@@ -28,6 +28,7 @@ from .helpers import datetime_str_from_timestamp
 from .helpers import get_service_account_token
 from .helpers import parse_datetime
 from .helpers import timestamp2datetime
+from .helpers import Lazy
 from .json import SafeJSONEncoder
 from .logging import init_logging
 from .openshift import OpenShift
@@ -55,4 +56,5 @@ __all__ = [
     "Workflow",
     "WorkflowManager",
     "timestamp2datetime",
+    "Lazy",
 ]
