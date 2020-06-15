@@ -1691,7 +1691,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "re_run_adviser_id": re_run_adviser_id,
-                "source_type": source_type,
+                "source_type": source_type.name if source_type is not None else None,
             }
         )
 
@@ -1795,7 +1795,9 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type,
+                    "source_type": source_type.name
+                    if source_type is not None
+                    else None,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2218,6 +2220,30 @@ class OpenShift:
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_thamos_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
+    def schedule_srcopsmetrics_workflow(self, repository: str,) -> Optional[str]:
+        """Schedule SrcOpsMetrics Workflow.
+
+        :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
+        """
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
+
+        workflow_id = self.generate_id("srcopsmetrics")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "REPOSITORY": repository,
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_srcopsmetrics_workflow,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
