@@ -5868,3 +5868,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Fix package name
 * Create initial dependencies.yml config
 * Initial project import
+
+## Release 0.13.12 (2020-06-16T23:35:49)
+* :pushpin: Automatic update of dependency pytest-timeout from 1.3.4 to 1.4.1
+* remove default index
+* move Lazy to common helpers from python helpers
+* mypy typing error introduced in another commit
+* No default package index
+* Ignore unused import
+* use middletier namespace
+* add submit and schedule methods for SI's
+* Setup Sentry traces sample rate
