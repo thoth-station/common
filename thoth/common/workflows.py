@@ -628,3 +628,78 @@ class WorkflowManager:
         )
 
         return workflow_id
+
+    def submit_si_bandit_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Submit Bandit Security Indicator Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=si-bandit",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+      
+    def submit_si_cloc_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Submit CLOC Security Indicator Workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=si-cloc",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+
+    def submit_srcopsmetrics_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:        
+        """Submit SrcOpsMetrics workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=srcopsmetrics",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id

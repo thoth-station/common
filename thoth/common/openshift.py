@@ -1577,17 +1577,17 @@ class OpenShift:
             )
 
     @staticmethod
-    def verify_kebechet_inputs(
-        origin: Optional[str],
-    ) -> None:
+    def verify_kebechet_inputs(origin: Optional[str],) -> None:
         """Verify if Thoth Kebechet integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
-            raise KebechetInputsMissing(f"Not all inputs to schedule Kebechet are provided: {parameters}")
+            raise KebechetInputsMissing(
+                f"Not all inputs to schedule Kebechet are provided: {parameters}"
+            )
 
     def verify_integration_inputs(
         self,
-        source_type: ThothAdviserIntegrationEnum,
+        source_type: Optional[ThothAdviserIntegrationEnum],
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
@@ -1605,9 +1605,7 @@ class OpenShift:
             )
 
         if source_type is ThothAdviserIntegrationEnum.KEBECHET:
-            self.verify_kebechet_inputs(
-                origin=origin,
-            )
+            self.verify_kebechet_inputs(origin=origin,)
 
     def schedule_adviser(
         self,
@@ -1693,7 +1691,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "re_run_adviser_id": re_run_adviser_id,
-                "source_type": source_type,
+                "source_type": source_type.name if source_type is not None else None,
             }
         )
 
@@ -1797,7 +1795,9 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type,
+                    "source_type": source_type.name
+                    if source_type is not None
+                    else None,
                 }
             ),
             "THOTH_ADVISER_OUTPUT": output,
@@ -2226,6 +2226,30 @@ class OpenShift:
             },
         )
 
+    def schedule_srcopsmetrics_workflow(self, repository: str,) -> Optional[str]:
+        """Schedule SrcOpsMetrics Workflow.
+
+        :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
+        """
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
+            )
+
+        workflow_id = self.generate_id("srcopsmetrics")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "REPOSITORY": repository,
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_srcopsmetrics_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
     def schedule_kebechet_workflow(
         self, webhook_payload: Dict[str, Any]
     ) -> Optional[str]:
@@ -2357,6 +2381,68 @@ class OpenShift:
             )
 
         return self._get_template("template=kebechet")
+
+    def schedule_si_bandit(
+        self,
+        python_package_name: str,
+        python_package_version: str,
+        python_package_index: str,
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a bandit security indicator run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule si-bandit without middletier namespace being set"
+            )
+
+        si_bandit_id = job_id or self.generate_id("si-bandit")
+        template_parameters = {}
+        template_parameters["THOTH_SI_BANDIT_JOB_ID"] = si_bandit_id
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_NAME"] = python_package_name
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_VERSION"] = python_package_version
+        template_parameters["THOTH_SI_BANDIT_PACKAGE_INDEX"] = python_package_index
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_si_bandit_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
+    def schedule_si_cloc(
+        self,
+        python_package_name: str,
+        python_package_version: str,
+        python_package_index: str,
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a cloc security indicator run."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule si-cloc without middletier namespace being set"
+            )
+
+        si_cloc_id = job_id or self.generate_id("si-cloc")
+        template_parameters = {}
+        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_cloc_id
+        template_parameters["THOTH_SI_CLOC_PACKAGE_NAME"] = python_package_name
+        template_parameters["THOTH_SI_CLOC_PACKAGE_VERSION"] = python_package_version
+        template_parameters["THOTH_SI_CLOC_PACKAGE_INDEX"] = python_package_index
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_si_cloc_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     def _raise_on_invalid_response_size(self, response: Any) -> None:
         """Expect that there is only one object type for the given item."""
