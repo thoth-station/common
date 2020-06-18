@@ -1605,7 +1605,7 @@ class OpenShift:
             )
 
         if source_type is ThothAdviserIntegrationEnum.KEBECHET:
-            self.verify_kebechet_inputs(origin=origin,)
+            self.verify_kebechet_inputs(origin=origin)
 
     def schedule_adviser(
         self,
@@ -1650,6 +1650,9 @@ class OpenShift:
         if not self.use_argo:
             job_id = job_id or self.generate_id("adviser")
             parameters = locals()
+            parameters["source_type"] = (
+                source_type.name if source_type is not None else None,
+            )
             parameters.pop("self", None)
             return self._schedule_workload(
                 run_method_name=self.run_adviser.__name__,
@@ -2226,7 +2229,7 @@ class OpenShift:
             },
         )
 
-    def schedule_srcopsmetrics_workflow(self, repository: str,) -> Optional[str]:
+    def schedule_srcopsmetrics_workflow(self, repository: str) -> Optional[str]:
         """Schedule SrcOpsMetrics Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
@@ -2237,10 +2240,7 @@ class OpenShift:
             )
 
         workflow_id = self.generate_id("srcopsmetrics")
-        template_parameters = {
-            "WORKFLOW_ID": workflow_id,
-            "REPOSITORY": repository,
-        }
+        template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_srcopsmetrics_workflow,
