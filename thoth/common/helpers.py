@@ -37,6 +37,7 @@ SERVICE_TOKEN_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 SERVICE_CERT_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 
 _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
+_ALTERNATIVE_DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S"
 
 
 @contextmanager
@@ -57,7 +58,12 @@ def get_default_datetime_format() -> str:
 
 def parse_datetime(datetime_string: str) -> datetime.datetime:
     """Parse datetime string represented in ISO format."""
-    parsed = datetime.datetime.strptime(datetime_string, _DATETIME_FORMAT_STRING)
+    try:
+        parsed = datetime.datetime.strptime(datetime_string, _DATETIME_FORMAT_STRING)
+    except ValueError:
+        # PyPI also accepts this type of formatting.
+        parsed = datetime.datetime.strptime(datetime_string, _ALTERNATIVE_DATETIME_FORMAT_STRING)
+
     # Make all timezone unaware datetimes timezone aware.
     return parsed.replace(tzinfo=timezone.utc)
 
