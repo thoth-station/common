@@ -1245,7 +1245,7 @@ class OpenShift:
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule a dependency monkey run."""
         if not self.middletier_namespace:
             raise ConfigurationError(
@@ -1296,139 +1296,50 @@ class OpenShift:
             },
         )
 
-    def schedule_build_analyze(
-        self, document_id: str, output: str, job_id: Optional[str] = None
-    ) -> str:
-        """Schedule an build analyze run."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Unable to schedule build analyze without middletier namespace being set"
-            )
-
-        job_id = job_id or self.generate_id("build-analyze")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_build_analyze.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_build_analyze_template.__name__,
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "build-analyze"},
-        )
-
-    def run_build_analyze(
+    def schedule_build_analysis(
         self,
-        document_id: str,
-        output: str,
+        *,
+        output_image: Optional[str] = None,
+        base_image: Optional[str] = None,
+        registry_user: Optional[str] = None,
+        registry_password: Optional[str] = None,
+        registry_verify_tls: bool = True,
+        environment_type: Optional[str] = None,
+        origin: Optional[str] = None,
         job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
-        """Run build analyze on the provided user input."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Running build-analyze requires middletier namespace configuration"
-            )
-
-        template = template or self.get_build_analyze_template()
-        job_id = job_id or self.generate_id("build-analyze")
-
-        parameters = {
-            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
-            "THOTH_BUILD_LOG_DOC_ID": document_id,
-            "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYZER_JOB_ID": job_id,
-            "THOTH_DOCUMENT_ID": job_id,
-        }
-
-        self.set_template_parameters(template, **parameters)
-
-        template = self.oc_process(self.middletier_namespace, template)
-        build_analyze = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=build_analyze["apiVersion"], kind=build_analyze["kind"]
-        ).create(body=build_analyze, namespace=self.middletier_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_build_analyze_template(self) -> Dict[str, Any]:
-        """Get template for build analyze run."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather build analyzer template when running it"
-            )
-
-        return self._get_template("template=build-analyze")
-
-    def schedule_build_report(
-        self, document_id: str, output: str, job_id: Optional[str] = None
-    ) -> str:
-        """Schedule an build report run."""
+    ) -> Optional[str]:
+        """Schedule a build analysis workflow."""
         if not self.middletier_namespace:
             raise ConfigurationError(
                 "Unable to schedule build report without middletier namespace being set"
             )
 
-        job_id = job_id or self.generate_id("build-report")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_build_report.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_build_report_template.__name__,
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "build-report"},
-        )
-
-    def run_build_report(
-        self,
-        document_id: str,
-        output: str,
-        job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
-        """Run build report on the provided user input."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Running build-report requires middletier namespace configuration"
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
-        template = template or self.get_build_report_template()
-        job_id = job_id or self.generate_id("build-report")
-
-        parameters = {
-            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
-            "THOTH_BUILD_LOG_DOC_ID": document_id,
-            "THOTH_REPORT_OUTPUT": output,
-            "THOTH_BUILD_ANALYZER_JOB_ID": job_id or self.generate_id("build-report"),
-            "THOTH_DOCUMENT_ID": job_id,
+        workflow_id = job_id or self.generate_id("build-analysis")
+        template_parameters = {
+            "THOTH_BUILD_ANALYSIS_WORKFLOW_ID": workflow_id,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
+            "THOTH_BUILD_ANALYSIS_BASE_IMAGE": base_image,
+            "THOTH_BUILD_ANALYSIS_REGISTRY_USER": registry_user,
+            "THOTH_BUILD_ANALYSIS_REGISTRY_PASSWORD": registry_password,
+            "THOTH_BUILD_ANALYSIS_REGISTRY_VERIFY_TLS": registry_verify_tls,
+            "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
+            "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
         }
 
-        self.set_template_parameters(template, **parameters)
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
-        template = self.oc_process(self.middletier_namespace, template)
-        build_report = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=build_report["apiVersion"], kind=build_report["kind"]
-        ).create(body=build_report, namespace=self.middletier_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_build_report_template(self) -> Dict[str, Any]:
-        """Get template for build report run."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather build analyzer template when running it"
-            )
-
-        return self._get_template("template=build-report")
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_build_analysis,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     @staticmethod
     def _verify_thoth_integration(source_type: Optional[str]) -> None:

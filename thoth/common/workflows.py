@@ -728,3 +728,29 @@ class WorkflowManager:
         )
 
         return workflow_id
+
+    def submit_build_analysis(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Submit build analysis workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=build-analysis",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+
