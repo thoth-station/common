@@ -1245,7 +1245,7 @@ class OpenShift:
         debug: bool = False,
         job_id: Optional[str] = None,
         limit_latest_versions: Optional[int] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Schedule a dependency monkey run."""
         if not self.middletier_namespace:
             raise ConfigurationError(
