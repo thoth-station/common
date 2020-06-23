@@ -62,7 +62,9 @@ def parse_datetime(datetime_string: str) -> datetime.datetime:
         parsed = datetime.datetime.strptime(datetime_string, _DATETIME_FORMAT_STRING)
     except ValueError:
         # PyPI also accepts this type of formatting.
-        parsed = datetime.datetime.strptime(datetime_string, _ALTERNATIVE_DATETIME_FORMAT_STRING)
+        parsed = datetime.datetime.strptime(
+            datetime_string, _ALTERNATIVE_DATETIME_FORMAT_STRING
+        )
 
     # Make all timezone unaware datetimes timezone aware.
     return parsed.replace(tzinfo=timezone.utc)

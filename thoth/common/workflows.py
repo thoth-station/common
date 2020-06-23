@@ -653,7 +653,7 @@ class WorkflowManager:
         )
 
         return workflow_id
-      
+
     def submit_si_cloc_workflow(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
@@ -683,7 +683,7 @@ class WorkflowManager:
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> Optional[str]:        
+    ) -> Optional[str]:
         """Submit SrcOpsMetrics workflow."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
