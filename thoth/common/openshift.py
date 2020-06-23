@@ -1233,7 +1233,7 @@ class OpenShift:
 
     def schedule_dependency_monkey(
         self,
-        requirements: typing.Union[str, Dict[str, Any]],
+        requirements: Dict[str, Any],
         context: Dict[str, Any],
         *,
         pipeline: Optional[Dict[str, Any]] = None,
@@ -1258,13 +1258,9 @@ class OpenShift:
                 "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
-        if isinstance(requirements, dict):
-            # There was passed a serialized Pipfile into dict, serialize it into JSON.
-            requirements = json.dumps(requirements)
-
         job_id = job_id or self.generate_id("dependency-monkey")
         template_parameters = {
-            "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
+            "THOTH_ADVISER_REQUIREMENTS": json.dumps(requirements).replace("\n", "\\n"),
             "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
             if runtime_environment is None
