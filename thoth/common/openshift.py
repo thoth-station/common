@@ -1261,7 +1261,6 @@ class OpenShift:
         job_id = job_id or self.generate_id("dependency-monkey")
         template_parameters = {
             "THOTH_ADVISER_REQUIREMENTS": json.dumps(requirements).replace("\n", "\\n"),
-            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
             if runtime_environment is None
             else json.dumps(runtime_environment),
@@ -1272,6 +1271,9 @@ class OpenShift:
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
         }
+
+        if pipeline:
+            template_parameters["THOTH_ADVISER_PIPELINE"] = json.dumps(pipeline)
 
         if decision is not None:
             template_parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
