@@ -916,7 +916,6 @@ class OpenShift:
         workflow_id = job_id or self.generate_id(solver)
 
         template_parameters = {
-            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
             "THOTH_SOLVER_WORKFLOW_ID": workflow_id,
             "THOTH_SOLVER_NAME": solver,
             "THOTH_SOLVER_PACKAGES": packages.replace("\n", "\\n"),
