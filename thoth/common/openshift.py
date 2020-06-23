@@ -1275,7 +1275,9 @@ class OpenShift:
             template_parameters["THOTH_ADVISER_PIPELINE"] = json.dumps(pipeline)
 
         if decision is not None:
-            template_parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
+            template_parameters[
+                "THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"
+            ] = decision.lower()
 
         if seed is not None:
             template_parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
@@ -1284,7 +1286,9 @@ class OpenShift:
             template_parameters["THOTH_DEPENDENCY_MONKEY_COUNT"] = count
 
         if limit_latest_versions is not None:
-            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+            template_parameters[
+                "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
+            ] = limit_latest_versions
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
