@@ -1233,12 +1233,11 @@ class OpenShift:
 
     def schedule_dependency_monkey(
         self,
-        requirements: typing.Union[str, Dict[str, Any]],
+        requirements: Dict[str, Any],
         context: Dict[str, Any],
         *,
         pipeline: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
-        report_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
@@ -1254,98 +1253,49 @@ class OpenShift:
                 "Unable to schedule dependency monkey without middletier namespace being set"
             )
 
-        job_id = job_id or self.generate_id("dependency-monkey")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_dependency_monkey.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_dependency_monkey_template.__name__,
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "dependency-monkey"},
-        )
-
-    def run_dependency_monkey(
-        self,
-        requirements: typing.Union[str, Dict[str, Any]],
-        context: Dict[str, Any],
-        *,
-        pipeline: Optional[Dict[str, Any]] = None,
-        stack_output: Optional[str] = None,
-        report_output: Optional[str] = None,
-        runtime_environment: Optional[Dict[Any, Any]] = None,
-        seed: Optional[int] = None,
-        dry_run: bool = False,
-        decision: Optional[str] = None,
-        count: Optional[int] = None,
-        debug: bool = False,
-        job_id: Optional[str] = None,
-        limit_latest_versions: Optional[int] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
-        """Run Dependency Monkey on the provided user input."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Running Dependency Monkey requires middletier namespace configuration"
+        if not self.use_argo:
+            _LOGGER.warning(
+                "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
-        template = template or self.get_dependency_monkey_template()
-
-        if isinstance(requirements, dict):
-            # There was passed a serialized Pipfile into dict, serialize it into JSON.
-            requirements = json.dumps(requirements)
-
         job_id = job_id or self.generate_id("dependency-monkey")
-        parameters = {
-            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
-            "THOTH_ADVISER_REQUIREMENTS": requirements.replace("\n", "\\n"),
-            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline),
+        template_parameters = {
+            "THOTH_ADVISER_REQUIREMENTS": json.dumps(requirements).replace("\n", "\\n"),
             "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
             if runtime_environment is None
             else json.dumps(runtime_environment),
             "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
             "THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT": stack_output or "-",
-            "THOTH_DEPENDENCY_MONKEY_REPORT_OUTPUT": report_output or "-",
             "THOTH_DEPENDENCY_MONKEY_DRY_RUN": int(bool(dry_run)),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
         }
 
+        if pipeline:
+            template_parameters["THOTH_ADVISER_PIPELINE"] = json.dumps(pipeline)
+
         if decision is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
+            template_parameters["THOTH_DEPENDENCY_MONKEY_DECISION_TYPE"] = decision.lower()
 
         if seed is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
+            template_parameters["THOTH_DEPENDENCY_MONKEY_SEED"] = seed
 
         if count is not None:
-            parameters["THOTH_DEPENDENCY_MONKEY_COUNT"] = count
+            template_parameters["THOTH_DEPENDENCY_MONKEY_COUNT"] = count
 
         if limit_latest_versions is not None:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
+            template_parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
 
-        self.set_template_parameters(template, **parameters)
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
-        template = self.oc_process(self.middletier_namespace, template)
-        dependency_monkey = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=dependency_monkey["apiVersion"], kind=dependency_monkey["kind"]
-        ).create(body=dependency_monkey, namespace=self.middletier_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_dependency_monkey_template(self) -> Dict[str, Any]:
-        """Get template for a dependency monkey."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather Dependency Monkey template when running it"
-            )
-
-        return self._get_template("template=dependency-monkey-workload-operator")
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_dependency_monkey_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     def schedule_build_analyze(
         self, document_id: str, output: str, job_id: Optional[str] = None
@@ -1651,7 +1601,8 @@ class OpenShift:
             },
         )
 
-    def _assign_workflow_parameters_for_ceph(self) -> Dict[str, Any]:
+    @staticmethod
+    def _assign_workflow_parameters_for_ceph() -> Dict[str, Any]:
         """Check and assign workflow parameters for different services to interact with Ceph."""
         workflow_parameters = {
             "ceph_bucket_prefix": os.environ["THOTH_CEPH_BUCKET_PREFIX"],
