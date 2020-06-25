@@ -1512,7 +1512,7 @@ class OpenShift:
         github_installation_id: Optional[int] = None,
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
-        source_type: Optional[ThothAdviserIntegrationEnum] = None,
+        source_type: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1521,10 +1521,11 @@ class OpenShift:
             )
 
         if source_type is not None:
-            self._verify_thoth_integration(source_type=source_type.name)
+            self._verify_thoth_integration(source_type=source_type)
+            source_type_enum = getattr(ThothAdviserIntegrationEnum, source_type) if source_type else None
 
         self.verify_integration_inputs(
-            source_type=source_type,
+            source_type=source_type_enum,
             github_event_type=github_event_type,
             github_check_run_id=github_check_run_id,
             github_installation_id=github_installation_id,
@@ -1536,7 +1537,7 @@ class OpenShift:
             job_id = job_id or self.generate_id("adviser")
             parameters = locals()
             parameters["source_type"] = (
-                source_type.name if source_type is not None else None,
+                source_type if source_type is not None else None,
             )
             parameters.pop("self", None)
             return self._schedule_workload(
@@ -1579,7 +1580,7 @@ class OpenShift:
                 "github_base_repo_url": github_base_repo_url,
                 "origin": origin,
                 "re_run_adviser_id": re_run_adviser_id,
-                "source_type": source_type.name if source_type is not None else None,
+                "source_type": source_type if source_type is not None else None,
             }
         )
 
@@ -1637,7 +1638,7 @@ class OpenShift:
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         template: Optional[Dict[str, Any]] = None,
-        source_type: Optional[ThothAdviserIntegrationEnum] = None,
+        source_type: Optional[str] = None,
     ) -> str:
         """Run adviser on the provided user input."""
         if not self.backend_namespace:
@@ -1646,10 +1647,11 @@ class OpenShift:
             )
 
         if source_type is not None:
-            self._verify_thoth_integration(source_type=source_type.name)
+            self._verify_thoth_integration(source_type=source_type)
+            source_type_enum = getattr(ThothAdviserIntegrationEnum, source_type) if source_type else None
 
         self.verify_integration_inputs(
-            source_type=source_type,
+            source_type=source_type_enum,
             github_event_type=github_event_type,
             github_check_run_id=github_check_run_id,
             github_installation_id=github_installation_id,
@@ -1684,7 +1686,7 @@ class OpenShift:
                     "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type.name
+                    "source_type": source_type
                     if source_type is not None
                     else None,
                 }
