@@ -5879,3 +5879,25 @@ Starting with this release we have a Zuul-CI pipeline that:
 * use middletier namespace
 * add submit and schedule methods for SI's
 * Setup Sentry traces sample rate
+
+## Release 0.13.13 (2020-06-25T17:13:22)
+* Fixed precommit
+* Source type enum fix
+* Update OWNERS
+* Adjust signature - return value
+* some reformatting
+* :pushpin: Automatic update of dependency mypy from 0.781 to 0.782
+* :ambulance: some reformatting
+* Make pipeline configuration optional
+* The schedule method of dependency monkey now accepts only Pipfile
+* Remove report output, it is placed on Ceph by Argo
+* Schedule Dependency Monkey using Argo workflows
+* pre-commit
+* Remove variable not required
+* Remove build dependencies component
+* :pushpin: Automatic update of dependency mypy from 0.780 to 0.781
+* :pushpin: Automatic update of dependency sentry-sdk from 0.14.4 to 0.15.1
+* :pushpin: Automatic update of dependency requests from 2.23.0 to 2.24.0
+* Accept alternative datetime format string used by PyPI
+* Correct serialization of Enum
+* :pushpin: Automatic update of dependency pytest-cov from 2.9.0 to 2.10.0
