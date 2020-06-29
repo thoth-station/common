@@ -73,7 +73,6 @@ class OpenShift:
         kubernetes_api_url: Optional[str] = None,
         kubernetes_verify_tls: bool = True,
         openshift_api_url: Optional[str] = None,
-        use_argo: bool = False,
         token: Optional[str] = None,
         token_file: Optional[str] = None,
         cert_file: Optional[str] = None,
@@ -153,8 +152,6 @@ class OpenShift:
             _LOGGER.warning(
                 "TLS verification when communicating with k8s/okd master is disabled"
             )
-
-        self._use_argo = use_argo or bool(int(os.getenv("THOTH_USE_ARGO", 0)))
         self._workflow_manager: Optional["WorkflowManager"] = None
 
     @property
@@ -170,21 +167,6 @@ class OpenShift:
                 ]["value"].split(" ")[1]
 
         return self._token
-
-    @property
-    def use_argo(self) -> bool:
-        """Return whether Argo Workflows are currently enabled."""
-        return self._use_argo
-
-    @use_argo.setter
-    def use_argo(self, enable: bool) -> None:
-        """Set whether Argo Workflows are enabled."""
-        if enable:
-            _LOGGER.debug("Argo Workflows enabled")
-        else:
-            _LOGGER.debug("Argo Workflows disabled")
-
-        self._use_argo = enable
 
     @property
     def workflow_manager(
@@ -756,10 +738,6 @@ class OpenShift:
         parameters: Dict[str, Any],
     ) -> Optional[str]:
         """Schedule an inspection run."""
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
-            )
         if not self.amun_inspection_namespace:
             raise ConfigurationError(
                 "Unable to schedule inspection without Amun inspection namespace being set."
@@ -899,22 +877,7 @@ class OpenShift:
                 "Unable to schedule solver job without middletier namespace being set"
             )
 
-        if not self.use_argo:
-            job_id = job_id or self.generate_id(solver)
-            parameters = locals()
-            parameters.pop("self", None)
-            return self._schedule_workload(
-                run_method_name=self.run_solver.__name__,
-                run_method_parameters=parameters,
-                template_method_name=self.get_solver_template.__name__,
-                template_method_parameters={"solver": solver},
-                job_id=job_id,
-                namespace=self.middletier_namespace,
-                labels={"component": "solver"},
-            )
-
         workflow_id = job_id or self.generate_id(solver)
-
         template_parameters = {
             "THOTH_SOLVER_WORKFLOW_ID": workflow_id,
             "THOTH_SOLVER_NAME": solver,
@@ -1039,38 +1002,6 @@ class OpenShift:
         )
         return configmap_name
 
-    def _schedule_workload(
-        self,
-        *,
-        run_method_name: str,
-        job_id: str,
-        namespace: str,
-        template_method_name: str,
-        run_method_parameters: Optional[Dict[str, str]] = None,
-        template_method_parameters: Optional[Dict[str, Any]] = None,
-        labels: Optional[Dict[str, str]] = None,
-    ) -> str:
-        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
-        if labels:
-            # Inject labels needed by default.
-            labels.update(self._DEFAULT_WORKLOAD_LABELS)
-
-        self.create_config_map(
-            job_id,
-            namespace,
-            labels=labels or self._DEFAULT_WORKLOAD_LABELS,
-            data={
-                "run_method_name": run_method_name,
-                "run_method_parameters": json.dumps(run_method_parameters or {}),
-                "template_method_name": template_method_name,
-                "template_method_parameters": json.dumps(
-                    template_method_parameters or {}
-                ),
-            },
-        )
-
-        return job_id
-
     def _schedule_workflow(
         self, workflow: typing.Callable[..., Optional[str]], parameters: Dict[str, Any]
     ) -> Optional[str]:
@@ -1114,11 +1045,6 @@ class OpenShift:
         if not self.middletier_namespace:
             raise ConfigurationError(
                 "Unable to schedule dependency monkey without middletier namespace being set"
-            )
-
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
         job_id = job_id or self.generate_id("dependency-monkey")
@@ -1180,11 +1106,6 @@ class OpenShift:
         if not self.middletier_namespace:
             raise ConfigurationError(
                 "Unable to schedule build report without middletier namespace being set"
-            )
-
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
             )
 
         workflow_id = job_id or self.generate_id("build-analysis")
@@ -1311,22 +1232,6 @@ class OpenShift:
             github_base_repo_url=github_base_repo_url,
             origin=origin,
         )
-
-        if not self.use_argo:
-            job_id = job_id or self.generate_id("adviser")
-            parameters = locals()
-            parameters["source_type"] = (
-                source_type if source_type is not None else None,
-            )
-            parameters.pop("self", None)
-            return self._schedule_workload(
-                run_method_name=self.run_adviser.__name__,
-                run_method_parameters=parameters,
-                template_method_name=self.get_adviser_template.__name__,
-                job_id=job_id,
-                namespace=self.backend_namespace,
-                labels={"component": "adviser"},
-            )
 
         adviser_id = job_id or self.generate_id("adviser")
         template_parameters = {}
@@ -1563,11 +1468,6 @@ class OpenShift:
         host: str,
     ) -> Optional[str]:
         """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
-            )
-
         workflow_id = self.generate_id("qeb-hwt")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
@@ -1594,11 +1494,6 @@ class OpenShift:
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
         """
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
-            )
-
         workflow_id = self.generate_id("srcopsmetrics")
         template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
 
@@ -1614,11 +1509,6 @@ class OpenShift:
         self, webhook_payload: Dict[str, Any]
     ) -> Optional[str]:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
-        if not self.use_argo:
-            _LOGGER.warning(
-                "No legacy implementation that would use workload operator, using Argo workflows.."
-            )
-
         workflow_id = self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
