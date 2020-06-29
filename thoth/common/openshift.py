@@ -31,7 +31,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Tuple
 
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 from .exceptions import NotKnownThothIntegration
@@ -795,7 +794,6 @@ class OpenShift:
         self,
         packages: str,
         *,
-        output: Optional[str] = None,
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = False,
@@ -805,7 +803,6 @@ class OpenShift:
         for solver_name in self.get_solver_names():
             solver_id = self.schedule_solver(
                 packages=packages,
-                output=output,
                 solver=solver_name,
                 indexes=indexes,
                 debug=debug,
@@ -816,56 +813,11 @@ class OpenShift:
 
         return solver_ids
 
-    def run_solver(
-        self,
-        packages: str,
-        output: str,
-        solver: str,
-        *,
-        indexes: Optional[List[str]] = None,
-        debug: bool = False,
-        transitive: bool = True,
-        job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
-        """Run solver or all solver to solve the given requirements."""
-        if self.middletier_namespace is None:
-            raise ConfigurationError(
-                "Solver requires middletier namespace to be specified"
-            )
-
-        template = template or self.get_solver_template(solver)
-
-        job_id = job_id or self.generate_id(solver)
-        self.set_template_parameters(
-            template,
-            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
-            THOTH_SOLVER_NO_TRANSITIVE=int(not transitive),
-            THOTH_SOLVER_PACKAGES=packages.replace("\n", "\\n"),
-            THOTH_SOLVER_INDEXES=",".join(indexes) if indexes else "",
-            THOTH_LOG_SOLVER="DEBUG" if debug else "INFO",
-            THOTH_SOLVER_OUTPUT=output,
-            THOTH_SOLVER_JOB_ID=job_id,
-            THOTH_DOCUMENT_ID=job_id,
-        )
-
-        template = self.oc_process(self.middletier_namespace, template)
-        solver_template = template["objects"][0]
-        response = self.ocp_client.resources.get(
-            api_version=solver_template["apiVersion"], kind=solver_template["kind"]
-        ).create(body=solver_template, namespace=self.middletier_namespace)
-
-        _LOGGER.debug("Starting solver %r", solver)
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
     def schedule_solver(
         self,
         packages: str,
         solver: str,
         *,
-        output: Optional[str] = None,
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = True,
@@ -884,6 +836,7 @@ class OpenShift:
             "THOTH_SOLVER_PACKAGES": packages.replace("\n", "\\n"),
             "THOTH_SOLVER_NO_TRANSITIVE": int(not transitive),
             "THOTH_SOLVER_INDEXES": ",".join(indexes) if indexes else "",
+            "THOTH_LOG_SOLVER": "DEBUG" if debug else "INFO",
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
@@ -895,30 +848,6 @@ class OpenShift:
                 "workflow_parameters": workflow_parameters,
             },
         )
-
-    def get_solver_template(self, solver: str) -> Dict[str, Any]:
-        """Retrieve a solver template."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather solver template when running solver"
-            )
-
-        template = self._get_template("template=solver-workload-operator")
-
-        # Get only one solver - the solver that was requested.
-        solver_entry = None
-        for idx, obj in enumerate(template["objects"]):
-            if obj["metadata"]["labels"]["solver-type"] == solver:
-                solver_entry = obj
-                break
-
-        if solver_entry is None:
-            raise ConfigurationError(
-                f"No template for solver {solver!r} registered in {self.infra_namespace!r}"
-            )
-
-        template["objects"] = [solver_entry]
-        return template
 
     def schedule_package_extract(
         self,
@@ -1002,8 +931,9 @@ class OpenShift:
         )
         return configmap_name
 
+    @staticmethod
     def _schedule_workflow(
-        self, workflow: typing.Callable[..., Optional[str]], parameters: Dict[str, Any]
+        workflow: typing.Callable[..., Optional[str]], parameters: Dict[str, Any]
     ) -> Optional[str]:
         """Schedule an Argo Workflow."""
         return workflow(**parameters)
@@ -1191,7 +1121,6 @@ class OpenShift:
     def schedule_adviser(
         self,
         application_stack: Dict[Any, Any],
-        output: str,
         recommendation_type: str,
         *,
         count: Optional[int] = None,
@@ -1300,120 +1229,6 @@ class OpenShift:
         }
 
         return workflow_parameters
-
-    def run_adviser(
-        self,
-        application_stack: Dict[Any, Any],
-        output: str,
-        recommendation_type: str,
-        *,
-        count: Optional[int] = None,
-        limit: Optional[int] = None,
-        runtime_environment: Optional[Dict[Any, Any]] = None,
-        library_usage: Optional[Dict[Any, Any]] = None,
-        origin: Optional[str] = None,
-        dev: bool = False,
-        debug: bool = False,
-        job_id: Optional[str] = None,
-        limit_latest_versions: Optional[int] = None,
-        github_event_type: Optional[str] = None,
-        github_check_run_id: Optional[int] = None,
-        github_installation_id: Optional[int] = None,
-        github_base_repo_url: Optional[str] = None,
-        re_run_adviser_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-        source_type: Optional[str] = None,
-    ) -> str:
-        """Run adviser on the provided user input."""
-        if not self.backend_namespace:
-            raise ConfigurationError(
-                "Running adviser requires backend namespace configuration"
-            )
-
-        if source_type is not None:
-            self._verify_thoth_integration(source_type=source_type)
-            source_type_enum = (
-                getattr(ThothAdviserIntegrationEnum, source_type)
-                if source_type
-                else None
-            )
-
-        self.verify_integration_inputs(
-            source_type=source_type_enum,
-            github_event_type=github_event_type,
-            github_check_run_id=github_check_run_id,
-            github_installation_id=github_installation_id,
-            github_base_repo_url=github_base_repo_url,
-            origin=origin,
-        )
-
-        template = template or self.get_adviser_template()
-        job_id = job_id or self.generate_id("adviser")
-
-        parameters: Dict[str, Any] = {
-            "IMAGE_STREAM_NAMESPACE": self.infra_namespace,
-            "THOTH_ADVISER_REQUIREMENTS": application_stack.pop("requirements").replace(
-                "\n", "\\n"
-            ),
-            "THOTH_ADVISER_REQUIREMENTS_LOCKED": application_stack.get(
-                "requirements_lock", ""
-            ).replace("\n", "\\n"),
-            "THOTH_ADVISER_REQUIREMENTS_FORMAT": application_stack.get(
-                "requirements_format", "pipenv"
-            ),
-            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type.lower(),
-            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
-            if runtime_environment is None
-            else json.dumps(runtime_environment),
-            "THOTH_ADVISER_LIBRARY_USAGE": json.dumps(library_usage),
-            "THOTH_ADVISER_METADATA": json.dumps(
-                {
-                    "github_event_type": github_event_type,
-                    "github_check_run_id": github_check_run_id,
-                    "github_installation_id": github_installation_id,
-                    "github_base_repo_url": github_base_repo_url,
-                    "origin": origin,
-                    "re_run_adviser_id": re_run_adviser_id,
-                    "source_type": source_type if source_type is not None else None,
-                }
-            ),
-            "THOTH_ADVISER_OUTPUT": output,
-            "THOTH_ADVISER_DEV": "1" if dev else "0",
-            "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
-            "THOTH_ADVISER_JOB_ID": job_id,
-            "THOTH_DOCUMENT_ID": job_id,
-        }
-
-        if count:
-            parameters["THOTH_ADVISER_COUNT"] = count
-
-        if limit:
-            parameters["THOTH_ADVISER_LIMIT"] = limit
-
-        if limit_latest_versions is not None:
-            parameters["THOTH_ADVISER_LIMIT_LATEST_VERSIONS"] = limit_latest_versions
-
-        self.set_template_parameters(template, **parameters)
-
-        template = self.oc_process(self.backend_namespace, template)
-        adviser = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=adviser["apiVersion"], kind=adviser["kind"]
-        ).create(body=adviser, namespace=self.backend_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_adviser_template(self) -> Dict[str, Any]:
-        """Get template for an adviser run."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather adviser template when running it"
-            )
-
-        return self._get_template("template=adviser-workload-operator")
 
     def schedule_provenance_checker(
         self,
@@ -1538,12 +1353,12 @@ class OpenShift:
             )
 
         si_bandit_id = job_id or self.generate_id("si-bandit")
-        template_parameters = {}
-        template_parameters["THOTH_SI_BANDIT_JOB_ID"] = si_bandit_id
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_NAME"] = python_package_name
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_VERSION"] = python_package_version
-        template_parameters["THOTH_SI_BANDIT_PACKAGE_INDEX"] = python_package_index
-
+        template_parameters = {
+            "THOTH_SI_BANDIT_JOB_ID": si_bandit_id,
+            "THOTH_SI_BANDIT_PACKAGE_NAME": python_package_name,
+            "THOTH_SI_BANDIT_PACKAGE_VERSION": python_package_version,
+            "THOTH_SI_BANDIT_PACKAGE_INDEX": python_package_index,
+        }
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
@@ -1569,12 +1384,12 @@ class OpenShift:
             )
 
         si_cloc_id = job_id or self.generate_id("si-cloc")
-        template_parameters = {}
-        template_parameters["THOTH_SI_CLOC_JOB_ID"] = si_cloc_id
-        template_parameters["THOTH_SI_CLOC_PACKAGE_NAME"] = python_package_name
-        template_parameters["THOTH_SI_CLOC_PACKAGE_VERSION"] = python_package_version
-        template_parameters["THOTH_SI_CLOC_PACKAGE_INDEX"] = python_package_index
-
+        template_parameters = {
+            "THOTH_SI_CLOC_JOB_ID": si_cloc_id,
+            "THOTH_SI_CLOC_PACKAGE_NAME": python_package_name,
+            "THOTH_SI_CLOC_PACKAGE_VERSION": python_package_version,
+            "THOTH_SI_CLOC_PACKAGE_INDEX": python_package_index,
+        }
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
@@ -1686,179 +1501,6 @@ class OpenShift:
             return parsed * 1024
 
         raise ValueError(f"Cannot parse memory specification from {memory_spec!r}")
-
-    def get_quota_status(self, namespace: str) -> Dict[str, Dict[str, Any]]:
-        """Get quota status.
-
-        For now, there is retrieved a very first quota specification and its status from resource quota list, we
-        gather information about memory, CPU usage and number of pods.
-        """
-        # TODO: rewrite to OpenShift REST client
-        endpoint = "{}/api/v1/namespaces/{}/resourcequotas".format(
-            self.openshift_api_url, namespace
-        )
-        response = requests.get(
-            endpoint,
-            headers={
-                "Authorization": "Bearer {}".format(self.token),
-                "Content-Type": "application/json",
-            },
-            verify=self.kubernetes_verify_tls,
-        )
-        _LOGGER.debug(
-            "OpenShift master response for quota (%d): %r",
-            response.status_code,
-            response.text,
-        )
-
-        try:
-            response.raise_for_status()
-        except Exception:
-            _LOGGER.error("Failed to obtain quota: %s", response.text)
-            raise
-
-        if len(response.json()["items"]) != 1:
-            raise ValueError(
-                f"No or multiple cluster resources configured in namespace {namespace!r}"
-            )
-
-        # We get a very first item for now.
-        status = response.json()["items"][0]["status"]
-        pods_used = status["used"].get("pods")
-        pods_hard = status["hard"].get("pods")
-
-        return {
-            "used": {
-                "cpu": self.parse_cpu_spec(status["used"].get("limits.cpu")) or 0,
-                "memory": self.parse_memory_spec(status["used"].get("limits.memory"))
-                or 0,
-                "pods": int(pods_used) if pods_used is not None else None,
-            },
-            "hard": {
-                "cpu": self.parse_cpu_spec(status["hard"].get("limits.cpu")) or 0,
-                "memory": self.parse_memory_spec(status["hard"].get("limits.memory"))
-                or 0,
-                "pods": int(pods_hard) if pods_hard is not None else None,
-            },
-        }
-
-    def can_run_workload(self, template: Dict[str, Any], namespace: str) -> bool:
-        """Check if the given (job) can be run in the given namespace based on mem, cpu and pod restrictions."""
-        quota_status = self.get_quota_status(namespace)
-        if (
-            quota_status["hard"]["pods"] is not None
-            and quota_status["used"]["pods"] + 1 > quota_status["hard"]["pods"]
-        ):
-            _LOGGER.debug("Cannot run workload, no pods available")
-            return False
-
-        template_name = template["metadata"]["name"]
-
-        if template["objects"][0]["kind"] == "Job":
-            cpu_requested, mem_requested = self._get_job_requests(template)
-        elif template["objects"][0]["kind"] == "BuildConfig":
-            cpu_requested, mem_requested = self._get_build_requests(template)
-        else:
-            raise ValueError(
-                f"Unable to handle template {template_name} - no requests gathering method defined for "
-                f"workload of type {template['objects'][0]['kind']}"
-            )
-
-        if (
-            quota_status["used"]["memory"] + mem_requested
-            > quota_status["hard"]["memory"]
-        ):
-            _LOGGER.debug("Cannot run workload %r, no memory available", template_name)
-
-            return False
-
-        if quota_status["used"]["cpu"] + cpu_requested > quota_status["hard"]["cpu"]:
-            _LOGGER.debug("Cannot run workload %r, no CPU available", template_name)
-            return False
-
-        return True
-
-    def _get_job_requests(self, template: Dict[str, Any]) -> Tuple[int, int]:
-        """Get resources needed for running a workload of type Job."""
-        template_name = template["metadata"]["name"]
-
-        if len(template["objects"]) > 1:
-            _LOGGER.warning(
-                "Template %r has multiple pods defined, only the first will be considered in workload computation",
-                template_name,
-            )
-
-        pod_mem_requested = 0
-        pod_cpu_requested = 0
-        for container in template["objects"][0]["spec"]["template"]["spec"][
-            "containers"
-        ]:
-            container_mem_requested = (
-                container.get("resources", {}).get("requests", {}).get("memory", 0)
-            )
-            if not container_mem_requested:
-                _LOGGER.warning(
-                    "No memory requests for container %r in template %r",
-                    container["name"],
-                    template_name,
-                )
-            else:
-                container_mem_requested = self.parse_memory_spec(
-                    container_mem_requested
-                )
-                if container_mem_requested is not None:
-                    pod_mem_requested += container_mem_requested
-
-            container_cpu_requested = (
-                container.get("resources", {}).get("requests", {}).get("cpu", 0)
-            )
-            if not container_cpu_requested:
-                _LOGGER.warning(
-                    "No CPU requests for container %r in template %r",
-                    container["name"],
-                    template_name,
-                )
-            else:
-                container_cpu_requested = self.parse_cpu_spec(container_cpu_requested)
-                if container_cpu_requested is not None:
-                    pod_cpu_requested += container_cpu_requested
-
-        return pod_cpu_requested, pod_mem_requested
-
-    def _get_build_requests(self, template: Dict[str, Any]) -> Tuple[int, int]:
-        """Get resources needed for running a workload of type BuildConfig (running the build)."""
-        template_name = template["metadata"]["name"]
-        if len(template["objects"]) != 1:
-            _LOGGER.warning(
-                "Template %r has multiple objects defined, only the first will be considered in workload computation",
-                template_name,
-            )
-
-        build_memory = (
-            template["objects"][0]["spec"]
-            .get("resources", {})
-            .get("requests", {})
-            .get("memory", 0)
-        )
-        if not build_memory:
-            _LOGGER.warning(
-                "No memory requests for build in template %r", template_name
-            )
-        else:
-            build_memory = self.parse_memory_spec(build_memory)
-
-        build_cpu = (
-            template["objects"][0]["spec"]
-            .get("resources", {})
-            .get("requests", {})
-            .get("cpu", 0)
-        )
-        if not build_cpu:
-            _LOGGER.warning("No CPU requests for build in template %r", template_name)
-        else:
-            build_cpu = self.parse_cpu_spec(build_cpu)
-
-        return build_cpu, build_memory
 
     def get_job_status_count(
         self, label_selector: str, namespace: str
