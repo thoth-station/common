@@ -554,6 +554,28 @@ class WorkflowManager:
 
         return workflow_id
 
+    def submit_package_extract_workflow(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, str]] = None,
+    ) -> Optional[str]:
+        """Submit package-extract workflow."""
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=package-extract",
+            template_parameters=template_parameters or {},
+            workflow_parameters=workflow_parameters or {},
+            workflow_namespace=self.openshift.middletier_namespace,
+        )
+
+        return workflow_id
+
     def submit_dependency_monkey_workflow(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
