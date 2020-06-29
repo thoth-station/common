@@ -970,8 +970,8 @@ class OpenShift:
         verify_tls: bool = True,
         debug: bool = False,
         job_id: Optional[str] = None,
-    ) -> str:
-        """Schedule the given job run, the scheduled job is handled by workload operator based resources available."""
+    ) -> Optional[str]:
+        """Schedule package extract workflow."""
         if not self.middletier_namespace:
             raise ConfigurationError(
                 "Unable to schedule package extract job without middletier namespace being set"
@@ -982,90 +982,37 @@ class OpenShift:
                 "Unknown environment type %r, has to be runtime or buildtime"
             )
 
-        job_id = job_id or self.generate_id("package-extract")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_package_extract.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_package_extract_template.__name__,
-            job_id=job_id,
-            namespace=self.middletier_namespace,
-            labels={"component": "package-extract"},
-        )
-
-    def run_package_extract(
-        self,
-        image: str,
-        output: str,
-        *,
-        environment_type: str,
-        is_external: bool = True,
-        origin: Optional[str] = None,
-        registry_user: Optional[str] = None,
-        registry_password: Optional[str] = None,
-        verify_tls: bool = True,
-        debug: bool = False,
-        job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
-        """Run package-extract analyzer to extract information from the provided image."""
-        if not self.middletier_namespace:
-            raise ConfigurationError(
-                "Running package-extract requires middletier namespace to be specified"
-            )
-
-        if environment_type not in ("runtime", "buildtime"):
-            raise ValueError(
-                "Unknown environment type %r, has to be runtime or buildtime"
-            )
-
-        template = template or self.get_package_extract_template()
-        job_id = job_id or self.generate_id("package-extract")
-
-        self.set_template_parameters(
-            template,
-            IMAGE_STREAM_PROJECT_NAME=self.infra_namespace,
-            THOTH_LOG_PACKAGE_EXTRACT="DEBUG" if debug else "INFO",
-            THOTH_ANALYZED_IMAGE=image,
-            THOTH_ANALYZER_NO_TLS_VERIFY=int(not verify_tls),
-            THOTH_ANALYZER_OUTPUT=output,
-            THOTH_PACKAGE_EXTRACT_JOB_ID=job_id,
-            THOTH_DOCUMENT_ID=job_id,
-            THOTH_PACKAGE_EXTRACT_METADATA=json.dumps(
+        template_parameters = {
+            "THOTH_LOG_PACKAGE_EXTRACT": "DEBUG" if debug else "INFO",
+            "THOTH_ANALYZED_IMAGE": image,
+            "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
+            "THOTH_ANALYZER_OUTPUT": output,
+            "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id
+            or self.generate_id("package-extract"),
+            "THOTH_DOCUMENT_ID": job_id,
+            "THOTH_PACKAGE_EXTRACT_METADATA": json.dumps(
                 {
                     "origin": origin,
                     "environment_type": environment_type,
                     "is_external": is_external,
                 }
             ),
-        )
+        }
 
         if registry_user and registry_password:
-            self.set_template_parameters(
-                template,
-                THOTH_REGISTRY_CREDENTIALS=f"{registry_user}:{registry_password}",
-            )
+            template_parameters[
+                "THOTH_REGISTRY_CREDENTIALS"
+            ] = f"{registry_user}:{registry_password}"
 
-        template = self.oc_process(self.middletier_namespace, template)
-        analyzer = template["objects"][0]
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
-        response = self.ocp_client.resources.get(
-            api_version=analyzer["apiVersion"], kind=analyzer["kind"]
-        ).create(body=analyzer, namespace=self.middletier_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_package_extract_template(self) -> Dict[str, Any]:
-        """Get template for package-extract."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather package-extract template when running it"
-            )
-
-        return self._get_template("template=package-extract-workload-operator")
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_package_extract_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
 
     def schedule_package_analyzer(
         self,
