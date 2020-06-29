@@ -1596,88 +1596,43 @@ class OpenShift:
     def schedule_provenance_checker(
         self,
         application_stack: Dict[Any, Any],
-        output: str,
         *,
         origin: Optional[str] = None,
         whitelisted_sources: Optional[List[str]] = None,
         debug: bool = False,
         job_id: Optional[str] = None,
-    ) -> str:
-        """Schedule a provenance checker run."""
-        if not self.backend_namespace:
-            raise ConfigurationError(
-                "Unable to schedule provenance checker without backend namespace being set"
-            )
-
-        job_id = job_id or self.generate_id("provenance-checker")
-        parameters = locals()
-        parameters.pop("self", None)
-        return self._schedule_workload(
-            run_method_name=self.run_provenance_checker.__name__,
-            run_method_parameters=parameters,
-            template_method_name=self.get_provenance_checker_template.__name__,
-            job_id=job_id,
-            namespace=self.backend_namespace,
-            labels={"component": "provenance-checker"},
-        )
-
-    def run_provenance_checker(
-        self,
-        application_stack: Dict[Any, Any],
-        output: str,
-        *,
-        origin: Optional[str] = None,
-        whitelisted_sources: Optional[List[str]] = None,
-        debug: bool = False,
-        job_id: Optional[str] = None,
-        template: Optional[Dict[str, Any]] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
             raise ConfigurationError(
                 "Running provenance checks requires backend namespace configuration"
             )
 
-        template = template or self.get_provenance_checker_template()
         job_id = job_id or self.generate_id("provenance-checker")
 
         requirements = application_stack.pop("requirements").replace("\n", "\\n")
         requirements_locked = application_stack.pop("requirements_lock").replace(
             "\n", "\\n"
         )
-        self.set_template_parameters(
-            template,
-            IMAGE_STREAM_NAMESPACE=self.infra_namespace,
-            THOTH_ADVISER_REQUIREMENTS=requirements,
-            THOTH_ADVISER_REQUIREMENTS_LOCKED=requirements_locked,
-            THOTH_ADVISER_OUTPUT=output,
-            THOTH_ADVISER_METADATA=json.dumps({"origin": origin}),
-            THOTH_WHITELISTED_SOURCES=",".join(whitelisted_sources or []),
-            THOTH_LOG_ADVISER="DEBUG" if debug else "INFO",
-            THOTH_PROVENANCE_CHECKER_JOB_ID=job_id,
-            THOTH_DOCUMENT_ID=job_id,
+        template_parameters = {
+            "THOTH_ADVISER_REQUIREMENTS": requirements,
+            "THOTH_ADVISER_REQUIREMENTS_LOCKED": requirements_locked,
+            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
+            "THOTH_WHITELISTED_SOURCES": ",".join(whitelisted_sources or []),
+            "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
+            "THOTH_PROVENANCE_CHECKER_JOB_ID": job_id,
+            "THOTH_DOCUMENT_ID": job_id,
+        }
+
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_provenance_checker_workflow,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
         )
-
-        template = self.oc_process(self.backend_namespace, template)
-        provenance_checker = template["objects"][0]
-
-        response = self.ocp_client.resources.get(
-            api_version=provenance_checker["apiVersion"],
-            kind=provenance_checker["kind"],
-        ).create(body=provenance_checker, namespace=self.backend_namespace)
-
-        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
-        result: str = response.metadata.name
-        return result
-
-    def get_provenance_checker_template(self) -> Dict[str, Any]:
-        """Get template for a provenance checker."""
-        if not self.infra_namespace:
-            raise ConfigurationError(
-                "Infra namespace is required to gather provenance template when running it"
-            )
-
-        return self._get_template("template=provenance-checker-workload-operator")
 
     def schedule_kebechet_run_url(
         self,
