@@ -852,7 +852,6 @@ class OpenShift:
     def schedule_package_extract(
         self,
         image: str,
-        output: str,
         *,
         environment_type: str,
         is_external: bool = True,
@@ -878,7 +877,6 @@ class OpenShift:
             "THOTH_LOG_PACKAGE_EXTRACT": "DEBUG" if debug else "INFO",
             "THOTH_ANALYZED_IMAGE": image,
             "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
-            "THOTH_ANALYZER_OUTPUT": output,
             "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id
             or self.generate_id("package-extract"),
             "THOTH_DOCUMENT_ID": job_id,
