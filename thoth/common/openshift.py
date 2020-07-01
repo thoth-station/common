@@ -987,10 +987,8 @@ class OpenShift:
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
+            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline) if pipeline else "{}",
         }
-
-        if pipeline:
-            template_parameters["THOTH_ADVISER_PIPELINE"] = json.dumps(pipeline)
 
         if decision is not None:
             template_parameters[
