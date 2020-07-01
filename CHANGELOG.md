@@ -5901,3 +5901,19 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Accept alternative datetime format string used by PyPI
 * Correct serialization of Enum
 * :pushpin: Automatic update of dependency pytest-cov from 2.9.0 to 2.10.0
+
+## Release 0.14.0 (2020-07-01T09:45:47)
+* Always supply pipeline configuration for dependency monkey (#897)
+* Package extract now does not need output to result-api (#896)
+* Update OWNERS
+* Update OWNERS
+* Drop remaning workload-operator bits
+* Drop legacy workload operator, use only Argo workflows
+* Update OWNERS
+* Remove kebechet jobs they are now part of workflows
+* Remove package analyzer job
+* Introduce provenance-checker Argo workflow
+* Use Argo workflows for package-extract
+* Reformat using black
+* Introduce build analysis workflow
+* Remove graph sync jobs
