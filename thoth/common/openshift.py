@@ -1334,7 +1334,7 @@ class OpenShift:
             },
         )
 
-    def schedule_security_indicators(
+    def schedule_security_indicator(
         self,
         python_package_name: str,
         python_package_version: str,
