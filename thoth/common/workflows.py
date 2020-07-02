@@ -701,7 +701,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_security_indicators_workflow(
+    def submit_security_indicator_workflow(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
