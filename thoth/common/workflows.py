@@ -494,7 +494,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_inspection_workflow(
+    def submit_inspection(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -529,7 +529,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_adviser_workflow(
+    def submit_adviser(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -554,7 +554,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_package_extract_workflow(
+    def submit_package_extract(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, str]] = None,
@@ -576,7 +576,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_dependency_monkey_workflow(
+    def submit_dependency_monkey(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -601,7 +601,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_provenance_checker_workflow(
+    def submit_provenance_checker(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -626,7 +626,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_kebechet_workflow(
+    def submit_kebechet(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -651,7 +651,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_solver_workflow(
+    def submit_solver(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -676,7 +676,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_thamos_workflow(
+    def submit_thamos(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -701,7 +701,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_security_indicator_workflow(
+    def submit_security_indicator(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
@@ -726,7 +726,7 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_srcopsmetrics_workflow(
+    def submit_srcopsmetrics(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
