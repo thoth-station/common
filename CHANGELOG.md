@@ -5917,3 +5917,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Reformat using black
 * Introduce build analysis workflow
 * Remove graph sync jobs
+
+## Release 0.14.1 (2020-07-03T08:50:13)
+* Use singular (#901)
+* Add methods to schedule SI workflow (#900)
