@@ -769,7 +769,7 @@ class OpenShift:
             workflow_parameters["batch-size"] = specification["batch_size"]
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_inspection_workflow,
+            workflow=self.workflow_manager.submit_inspection,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -842,7 +842,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_solver_workflow,
+            workflow=self.workflow_manager.submit_solver,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -897,7 +897,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_package_extract_workflow,
+            workflow=self.workflow_manager.submit_package_extract,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -1009,7 +1009,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_dependency_monkey_workflow,
+            workflow=self.workflow_manager.submit_dependency_monkey,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -1207,7 +1207,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_adviser_workflow,
+            workflow=self.workflow_manager.submit_adviser,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -1260,7 +1260,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_provenance_checker_workflow,
+            workflow=self.workflow_manager.submit_provenance_checker,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
@@ -1293,7 +1293,7 @@ class OpenShift:
         }
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_thamos_workflow,
+            workflow=self.workflow_manager.submit_thamos,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
@@ -1309,7 +1309,7 @@ class OpenShift:
         template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_srcopsmetrics_workflow,
+            workflow=self.workflow_manager.submit_srcopsmetrics,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
@@ -1327,7 +1327,7 @@ class OpenShift:
         }
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_kebechet_workflow,
+            workflow=self.workflow_manager.submit_kebechet,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
@@ -1360,7 +1360,7 @@ class OpenShift:
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_security_indicators_workflow,
+            workflow=self.workflow_manager.submit_security_indicator,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
