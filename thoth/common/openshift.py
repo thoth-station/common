@@ -797,6 +797,7 @@ class OpenShift:
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = False,
+        run_reverse_solver: bool = True,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
         solver_ids = []
@@ -807,6 +808,7 @@ class OpenShift:
                 indexes=indexes,
                 debug=debug,
                 transitive=transitive,
+                run_reverse_solver=run_reverse_solver,
             )
             if solver_id is not None:
                 solver_ids.append(solver_id)
@@ -822,6 +824,7 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
+        run_reverse_solver: bool = True,
     ) -> Optional[str]:
         """Schedule the given solver."""
         if not self.middletier_namespace:
@@ -837,6 +840,7 @@ class OpenShift:
             "THOTH_SOLVER_NO_TRANSITIVE": int(not transitive),
             "THOTH_SOLVER_INDEXES": ",".join(indexes) if indexes else "",
             "THOTH_LOG_SOLVER": "DEBUG" if debug else "INFO",
+            "THOTH_RUN_REVERSE_SOLVER": "1" if run_reverse_solver else "0",
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
