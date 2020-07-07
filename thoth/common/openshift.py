@@ -797,7 +797,6 @@ class OpenShift:
         indexes: Optional[List[str]] = None,
         debug: bool = False,
         transitive: bool = False,
-        run_reverse_solver: bool = True,
     ) -> typing.List[str]:
         """Schedule all solvers for the given packages."""
         solver_ids = []
@@ -808,7 +807,6 @@ class OpenShift:
                 indexes=indexes,
                 debug=debug,
                 transitive=transitive,
-                run_reverse_solver=run_reverse_solver,
             )
             if solver_id is not None:
                 solver_ids.append(solver_id)
@@ -824,7 +822,6 @@ class OpenShift:
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
-        run_reverse_solver: bool = True,
     ) -> Optional[str]:
         """Schedule the given solver."""
         if not self.middletier_namespace:
@@ -840,13 +837,43 @@ class OpenShift:
             "THOTH_SOLVER_NO_TRANSITIVE": int(not transitive),
             "THOTH_SOLVER_INDEXES": ",".join(indexes) if indexes else "",
             "THOTH_LOG_SOLVER": "DEBUG" if debug else "INFO",
-            "THOTH_RUN_REVERSE_SOLVER": "1" if run_reverse_solver else "0",
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_solver,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
+    def schedule_revsolver(
+        self,
+        package_name: str,
+        package_version: str,
+        *,
+        debug: bool = False,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule reverse solver."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule reverse solver without middletier namespace being set"
+            )
+
+        workflow_id = job_id or self.generate_id("revsolver")
+        template_parameters = {
+            "THOTH_REVSOLVER_WORKFLOW_ID": workflow_id,
+            "THOTH_REVSOLVER_PACKAGE_NAME": package_name,
+            "THOTH_REVSOLVER_PACKAGE_VERSION": package_version,
+            "THOTH_LOG_REVSOLVER": "DEBUG" if debug else "INFO",
+        }
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_revsolver,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
