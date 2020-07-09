@@ -192,7 +192,8 @@ class OpenShift:
         # Discard any minor release, if present.
         return os_version.split(".", maxsplit=1)[0]
 
-    def parse_python_solver_name(self, solver_name: str) -> Dict[str, Any]:
+    @classmethod
+    def parse_python_solver_name(cls, solver_name: str) -> Dict[str, Any]:
         """Parse os and Python identifiers encoded into solver name."""
         if solver_name.startswith("solver-"):
             solver_identifiers = solver_name[len("solver-") :]
@@ -219,7 +220,7 @@ class OpenShift:
         python_version = ".".join(list(python_version))
         return {
             "os_name": parts[0],
-            "os_version": self.normalize_os_version(parts[0], parts[1]),
+            "os_version": cls.normalize_os_version(parts[0], parts[1]),
             "python_version": python_version,
         }
 
