@@ -224,8 +224,9 @@ class OpenShift:
             "python_version": python_version,
         }
 
+    @classmethod
     def obtain_solver_from_runtime_environment(
-        self, runtime_environment: Dict[str, Any]
+        cls, runtime_environment: Dict[str, Any]
     ) -> Optional[str]:
         """Define solver from runtime_environment."""
         solver = None
@@ -235,7 +236,7 @@ class OpenShift:
             return solver
 
         os_name = runtime_environment["operating_system"].get("name")
-        os_version = self.normalize_os_version(
+        os_version = cls.normalize_os_version(
             operating_system.get("name"), operating_system.get("version")
         )
         python_version = runtime_environment.get("python_version")
@@ -250,7 +251,7 @@ class OpenShift:
         else:
             solver = f"solver-{os_name}-{os_version}"
 
-        self.parse_python_solver_name(solver)
+        cls.parse_python_solver_name(solver)
 
         return solver
 
