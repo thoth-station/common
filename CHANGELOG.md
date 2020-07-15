@@ -5921,3 +5921,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.14.1 (2020-07-03T08:50:13)
 * Use singular (#901)
 * Add methods to schedule SI workflow (#900)
+
+## Release 0.14.2 (2020-07-15T21:57:46)
+* Make methods static (#909)
+* Parsing solver names can be a class method (#908)
+* Introduce reverse solver workflow (#907)
+* Add parameter to trigger reverse solver run (#906)
