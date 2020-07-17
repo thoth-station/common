@@ -1160,7 +1160,6 @@ class OpenShift:
         dev: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
-        limit_latest_versions: Optional[int] = None,
         github_event_type: Optional[str] = None,
         github_check_run_id: Optional[int] = None,
         github_installation_id: Optional[int] = None,
@@ -1231,11 +1230,6 @@ class OpenShift:
 
         if count is not None:
             template_parameters["THOTH_ADVISER_COUNT"] = count
-
-        if limit_latest_versions is not None:
-            template_parameters[
-                "THOTH_ADVISER_LIMIT_LATEST_VERSIONS"
-            ] = limit_latest_versions
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
