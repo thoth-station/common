@@ -22,6 +22,7 @@ import logging
 from typing import Optional
 from typing import Any
 from typing import Dict
+from typing import Tuple
 
 import attr
 import yaml
@@ -44,6 +45,9 @@ class RuntimeEnvironment:
     cuda_version = attr.ib(type=str, default=None)
     name = attr.ib(type=str, default=None)
     platform = attr.ib(type=str, default=None)
+    _python_version_tuple = attr.ib(
+        type=Optional[Tuple[int, int]], default=None, init=False
+    )
 
     @classmethod
     def load(cls, content: Optional[str] = None) -> "RuntimeEnvironment":
@@ -94,6 +98,16 @@ class RuntimeEnvironment:
             )
 
         return instance
+
+    def get_python_version_tuple(self) -> Tuple[int, int]:
+        """Get tuple with Python version (major, minor) information."""
+        if self.python_version is None:
+            raise ValueError("No Python version provided")
+
+        if self._python_version_tuple is None:
+            self._python_version_tuple = tuple(map(int, self.python_version.split(".", maxsplit=2)))  # type: ignore
+
+        return self._python_version_tuple  # type: ignore
 
     def to_dict(self, without_none: bool = False) -> Dict[str, Any]:
         """Convert runtime environment configuration to a dict representation."""
