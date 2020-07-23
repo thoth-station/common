@@ -1608,6 +1608,29 @@ class OpenShift:
 
         return wf
 
+    def get_workflow_status_report(
+        self,
+        workflow_id: str,
+        label_selector: Optional[str] = None,
+        namespace: Optional[str] = None,
+    ) -> Dict[str, Optional[str]]:
+        """Get workflow status report, derived from workflow status."""
+        try:
+            wf_status = self.get_workflow_status(
+                name=workflow_id, label_selector=label_selector, namespace=namespace
+            )
+            status = {
+                "finished_at": wf_status.get("finishedAt"),
+                "reason": None,
+                "started_at": wf_status.get("startedAt"),
+                "state": wf_status.get("phase", "pending").lower(),
+            }
+        except NotFoundException as exc:
+            raise NotFoundException(
+                f"Requested status for analysis {workflow_id!r} was not found"
+            ) from exc
+        return status
+
     def get_workflow_status(
         self,
         name: Optional[str] = None,
