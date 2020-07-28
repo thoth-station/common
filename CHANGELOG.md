@@ -5927,3 +5927,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Parsing solver names can be a class method (#908)
 * Introduce reverse solver workflow (#907)
 * Add parameter to trigger reverse solver run (#906)
+
+## Release 0.15.0 (2020-07-28T18:38:04)
+* Added workflow status wrapper (#919)
+* Do not limit latest versions on adviser runs (#917)
+* Remove unused env variable (#916)
