@@ -1327,16 +1327,16 @@ class OpenShift:
             },
         )
 
-    def schedule_srcopsmetrics_workflow(self, repository: str) -> Optional[str]:
-        """Schedule SrcOpsMetrics Workflow.
+    def schedule_mi_workflow(self, repository: str) -> Optional[str]:
+        """Schedule Meta-information Indicators Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
         """
-        workflow_id = self.generate_id("srcopsmetrics")
+        workflow_id = self.generate_id("mi")
         template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_srcopsmetrics,
+            workflow=self.workflow_manager.submit_mi,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
