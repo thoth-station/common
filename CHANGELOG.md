@@ -5932,3 +5932,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Added workflow status wrapper (#919)
 * Do not limit latest versions on adviser runs (#917)
 * Remove unused env variable (#916)
+
+## Release 0.16.0 (2020-07-30T08:22:35)
+* :pushpin: Automatic update of dependency pytest from 5.4.3 to 6.0.0 (#927)
+* Rename srcopsmetrics to mi (#926)
