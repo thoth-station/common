@@ -1175,11 +1175,9 @@ class OpenShift:
 
         if source_type is not None:
             self._verify_thoth_integration(source_type=source_type)
-            source_type_enum = (
-                getattr(ThothAdviserIntegrationEnum, source_type)
-                if source_type
-                else None
-            )
+        source_type_enum = (
+            getattr(ThothAdviserIntegrationEnum, source_type) if source_type else None
+        )
 
         self.verify_integration_inputs(
             source_type=source_type_enum,
