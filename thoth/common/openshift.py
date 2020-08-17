@@ -737,6 +737,8 @@ class OpenShift:
         specification: Dict[str, Any],
         target: str,
         parameters: Dict[str, Any],
+        *,
+        raw_specification: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Schedule an inspection run."""
         if not self.amun_inspection_namespace:
@@ -764,7 +766,12 @@ class OpenShift:
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
-        workflow_parameters["specification"] = json.dumps(specification)
+        # Propagate raw specification to be placed on Ceph, not to submit escaped specification.
+        workflow_parameters["specification"] = (
+            json.dumps(raw_specification)
+            if raw_specification is not None
+            else json.dumps(specification)
+        )
         workflow_parameters["target"] = target
 
         if "batch_size" in specification:
