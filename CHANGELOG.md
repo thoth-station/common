@@ -5936,3 +5936,11 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.16.0 (2020-07-30T08:22:35)
 * :pushpin: Automatic update of dependency pytest from 5.4.3 to 6.0.0 (#927)
 * Rename srcopsmetrics to mi (#926)
+
+## Release 0.16.1 (2020-08-17T19:56:11)
+* Introduce raw specification parameter to be used when storing on Ceph (#936)
+* Add long_description_content_type (#935)
+* set source_type_enum None when soure_type not set (#932)
+* :pushpin: Automatic update of dependency pytest from 6.0.0 to 6.0.1 (#934)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.16.2 to 0.16.3 (#933)
+* :arrow_down: removed the files as they are no longer required
