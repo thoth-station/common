@@ -1202,7 +1202,6 @@ class OpenShift:
             template_parameters[
                 "THOTH_ADVISER_REQUIREMENTS_LOCKED"
             ] = application_stack["requirements_lock"]
-        template_parameters["IMAGE_STREAM_NAMESPACE"] = self.infra_namespace
         template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
         template_parameters["THOTH_ADVISER_DEV"] = "1" if dev else "0"
         template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
