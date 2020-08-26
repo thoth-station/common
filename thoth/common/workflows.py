@@ -460,6 +460,9 @@ class WorkflowManager:
 
         return wf.name
 
+    def _get_total_workflows(self, workflow_namespace: str) -> int:
+        return len(self.api.list_namespaced_workflows(workflow_namespace).items)
+
     def submit_workflow_from_template(
         self,
         namespace: str,
@@ -468,6 +471,7 @@ class WorkflowManager:
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
         workflow_namespace: Optional[str] = None,
+        workflow_limit: Optional[int] = None,
     ) -> Union[str, None]:
         """Retrieve and Submit Workflow from an OpenShift template.
 
@@ -480,7 +484,14 @@ class WorkflowManager:
         :param template_parameters: parameters for the template
         :param workflow_parameters: parameters for the workflow
         :param workflow_namespace: namespace to submit the workflow to
+        :param workflow_limit: limit number of workflows currently in memory for workflowController
         """
+        if workflow_limit is not None:
+            if workflow_namespace is None:
+                raise ValueError("Namespace must be set when passing a limit.")
+            while self._get_total_workflows(workflow_namespace) > workflow_limit:
+                _LOGGER.debug("Waiting for number of workflows to drop below limit.")
+
         template = self.get_workflow_template(
             namespace, label_selector, parameters=template_parameters
         )
