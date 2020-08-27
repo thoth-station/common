@@ -20,6 +20,7 @@ import logging
 import json
 import requests
 import yaml
+import time
 
 from pathlib import Path
 
@@ -165,6 +166,8 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
 
 class WorkflowManager:
     """Argo Workflow manager."""
+
+    LIMIT_WAIT_TIME = 2.5  # time to wait between limit checking of argo api
 
     def __init__(
         self,
@@ -491,6 +494,7 @@ class WorkflowManager:
                 raise ValueError("Namespace must be set when passing a limit.")
             while self._get_total_workflows(workflow_namespace) > workflow_limit:
                 _LOGGER.debug("Waiting for number of workflows to drop below limit.")
+                time.sleep(self.LIMIT_WAIT_TIME)
 
         template = self.get_workflow_template(
             namespace, label_selector, parameters=template_parameters
