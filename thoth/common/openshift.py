@@ -356,7 +356,7 @@ class OpenShift:
         response.raise_for_status()
         return response.text
 
-    def get_workflow_node_log(self, node_name: str, workflow_id: str, namespace: str) -> str:
+    def get_workflow_node_log(self, node_name: str, workflow_id: str, namespace: str) -> Optional[str]:
         """Get log from a task/node in a workflow."""
         workflow = self.get_workflow(workflow_id, namespace=namespace)
         nodes = workflow.get("status", {}).get("nodes", {})
