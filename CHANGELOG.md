@@ -5944,3 +5944,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pytest from 6.0.0 to 6.0.1 (#934)
 * :pushpin: Automatic update of dependency sentry-sdk from 0.16.2 to 0.16.3 (#933)
 * :arrow_down: removed the files as they are no longer required
+
+## Release 0.17.0 (2020-08-27T18:27:21)
+### Features
+* Add a routine for obtaining logs from workflow nodes
+* Remove IMAGE_STREAM_NAMESPACE env (#941)
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest-mypy from 0.6.2 to 0.7.0 (#946)
+* :pushpin: Automatic update of dependency pylint from 2.5.3 to 2.6.0 (#945)
+* :pushpin: Automatic update of dependency attrs from 19.3.0 to 20.1.0 (#944)
+* :pushpin: Automatic update of dependency attrs from 19.3.0 to 20.1.0 (#943)
