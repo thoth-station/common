@@ -5954,3 +5954,10 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pylint from 2.5.3 to 2.6.0 (#945)
 * :pushpin: Automatic update of dependency attrs from 19.3.0 to 20.1.0 (#944)
 * :pushpin: Automatic update of dependency attrs from 19.3.0 to 20.1.0 (#943)
+
+## Release 0.17.1 (2020-09-01T13:34:45)
+### Features
+* Introduce a way to parametrize adviser's predictor (#955)
+* Provide cached Python package version tuple (#918)
+### Automatic Updates
+* :pushpin: Automatic update of dependency sentry-sdk from 0.16.5 to 0.17.2 (#957)
