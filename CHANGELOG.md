@@ -5961,3 +5961,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Provide cached Python package version tuple (#918)
 ### Automatic Updates
 * :pushpin: Automatic update of dependency sentry-sdk from 0.16.5 to 0.17.2 (#957)
+
+## Release 0.17.2 (2020-09-01T14:42:25)
+### Features
+* Allow users to pick predictor to be used (#959)
