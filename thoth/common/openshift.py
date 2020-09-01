@@ -1031,7 +1031,7 @@ class OpenShift:
         context: Dict[str, Any],
         *,
         pipeline: Optional[Dict[str, Any]] = None,
-        predictor: str = "AUTO",
+        predictor: Optional[str] = None,
         predictor_config: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
@@ -1062,7 +1062,7 @@ class OpenShift:
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_ADVISER_PIPELINE": json.dumps(pipeline) if pipeline else "{}",
-            "THOTH_ADVISER_PREDICTOR": predictor,
+            "THOTH_ADVISER_PREDICTOR": predictor or "AUTO",
             "THOTH_ADVISER_PREDICTOR_CONFIG": json.dumps(predictor_config)
             if predictor_config
             else "{}",
