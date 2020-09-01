@@ -1018,6 +1018,7 @@ class OpenShift:
         context: Dict[str, Any],
         *,
         pipeline: Optional[Dict[str, Any]] = None,
+        predictor_config: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
@@ -1047,6 +1048,9 @@ class OpenShift:
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_ADVISER_PIPELINE": json.dumps(pipeline) if pipeline else "{}",
+            "THOTH_ADVISER_PREDICTOR_CONFIG": json.dumps(predictor_config)
+            if predictor_config
+            else "{}",
         }
 
         if decision is not None:
@@ -1180,6 +1184,7 @@ class OpenShift:
         *,
         count: Optional[int] = None,
         limit: Optional[int] = None,
+        predictor_config: Optional[Dict[str, Any]] = None,
         runtime_environment: Optional[Dict[Any, Any]] = None,
         library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
@@ -1234,6 +1239,9 @@ class OpenShift:
         template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
         template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
             runtime_environment
+        )
+        template_parameters["THOTH_ADVISER_PREDICTOR_CONFIG"] = (
+            json.dumps(predictor_config) if predictor_config else "{}",
         )
 
         template_parameters["THOTH_ADVISER_METADATA"] = json.dumps(
