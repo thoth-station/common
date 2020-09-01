@@ -712,7 +712,9 @@ class OpenShift:
             _label_selector,
             response.to_dict(),
         )
-        self._raise_on_invalid_response_size(response)
+        self._raise_on_invalid_response_size(
+            response, label_selector=_label_selector, namespace=namespace
+        )
         template: Dict[str, Any] = response.to_dict()["items"][0]
         return template
 
@@ -726,7 +728,9 @@ class OpenShift:
             _label_selector,
             response.to_dict(),
         )
-        self._raise_on_invalid_response_size(response)
+        self._raise_on_invalid_response_size(
+            response, label_selector=_label_selector, namespace=namespace
+        )
         template: Dict[str, Any] = response.to_dict()["items"][0]
         return template
 
@@ -1440,12 +1444,20 @@ class OpenShift:
             },
         )
 
-    def _raise_on_invalid_response_size(self, response: Any) -> None:
+    def _raise_on_invalid_response_size(
+        self,
+        response: Any,
+        *,
+        label_selector: Optional[str] = None,
+        name: Optional[str] = None,
+        namespace: Optional[str] = None,
+    ) -> None:
         """Expect that there is only one object type for the given item."""
         if len(response.items) != 1:
             raise RuntimeError(
-                f"Application misconfiguration - number of templates available in the infra namespace "
-                f"{self.infra_namespace!r} is {len(response.items)}, should be 1."
+                f"Application misconfiguration - number of templates available in namespace {namespace!r} "
+                f"is {len(response.items)}, should be 1: "
+                f"label selector: {label_selector!r}, name: {name!r}"
             )
 
             # TODO add name of template we were looking for...
@@ -1645,7 +1657,9 @@ class OpenShift:
                     f"The given Workflow containing label {label_selector} could not be found"
                 ) from exc
 
-            self._raise_on_invalid_response_size(response)
+            self._raise_on_invalid_response_size(
+                response, label_selector=label_selector, namespace=namespace
+            )
 
             wf = response.to_dict()["items"][0]
 
