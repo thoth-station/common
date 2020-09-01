@@ -308,7 +308,10 @@ class OpenShift:
                 )
 
     def get_pod_log(
-        self, pod_id: str, namespace: Optional[str] = None, container: Optional[str] = None
+        self,
+        pod_id: str,
+        namespace: Optional[str] = None,
+        container: Optional[str] = None,
     ) -> Optional[str]:
         """Get log of a pod based on assigned pod ID."""
         if not namespace:
@@ -347,16 +350,24 @@ class OpenShift:
                 f"Pod with id {pod_id} was not found in namespace {namespace}"
             )
 
-        if response.status_code == 400 and "a container name must be specified for pod" not in response.json()["message"]:
+        if (
+            response.status_code == 400
+            and "a container name must be specified for pod"
+            not in response.json()["message"]
+        ):
             # If Pod has not been initialized yet, there is returned 400 status code. Return None in this case.
             return None
         elif response.status_code == 400:
-            raise ThothCommonException(f"Failed to obtain logs, container name has to be specified: {response.json()['message']}")
+            raise ThothCommonException(
+                f"Failed to obtain logs, container name has to be specified: {response.json()['message']}"
+            )
 
         response.raise_for_status()
         return response.text
 
-    def get_workflow_node_log(self, node_name: str, workflow_id: str, namespace: str) -> Optional[str]:
+    def get_workflow_node_log(
+        self, node_name: str, workflow_id: str, namespace: str
+    ) -> Optional[str]:
         """Get log from a task/node in a workflow."""
         workflow = self.get_workflow(workflow_id, namespace=namespace)
         nodes = workflow.get("status", {}).get("nodes", {})
@@ -365,7 +376,9 @@ class OpenShift:
             if node_info["displayName"] == node_name:
                 return self.get_pod_log(pod_name, namespace=namespace, container="main")
 
-        raise NotFoundException(f"No node {node_name!r} in workflow {workflow_id!r} in namespace {namespace!r} found")
+        raise NotFoundException(
+            f"No node {node_name!r} in workflow {workflow_id!r} in namespace {namespace!r} found"
+        )
 
     def get_build(self, build_id: str, namespace: str) -> Dict[str, Any]:
         """Get a build in the given namespace."""
