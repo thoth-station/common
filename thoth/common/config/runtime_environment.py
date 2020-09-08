@@ -112,6 +112,8 @@ class RuntimeEnvironment:
     def to_dict(self, without_none: bool = False) -> Dict[str, Any]:
         """Convert runtime environment configuration to a dict representation."""
         dict_ = attr.asdict(self)
+        dict_.pop("_python_version_tuple", None)
+
         if not without_none:
             return dict_
 
