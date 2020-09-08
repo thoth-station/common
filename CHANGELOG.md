@@ -5965,3 +5965,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.17.2 (2020-09-01T14:42:25)
 ### Features
 * Allow users to pick predictor to be used (#959)
+
+## Release 0.17.3 (2020-09-08T13:00:16)
+### Features
+* Do not propagate private attribute in to_doct() method
+* Provenance checks should be scheduled in backend namespace
+* Hide default predictor name (#963)
+* Add Thoth's template for PRs (#964)
+### Improvements
+* Add more information related to invalid response size (#962)
