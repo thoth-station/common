@@ -621,7 +621,7 @@ class WorkflowManager:
             label_selector="template=provenance-checker",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.middletier_namespace,
+            workflow_namespace=self.openshift.backend_namespace,
         )
 
         return workflow_id
