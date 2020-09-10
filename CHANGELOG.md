@@ -5974,3 +5974,11 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add Thoth's template for PRs (#964)
 ### Improvements
 * Add more information related to invalid response size (#962)
+
+## Release 0.18.0 (2020-09-10T08:58:20)
+### Features
+* Provide a method for obtaining a link to justification description (#971)
+### Automatic Updates
+* :pushpin: Automatic update of dependency sentry-sdk from 0.17.3 to 0.17.4 (#973)
+* :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#969)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.17.2 to 0.17.3 (#968)
