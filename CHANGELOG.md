@@ -5982,3 +5982,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.17.3 to 0.17.4 (#973)
 * :pushpin: Automatic update of dependency attrs from 20.1.0 to 20.2.0 (#969)
 * :pushpin: Automatic update of dependency sentry-sdk from 0.17.2 to 0.17.3 (#968)
+
+## Release 0.18.1 (2020-09-10T14:00:08)
+### Features
+* Make links to justifications shorter so they fit to terminal output (#975)
