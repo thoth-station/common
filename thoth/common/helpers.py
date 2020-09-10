@@ -38,6 +38,9 @@ SERVICE_CERT_FILENAME = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 
 _DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S.%f"
 _ALTERNATIVE_DATETIME_FORMAT_STRING = "%Y-%m-%dT%H:%M:%S"
+_JUSTIFICATION_LINK_BASE = os.getenv(
+    "THOTH_JUSTIFICATION_LINK_BASE", "https://thoth-station.ninja/justifications"
+)
 
 
 @contextmanager
@@ -173,4 +176,4 @@ class Lazy(object):
 
 def get_justification_link(identifier: str) -> str:
     """Construct a link to a detailed justification document."""
-    return f"https://thoth-station.ninja/justifications/{identifier}.html"
+    return f"{_JUSTIFICATION_LINK_BASE}/{identifier}.html"
