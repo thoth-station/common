@@ -804,9 +804,9 @@ class OpenShift:
         workflow_parameters["dockerfile"] = dockerfile
         # Propagate raw specification to be placed on Ceph, not to submit escaped specification.
         workflow_parameters["specification"] = (
-            json.dumps(raw_specification)
+            json.dumps(raw_specification, sort_keys=True, indent=2)
             if raw_specification is not None
-            else json.dumps(specification)
+            else json.dumps(specification, sort_keys=True, indent=2)
         )
         workflow_parameters["target"] = target
 
