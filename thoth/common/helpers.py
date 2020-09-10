@@ -169,3 +169,8 @@ class Lazy(object):
         value = self._calculate(obj)
         setattr(obj, self._calculate.__name__, value)
         return value
+
+
+def get_justification_link(identifier: str) -> str:
+    """Construct a link to a detailed justification document."""
+    return f"https://thoth-station.ninja/justifications/{identifier}.html"
