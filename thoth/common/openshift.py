@@ -775,6 +775,7 @@ class OpenShift:
         parameters: Dict[str, Any],
         *,
         raw_specification: Optional[Dict[str, Any]] = None,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule an inspection run."""
         if not self.amun_inspection_namespace:
@@ -782,7 +783,7 @@ class OpenShift:
                 "Unable to schedule inspection without Amun inspection namespace being set."
             )
 
-        inspection_id = self.generate_id(
+        inspection_id = job_id or self.generate_id(
             prefix="inspection", identifier=specification.get("identifier")
         )
 
@@ -1354,9 +1355,11 @@ class OpenShift:
         origin: str,
         revision: str,
         host: str,
+        *,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Workflow for Qeb-Hwt GitHub App.."""
-        workflow_id = self.generate_id("qeb-hwt")
+        workflow_id = job_id or self.generate_id("qeb-hwt")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "GITHUB_EVENT_TYPE": github_event_type,
@@ -1377,12 +1380,14 @@ class OpenShift:
             },
         )
 
-    def schedule_mi_workflow(self, repository: str) -> Optional[str]:
+    def schedule_mi_workflow(
+        self, repository: str, *, job_id: Optional[str] = None,
+    ) -> Optional[str]:
         """Schedule Meta-information Indicators Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
         """
-        workflow_id = self.generate_id("mi")
+        workflow_id = job_id or self.generate_id("mi")
         template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
 
         return self._schedule_workflow(
@@ -1394,10 +1399,10 @@ class OpenShift:
         )
 
     def schedule_kebechet_workflow(
-        self, webhook_payload: Dict[str, Any]
+        self, webhook_payload: Dict[str, Any], *, job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
-        workflow_id = self.generate_id("kebechet-job")
+        workflow_id = job_id or self.generate_id("kebechet-job")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "WEBHOOK_PAYLOAD": json.dumps(webhook_payload),
