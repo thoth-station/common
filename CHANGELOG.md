@@ -5986,3 +5986,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.18.1 (2020-09-10T14:00:08)
 ### Features
 * Make links to justifications shorter so they fit to terminal output (#975)
+
+## Release 0.18.2 (2020-09-11T14:22:22)
+### Features
+* thamos->qebhwt for workflow name (#978)
