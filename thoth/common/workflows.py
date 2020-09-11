@@ -698,12 +698,12 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_thamos(
+    def submit_qebhwt(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
-        """Submit Thamos Advise Workflow for Qeb-Hwt GitHub App."""
+        """Submit Workflow for Qeb-Hwt GitHub App."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 

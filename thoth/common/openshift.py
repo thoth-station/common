@@ -1344,7 +1344,7 @@ class OpenShift:
             },
         )
 
-    def schedule_thamos_workflow(
+    def schedule_qebhwt_workflow(
         self,
         github_event_type: str,
         github_check_run_id: int,
@@ -1355,7 +1355,7 @@ class OpenShift:
         revision: str,
         host: str,
     ) -> Optional[str]:
-        """Schedule Thamos Advise Workflow for Qeb-Hwt GitHub App.."""
+        """Schedule Workflow for Qeb-Hwt GitHub App.."""
         workflow_id = self.generate_id("qeb-hwt")
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
@@ -1370,7 +1370,7 @@ class OpenShift:
         }
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_thamos,
+            workflow=self.workflow_manager.submit_qebhwt,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
