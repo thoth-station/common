@@ -176,4 +176,4 @@ class Lazy(object):
 
 def get_justification_link(identifier: str) -> str:
     """Construct a link to a detailed justification document."""
-    return f"{_JUSTIFICATION_LINK_BASE}/{identifier}.html"
+    return f"{_JUSTIFICATION_LINK_BASE}/{identifier}"
