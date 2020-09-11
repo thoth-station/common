@@ -5990,3 +5990,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.18.2 (2020-09-11T14:22:22)
 ### Features
 * thamos->qebhwt for workflow name (#978)
+
+## Release 0.18.3 (2020-09-11T23:08:54)
+### Features
+* add option to pass job_id so we can return it in user-api (#982)
+* No need to provide html suffix (#981)
