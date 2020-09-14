@@ -460,9 +460,13 @@ class WorkflowManager:
 
         return wf.name
 
-    def get_total_workflows(self, workflow_namespace: str) -> int:
+    def get_pending_workflows(self, workflow_namespace: str) -> int:
         """Get the total number of workflows in a given namespace."""
-        return len(self.api.list_namespaced_workflows(workflow_namespace).items)
+        return len(
+            self.api.list_namespaced_workflows(
+                workflow_namespace, labels="workflows.argoproj.io/phase=Pending"
+            ).items
+        )
 
     def submit_workflow_from_template(
         self,
