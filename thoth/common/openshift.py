@@ -1261,7 +1261,7 @@ class OpenShift:
             runtime_environment
         )
         template_parameters["THOTH_ADVISER_PREDICTOR_CONFIG"] = (
-            json.dumps(predictor_config) if predictor_config else "{}",
+            json.dumps(predictor_config) if predictor_config else "{}"
         )
 
         template_parameters["THOTH_ADVISER_METADATA"] = json.dumps(
