@@ -5995,3 +5995,11 @@ Starting with this release we have a Zuul-CI pipeline that:
 ### Features
 * add option to pass job_id so we can return it in user-api (#982)
 * No need to provide html suffix (#981)
+
+## Release 0.19.0 (2020-09-15T08:48:51)
+### Features
+* Fix predictor config propagation when scheduling adviser
+* only get pending workflows
+* make count a simple library call
+* add sleep
+* add optional limit for workflows
