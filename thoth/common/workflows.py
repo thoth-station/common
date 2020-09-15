@@ -460,6 +460,14 @@ class WorkflowManager:
 
         return wf.name
 
+    def get_pending_workflows(self, workflow_namespace: str) -> int:
+        """Get the total number of workflows in a given namespace."""
+        return len(
+            self.api.list_namespaced_workflows(
+                workflow_namespace, labels="workflows.argoproj.io/phase=Pending"
+            ).items
+        )
+
     def submit_workflow_from_template(
         self,
         namespace: str,
@@ -468,6 +476,7 @@ class WorkflowManager:
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
         workflow_namespace: Optional[str] = None,
+        workflow_limit: Optional[int] = None,
     ) -> Union[str, None]:
         """Retrieve and Submit Workflow from an OpenShift template.
 
@@ -480,6 +489,7 @@ class WorkflowManager:
         :param template_parameters: parameters for the template
         :param workflow_parameters: parameters for the workflow
         :param workflow_namespace: namespace to submit the workflow to
+        :param workflow_limit: limit number of workflows currently in memory for workflowController
         """
         template = self.get_workflow_template(
             namespace, label_selector, parameters=template_parameters
