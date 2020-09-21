@@ -366,7 +366,9 @@ class OpenShift:
             response.raise_for_status()
         except Exception as exc:
             _LOGGER.error("Error response when obtaining pod logs: %r", response.json())
-            raise ThothCommonException(f"Failed to obtain logs for pod: {str(exc)}") from exc
+            raise ThothCommonException(
+                f"Failed to obtain logs for pod: {str(exc)}"
+            ) from exc
 
         return response.text
 
