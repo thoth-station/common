@@ -362,7 +362,12 @@ class OpenShift:
                 f"Failed to obtain logs, container name has to be specified: {response.json()['message']}"
             )
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except Exception as exc:
+            _LOGGER.error("Error response when obtaining pod logs: %r", response.json())
+            raise ThothCommonException(f"Failed to obtain logs for pod: {str(exc)}") from exc
+
         return response.text
 
     def get_workflow_node_log(
