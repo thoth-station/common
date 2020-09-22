@@ -231,9 +231,7 @@ def init_logging(
     Optionally you can specify prefix of the logging environment variable
     determining logging configuration via env vars (defaults to THOTH_LOG_).
     """
-    if not os.getenv("OPENSHIFT_BUILD_NAME") or int(
-        os.getenv("THOTH_LOGGING_NO_JSON", 0)
-    ):
+    if not os.getenv("STI_SCRIPTS_PATH") or int(os.getenv("THOTH_LOGGING_NO_JSON", 0)):
         # Running outside the cluster or forced not to use structured logging.
         formatter = daiquiri.formatter.ColorFormatter(
             fmt="%(asctime)s %(process)3d %(color)s%(levelname)-8.8s %(name)s:"
