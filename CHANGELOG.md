@@ -6003,3 +6003,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 * make count a simple library call
 * add sleep
 * add optional limit for workflows
+
+## Release 0.20.0 (2020-09-23T19:47:43)
+### Features
+* Update versions for compatibility between Argo, Kuberneter and Openshift (#998)
+* Rely on S2I specific environment variable, no OpenShift build env vars (#994)
+* Improve message logged when obtaining wf node log from cluster fails
+### Bug Fixes
+* fix pre-commit for common (#996)
+### Automatic Updates
+* :pushpin: Automatic update of dependency sentry-sdk from 0.17.5 to 0.17.6 (#995)
