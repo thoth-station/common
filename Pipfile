@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 "rfc5424-logging-handler" = "*"
-argo-workflows = ">=2.0,<3.0"
+argo-workflows = ">=3.5"
 daiquiri = "*"
 requests = "*"
 sentry-sdk = "*"
-kubernetes = "==10.0.0"  # required pyyaml>=3.12
-openshift = "~=0.10.0"
+kubernetes = "~=11.0.0"  # required pyyaml>=3.12
+openshift = "*"
 attrs = "*"
 pyyaml = ">=3.12"
 attrdict = "*"

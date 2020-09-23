@@ -124,6 +124,11 @@ class OpenShift:
 
         self.configuration = self.ocp_client.configuration
 
+        # TODO: Update openshift.
+        # These parameters are missing in openshift configuration, but required for Argo API validation
+        self.configuration.retries = 5
+        self.configuration.client_side_validation = True
+
         self.amun_inspection_namespace = amun_inspection_namespace or os.getenv(
             "THOTH_AMUN_INSPECTION_NAMESPACE"
         )
