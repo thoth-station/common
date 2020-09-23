@@ -7,6 +7,6 @@ jsonformatter
 attrs
 pyyaml
 requests
-kubernetes == 10.0.0
-openshift  ~= 0.10.0
-argo-workflows >= 2.0, < 3.0
+kubernetes ~= 11.0.0
+openshift
+argo-workflows >=3.5
