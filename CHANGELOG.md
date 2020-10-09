@@ -6013,3 +6013,11 @@ Starting with this release we have a Zuul-CI pipeline that:
 * fix pre-commit for common (#996)
 ### Automatic Updates
 * :pushpin: Automatic update of dependency sentry-sdk from 0.17.5 to 0.17.6 (#995)
+
+## Release 0.20.1 (2020-10-09T15:31:44)
+### Features
+* Qebhwt needs deployment name (#1010)
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.1 (#1008)
+* :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.1 (#1006)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.17.8 to 0.18.0 (#1005)
