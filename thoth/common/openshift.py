@@ -1384,11 +1384,13 @@ class OpenShift:
             "THOTH_HOST": host,
         }
 
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_qebhwt,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": {},
+                "workflow_parameters": workflow_parameters,
             },
         )
 
