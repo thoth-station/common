@@ -27,7 +27,7 @@ from thoth.common import Workflow  # type: ignore
 from .base_test import CommonTestCase
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def url() -> str:
     """Fake URL fixture."""
 
