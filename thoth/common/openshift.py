@@ -1430,6 +1430,29 @@ class OpenShift:
             },
         )
 
+    def schedule_kebechet_run_url_workflow(
+        self,
+        repo_url: str,
+        service_name: str = "github",
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule Kebechet Workflow for a particular valid slug and service name."""
+        workflow_id = job_id or self.generate_id("kebechet-run-url")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "KEBECHET_REPO_URL": repo_url,
+            "KEBECHET_SERVICE_NAME": service_name,
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_kebechet_run_url,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
     def schedule_security_indicator(
         self,
         python_package_name: str,
