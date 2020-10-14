@@ -464,7 +464,7 @@ class WorkflowManager:
         """Get the total number of workflows in a given namespace."""
         return len(
             self.api.list_namespaced_workflows(
-                workflow_namespace, labels="workflows.argoproj.io/phase=Pending"
+                workflow_namespace, field_selector="phase=Pending"
             ).items
         )
 
