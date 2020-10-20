@@ -6021,3 +6021,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.1 (#1008)
 * :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.1 (#1006)
 * :pushpin: Automatic update of dependency sentry-sdk from 0.17.8 to 0.18.0 (#1005)
+
+## Release 0.20.2 (2020-10-20T09:30:52)
+### Features
+* check if workflow has started (#1017)
+* Added method to initiate kebechet run-url workflow (#1013)
+### Automatic Updates
+* :pushpin: Automatic update of dependency sentry-sdk from 0.19.0 to 0.19.1 (#1018)
+* :pushpin: Automatic update of dependency mypy from 0.782 to 0.790 (#1016)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.18.0 to 0.19.0 (#1015)
