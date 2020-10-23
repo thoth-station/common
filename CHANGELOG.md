@@ -6030,3 +6030,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency sentry-sdk from 0.19.0 to 0.19.1 (#1018)
 * :pushpin: Automatic update of dependency mypy from 0.782 to 0.790 (#1016)
 * :pushpin: Automatic update of dependency sentry-sdk from 0.18.0 to 0.19.0 (#1015)
+
+## Release 0.20.3 (2020-10-23T15:23:15)
+### Features
+* Added method to call kebechet admin workflow (#1021)
