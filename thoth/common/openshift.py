@@ -1430,6 +1430,34 @@ class OpenShift:
             },
         )
 
+    def schedule_kebechet_administrator(
+        self,
+        message_info: Dict[str, str],
+        message_type: str,
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule Kebechet Administrator Workflow for an internal trigger message."""
+        workflow_id = job_id or self.generate_id("kebechet-administrator")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "THOTH_PACKAGE_NAME": message_info.get("PACKAGE_NAME"),
+            "THOTH_PACKAGE_VERSION": message_info.get(
+                "PACKAGE_VERSION"
+            ),  # Optional value
+            "THOTH_PACKAGE_INDEX": message_info.get("PACKAGE_INDEX"),
+            "THOTH_SOLVER_NAME": message_info.get("SOLVER_NAME"),  # Optional value
+            "THOTH_MESSAGE_TYPE": message_type,
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_kebechet_administrator,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
     def schedule_kebechet_run_url_workflow(
         self,
         repo_url: str,
