@@ -1430,7 +1430,7 @@ class OpenShift:
             },
         )
 
-    def schedule_kebechet_administrator_workflow(
+    def schedule_kebechet_administrator(
         self,
         message_info: Dict[str, str],
         message_type: str,
