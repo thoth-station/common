@@ -6034,3 +6034,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.20.3 (2020-10-23T15:23:15)
 ### Features
 * Added method to call kebechet admin workflow (#1021)
+
+## Release 0.20.4 (2020-10-29T17:48:45)
+### Bug Fixes
+* Turn missing env variable warning into an error (#1024)
