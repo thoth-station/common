@@ -336,7 +336,7 @@ def init_logging(
             raise
 
         if environment is None:
-            root_logger.warning(
+            root_logger.error(
                 "No Sentry environment configured: it is recommended to provide Sentry environment "
                 "to split reported exceptions based on different deployments when running in a cluster"
             )
