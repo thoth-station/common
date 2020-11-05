@@ -377,20 +377,34 @@ class OpenShift:
 
         return response.text
 
-    def get_workflow_node_log(
+    def get_workflow_pod_name(
         self, node_name: str, workflow_id: str, namespace: str
-    ) -> Optional[str]:
-        """Get log from a task/node in a workflow."""
+    ) -> str:
+        """Get pod name where task is being executed."""
         workflow = self.get_workflow(workflow_id, namespace=namespace)
         nodes = workflow.get("status", {}).get("nodes", {})
 
         for pod_name, node_info in nodes.items():
             if node_info["displayName"] == node_name:
-                return self.get_pod_log(pod_name, namespace=namespace, container="main")
+                return pod_name  # type: ignore
 
         raise NotFoundException(
-            f"No node {node_name!r} in workflow {workflow_id!r} in namespace {namespace!r} found"
+            f"No node named {node_name!r} found in workflow {workflow_id!r} in namespace {namespace!r}"
         )
+
+    def get_workflow_node_log(
+        self, node_name: str, workflow_id: str, namespace: str
+    ) -> Optional[str]:
+        """Get log from a task/node in a workflow."""
+        pod_name = self.get_workflow_pod_name(node_name, workflow_id, namespace)
+        return self.get_pod_log(pod_name, namespace=namespace, container="main")
+
+    def get_workflow_node_status(
+        self, node_name: str, workflow_id: str, namespace: str
+    ) -> Dict[str, Any]:
+        """Get status from a task/node in a workflow."""
+        pod_id = self.get_workflow_pod_name(node_name, workflow_id, namespace)
+        return self.get_pod_status(pod_id, namespace)
 
     def get_build(self, build_id: str, namespace: str) -> Dict[str, Any]:
         """Get a build in the given namespace."""

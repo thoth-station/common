@@ -131,7 +131,7 @@ def _logging_adjust() -> None:
 
 def _get_sentry_integrations() -> List[object]:
     """Get integrations for Sentry based on installed packages."""
-    integrations = []
+    integrations = []  # type: List[Any]
     try:
         import flask  # noqa
     except ImportError:
