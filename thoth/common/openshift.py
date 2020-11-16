@@ -1528,6 +1528,35 @@ class OpenShift:
             },
         )
 
+    def schedule_graph_sync(
+        self,
+        document_id: str,
+        force_sync: bool = False,
+        *,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule graph sync for specific document id."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule graph-sync without middletier namespace being set"
+            )
+
+        graph_sync_id = job_id or self.generate_id("graph-sync")
+        template_parameters = {
+            "THOTH_SYNC_JOB_ID": graph_sync_id,
+            "THOTH_SYNC_DOCUMENT_ID": document_id,
+            "THOTH_FORCE_SYNC": force_sync,
+        }
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_graph_sync,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
     def _raise_on_invalid_response_size(
         self,
         response: Any,
