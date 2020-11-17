@@ -31,6 +31,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 from .exceptions import ThothCommonException
@@ -1606,6 +1607,41 @@ class OpenShift:
 
         result: Dict[str, Any] = response.json()
         return result
+
+    def get_mi_repositories_and_organizations(self,) -> Tuple[List[str], List[str]]:
+        """Get all of the repositories and organizations for mi-analysis.
+
+        :rtype: Tuple of (repositories, organizations)
+        """
+        if not self.infra_namespace:
+            raise ConfigurationError(
+                "Infra namespace is required in order to get repositories"
+            )
+
+        cm = self.get_configmap(
+            configmap_id="mi-scheduler", namespace=self.infra_namespace
+        )
+
+        organizations = cm["data"].get("organizations", "")
+        _LOGGER.info(
+            "Detected %s organizations from configMap for inspection", organizations
+        )
+        repositories = cm["data"].get("repositories", "")
+        _LOGGER.info(
+            "Detected %s repositories from configMap for inspection", repositories
+        )
+
+        orgs = (
+            organizations.split(",")
+            if organizations is not None and organizations != ""
+            else []
+        )
+        repos = (
+            repositories.split(",")
+            if repositories is not None and repositories != ""
+            else []
+        )
+        return (repos, orgs)
 
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
