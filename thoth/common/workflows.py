@@ -833,12 +833,12 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_build_analysis(
+    def submit_buildlog_analysis(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
         workflow_parameters: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
-        """Submit build analysis workflow."""
+        """Submit build log analysis workflow."""
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
@@ -850,7 +850,7 @@ class WorkflowManager:
 
         workflow_id: Optional[str] = self.submit_workflow_from_template(
             self.openshift.infra_namespace,
-            label_selector="template=build-analysis",
+            label_selector="template=buildlog-analysis",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
             workflow_namespace=self.openshift.middletier_namespace,

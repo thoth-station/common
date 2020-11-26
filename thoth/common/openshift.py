@@ -1126,19 +1126,13 @@ class OpenShift:
             },
         )
 
-    def schedule_build_analysis(
+    def schedule_buildlog_analysis(
         self,
         *,
-        output_image: Optional[str] = None,
-        base_image: Optional[str] = None,
-        registry_user: Optional[str] = None,
-        registry_password: Optional[str] = None,
-        registry_verify_tls: bool = True,
-        environment_type: Optional[str] = None,
-        origin: Optional[str] = None,
-        job_id: Optional[str] = None,
+        document_id: str = None,
+        job_id: typing.Optional[str] = None,
     ) -> Optional[str]:
-        """Schedule a build analysis workflow."""
+        """Schedule a build log analysis workflow."""
         if not self.middletier_namespace:
             raise ConfigurationError(
                 "Unable to schedule build report without middletier namespace being set"
@@ -1147,19 +1141,13 @@ class OpenShift:
         workflow_id = job_id or self.generate_id("build-analysis")
         template_parameters = {
             "THOTH_BUILD_ANALYSIS_WORKFLOW_ID": workflow_id,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
-            "THOTH_BUILD_ANALYSIS_BASE_IMAGE": base_image,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_USER": registry_user,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_PASSWORD": registry_password,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_VERIFY_TLS": registry_verify_tls,
-            "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
-            "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
+            "THOTH_BUILD_ANALYSIS_DOCUMENT_ID": document_id,
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
         return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_build_analysis,
+            workflow=self.workflow_manager.submit_buildlog_analysis,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,
