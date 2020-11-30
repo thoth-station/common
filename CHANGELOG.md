@@ -6038,3 +6038,18 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.20.4 (2020-10-29T17:48:45)
 ### Bug Fixes
 * Turn missing env variable warning into an error (#1024)
+
+## Release 0.20.5 (2020-11-23T08:43:46)
+### Features
+* schedule graph sync workflow (#1028)
+* get workflow node status (#1007)
+### Other
+* Move openshift related code from mi-scheduler (#1037)
+### Automatic Updates
+* :pushpin: Automatic update of dependency argo-workflows from 3.5.1 to 3.6.0 (#1038)
+* :pushpin: Automatic update of dependency pytest-mypy from 0.7.0 to 0.8.0 (#1035)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.19.2 to 0.19.3 (#1034)
+* :pushpin: Automatic update of dependency requests from 2.24.0 to 2.25.0 (#1033)
+* :pushpin: Automatic update of dependency daiquiri from 2.1.1 to 3.0.0 (#1032)
+* :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1030)
+* :pushpin: Automatic update of dependency sentry-sdk from 0.19.1 to 0.19.2 (#1029)
