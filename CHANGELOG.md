@@ -6053,3 +6053,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * :pushpin: Automatic update of dependency daiquiri from 2.1.1 to 3.0.0 (#1032)
 * :pushpin: Automatic update of dependency attrs from 20.2.0 to 20.3.0 (#1030)
 * :pushpin: Automatic update of dependency sentry-sdk from 0.19.1 to 0.19.2 (#1029)
+
+## Release 0.20.6 (2020-11-30T18:26:00)
+### Features
+* Release of version 0.20.5 (#1041)
