@@ -193,7 +193,7 @@ class OpenShift:
     def parse_python_solver_name(cls, solver_name: str) -> Dict[str, Any]:
         """Parse os and Python identifiers encoded into solver name."""
         if solver_name.startswith("solver-"):
-            solver_identifiers = solver_name[len("solver-") :]
+            solver_identifiers = solver_name[len("solver-"):]
         else:
             raise SolverNameParseError(
                 f"Solver name has to start with 'solver-' prefix: {solver_name!r}"
@@ -761,6 +761,39 @@ class OpenShift:
         job_spec["kind"] = "Job"
         job_spec["metadata"]["generateName"] = item["metadata"]["name"] + "-"
         return job_spec
+
+    def schedule_graph_schema_update(self, job_id: Optional[str] = None, namespace: Optional[str] = None) -> str:
+        """Schedule graph schema update job in infra namespace by default."""
+        if namespace is None:
+            if not self.infra_namespace:
+                raise ConfigurationError(
+                    "No infra namespace configured to run graph-schema-update job"
+                )
+
+            namespace = self.infra_namespace
+
+        template = self._get_template("template=graph-schema-update-job", namespace=namespace)
+
+        job_id = job_id or self.generate_id("graph-update-schema")	
+        self.set_template_parameters(	
+            template,	
+            THOTH_SCHEMA_UPDATE_JOB_ID=job_id,
+        )
+
+        template = self.oc_process(namespace, template)	
+
+        graph_update_schema_template = template["objects"][0]
+
+        response = self.ocp_client.resources.get(
+            api_version=graph_update_schema_template["apiVersion"],
+            kind=graph_update_schema_template["kind"]	
+        ).create(body=graph_update_schema_template, namespace=namespace)	
+	
+        _LOGGER.debug("OpenShift response for creating a pod: %r", response.to_dict())
+	
+        name: str = response["metadata"]["name"]
+
+        return name
 
     def schedule_graph_refresh(self, namespace: Optional[str] = None) -> str:
         """Schedule graph refresh job in frontend namespace by default."""
