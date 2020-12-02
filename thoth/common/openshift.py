@@ -1661,10 +1661,6 @@ class OpenShift:
         )
         return (repos, orgs)
 
-    def get_mi_kebechet_repositories(self):
-        """Get all of the repositories that use kebechet."""
-        raise NotImplementedError
-
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
         """Parse the given CPU requirement as used by OpenShift/Kubernetes."""
