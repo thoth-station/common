@@ -1410,35 +1410,25 @@ class OpenShift:
         )
 
     def schedule_mi_workflow(
-        self, repository: str, *, job_id: Optional[str] = None,
+        self,
+        repository: str,
+        entities: Optional[str] = None,
+        *,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Meta-information Indicators Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
         """
         workflow_id = job_id or self.generate_id("mi")
-        template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "REPOSITORY": repository,
+            "ENTITIES": entities,
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_mi,
-            parameters={
-                "template_parameters": template_parameters,
-                "workflow_parameters": {},
-            },
-        )
-
-    def schedule_mi_kebechet_workflow(
-        self, repository: str, *, job_id: Optional[str] = None,
-    ) -> Optional[str]:
-        """Schedule Meta-information Indicators Workflow.
-
-        :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
-        """
-        workflow_id = job_id or self.generate_id("mi")
-        template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
-
-        return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_mi_kebechet,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": {},
