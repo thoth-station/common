@@ -1419,6 +1419,8 @@ class OpenShift:
         """Schedule Meta-information Indicators Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
+        :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
+                                       multiple entities are in form of Foo,Bar,...
         """
         workflow_id = job_id or self.generate_id("mi")
         template_parameters = {
