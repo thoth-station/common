@@ -1410,14 +1410,24 @@ class OpenShift:
         )
 
     def schedule_mi_workflow(
-        self, repository: str, *, job_id: Optional[str] = None,
+        self,
+        repository: str,
+        entities: Optional[str] = None,
+        *,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Meta-information Indicators Workflow.
 
         :param repository:str: GitHub repository in full name format: <repo_owner>/<repo_name>
+        :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
+                                       multiple entities are in form of Foo,Bar,...
         """
         workflow_id = job_id or self.generate_id("mi")
-        template_parameters = {"WORKFLOW_ID": workflow_id, "REPOSITORY": repository}
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "REPOSITORY": repository,
+            "ENTITIES": entities,
+        }
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_mi,
