@@ -323,7 +323,9 @@ class OpenShift:
 
         # TODO: rewrite to OpenShift rest client once it will support it.
         endpoint = "{}/api/v1/namespaces/{}/pods/{}/log".format(
-            self.openshift_api_url, namespace, pod_id,
+            self.openshift_api_url,
+            namespace,
+            pod_id,
         )
 
         response = requests.get(
@@ -1184,7 +1186,9 @@ class OpenShift:
             )
 
     @staticmethod
-    def verify_kebechet_inputs(origin: Optional[str],) -> None:
+    def verify_kebechet_inputs(
+        origin: Optional[str],
+    ) -> None:
         """Verify if Thoth Kebechet integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
@@ -1428,7 +1432,10 @@ class OpenShift:
         )
 
     def schedule_kebechet_workflow(
-        self, webhook_payload: Dict[str, Any], *, job_id: Optional[str] = None,
+        self,
+        webhook_payload: Dict[str, Any],
+        *,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
         workflow_id = job_id or self.generate_id("kebechet-job")
@@ -1581,8 +1588,10 @@ class OpenShift:
         # TODO: This does not work - see issue reported upstream:
         #   https://github.com/openshift/openshift-restclient-python/issues/190
         # return TemplateOpenshiftIoApi().create_namespaced_processed_template_v1(namespace, template)
-        endpoint = "{}/apis/template.openshift.io/v1/namespaces/{}/processedtemplates".format(
-            self.openshift_api_url, namespace
+        endpoint = (
+            "{}/apis/template.openshift.io/v1/namespaces/{}/processedtemplates".format(
+                self.openshift_api_url, namespace
+            )
         )
         response = requests.post(
             endpoint,
@@ -1608,7 +1617,9 @@ class OpenShift:
         result: Dict[str, Any] = response.json()
         return result
 
-    def get_mi_repositories_and_organizations(self,) -> Tuple[List[str], List[str]]:
+    def get_mi_repositories_and_organizations(
+        self,
+    ) -> Tuple[List[str], List[str]]:
         """Get all of the repositories and organizations for mi-analysis.
 
         :rtype: Tuple of (repositories, organizations)
