@@ -6068,3 +6068,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * bump python version
 ### Improvements
 * Add submit and schedule kebechet methods (#1054)
+
+## Release 0.21.1 (2021-01-05T19:08:30)
+### Features
+* Remove AttrDict from requirements (#1066)
