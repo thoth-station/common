@@ -6057,3 +6057,14 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.20.6 (2020-11-30T18:26:00)
 ### Features
 * Release of version 0.20.5 (#1041)
+
+## Release 0.21.0 (2021-01-05T17:17:53)
+### Features
+* :arrow_up: Automatic update of dependencies by kebechet. (#1063)
+* Move normalization functions to helpers (#1060)
+* Bump black version
+* included issue template to release missing module (#1055)
+* add .aicoe-ci.yaml
+* bump python version
+### Improvements
+* Add submit and schedule kebechet methods (#1054)
