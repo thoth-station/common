@@ -13,7 +13,6 @@ kubernetes = "~=11.0.0"  # required pyyaml>=3.12
 openshift = "*"
 attrs = "*"
 pyyaml = ">=3.12"
-attrdict = "*"
 flexmock = "*"
 jsonformatter = "*"
 

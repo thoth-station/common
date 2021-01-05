@@ -30,8 +30,6 @@ from typing import Mapping
 from typing import Optional
 from typing import Union
 
-from attrdict import AttrDict
-
 from argo.workflows import client
 from argo.workflows import models
 
@@ -141,6 +139,14 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
             attr = type("AttributeDict", (), body)
 
             wf = client.ApiClient().deserialize(attr, models.V1alpha1Workflow)
+
+            instance = cls(
+                api_version=wf.api_version,
+                kind=wf.kind,
+                metadata=wf.metadata,
+                spec=wf.spec,
+                status=wf.status,  # a small hack to overcome validation
+            )
         else:
             _LOGGER.warning(
                 "Validation is turned off. This may result in missing or invalid attributes."
@@ -148,18 +154,15 @@ class Workflow(models.V1alpha1Workflow):  # type: ignore
             obj = json.loads(body["data"])
             aux = to_snake_case(obj)
 
-            wf = AttrDict(**aux)
-
-        instance = cls(
-            api_version=wf.api_version,
-            kind=wf.kind,
-            metadata=wf.metadata,
-            spec=wf.spec,
-            status=wf.status,  # a small hack to overcome validation
-        )
+            instance = cls(
+                api_version=aux.get("api_version"),
+                kind=aux.get("kind"),
+                metadata=aux.get("metadata"),
+                spec=aux.get("spec"),
+                status=aux.get("status"),
+            )
 
         instance.__validated = validate
-
         return instance
 
 
