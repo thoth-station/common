@@ -177,3 +177,20 @@ class Lazy(object):
 def get_justification_link(identifier: str) -> str:
     """Construct a link to a detailed justification document."""
     return f"{_JUSTIFICATION_LINK_BASE}/{identifier}"
+
+
+def map_os_name(os_name: Optional[str]) -> Optional[str]:
+    """Map operating system name."""
+    if os_name == "ubi":
+        return "rhel"
+
+    return os_name
+
+
+def normalize_os_version(os_name: Optional[str], os_version: Optional[str]) -> Optional[str]:
+    """Normalize operating system version based on operating system used."""
+    if os_name is None or os_version is None or os_name.lower() != "rhel":
+        return os_version
+
+    # Discard any minor release, if present.
+    return os_version.split(".", maxsplit=1)[0]

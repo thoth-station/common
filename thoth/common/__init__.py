@@ -21,13 +21,15 @@ from .config import HardwareInformation
 from .config import OperatingSystem
 from .config import RuntimeEnvironment
 from .enums import ThothAdviserIntegrationEnum
-from .helpers import Lazy
 from .helpers import cwd
 from .helpers import datetime2datetime_str
 from .helpers import datetime_str2timestamp
 from .helpers import datetime_str_from_timestamp
 from .helpers import get_justification_link
 from .helpers import get_service_account_token
+from .helpers import Lazy
+from .helpers import map_os_name
+from .helpers import normalize_os_version
 from .helpers import parse_datetime
 from .helpers import timestamp2datetime
 from .json import SafeJSONEncoder
@@ -50,6 +52,8 @@ __all__ = [
     "HardwareInformation",
     "init_logging",
     "Lazy",
+    "map_os_name",
+    "normalize_os_version",
     "OpenShift",
     "OperatingSystem",
     "parse_datetime",

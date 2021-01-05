@@ -42,9 +42,10 @@ from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
 from .exceptions import SolverNameParseError
 from .helpers import (
-    get_service_account_token,
-    _get_incluster_token_file,
     _get_incluster_ca_file,
+    _get_incluster_token_file,
+    get_service_account_token,
+    normalize_os_version,
 )
 from .enums import ThothAdviserIntegrationEnum
 
@@ -188,17 +189,6 @@ class OpenShift:
             self._workflow_manager = WorkflowManager(openshift=self)
         return self._workflow_manager
 
-    @staticmethod
-    def normalize_os_version(
-        os_name: Optional[str], os_version: Optional[str]
-    ) -> Optional[str]:
-        """Normalize operating system version based on operating system used."""
-        if os_name is None or os_version is None or os_name.lower() != "rhel":
-            return os_version
-
-        # Discard any minor release, if present.
-        return os_version.split(".", maxsplit=1)[0]
-
     @classmethod
     def parse_python_solver_name(cls, solver_name: str) -> Dict[str, Any]:
         """Parse os and Python identifiers encoded into solver name."""
@@ -227,7 +217,7 @@ class OpenShift:
         python_version = ".".join(list(python_version))
         return {
             "os_name": parts[0],
-            "os_version": cls.normalize_os_version(parts[0], parts[1]),
+            "os_version": normalize_os_version(parts[0], parts[1]),
             "python_version": python_version,
         }
 
@@ -243,7 +233,7 @@ class OpenShift:
             return solver
 
         os_name = runtime_environment["operating_system"].get("name")
-        os_version = cls.normalize_os_version(
+        os_version = normalize_os_version(
             operating_system.get("name"), operating_system.get("version")
         )
         python_version = runtime_environment.get("python_version")
