@@ -6072,3 +6072,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.21.1 (2021-01-05T19:08:30)
 ### Features
 * Remove AttrDict from requirements (#1066)
+
+## Release 0.21.2 (2021-01-07T20:18:39)
+### Features
+* Increase random bits used to distinguish workflows (#1069)
