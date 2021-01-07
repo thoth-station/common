@@ -1042,12 +1042,12 @@ class OpenShift:
         # name and failed with regexp issues (that were not related to the
         # generateName configuration).
         if prefix and identifier:
-            return ("%s-%s-" + "%08x") % (prefix, identifier, random.getrandbits(32))
+            return ("%s-%s-" + "%08x") % (prefix, identifier, random.getrandbits(128))
 
         if prefix:
-            return prefix + "-%08x" % random.getrandbits(32)
+            return prefix + "-%08x" % random.getrandbits(128)
 
-        return "-%08x" % random.getrandbits(32)
+        return "-%08x" % random.getrandbits(128)
 
     def schedule_dependency_monkey(
         self,
