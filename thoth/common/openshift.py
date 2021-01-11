@@ -1127,6 +1127,7 @@ class OpenShift:
         registry_password: Optional[str] = None,
         registry_verify_tls: bool = True,
         environment_type: Optional[str] = None,
+        buildlog_document_id: Optional[str] = None,
         origin: Optional[str] = None,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -1145,6 +1146,7 @@ class OpenShift:
             "THOTH_BUILD_ANALYSIS_REGISTRY_PASSWORD": registry_password,
             "THOTH_BUILD_ANALYSIS_REGISTRY_VERIFY_TLS": registry_verify_tls,
             "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
+            "THOTH_BUILD_ANALYSIS_BUILDLOG_DOCUMENT_ID": buildlog_document_id,
             "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
         }
 
