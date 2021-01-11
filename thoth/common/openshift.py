@@ -1121,15 +1121,22 @@ class OpenShift:
     def schedule_build_analysis(
         self,
         *,
-        output_image: Optional[str] = None,
         base_image: Optional[str] = None,
-        registry_user: Optional[str] = None,
-        registry_password: Optional[str] = None,
-        registry_verify_tls: bool = True,
-        environment_type: Optional[str] = None,
+        base_image_analysis_id: Optional[str] = None,
+        base_registry_password: Optional[str] = None,
+        base_registry_user: Optional[str] = None,
+        base_registry_verify_tls: bool = True,
+        output_image: Optional[str] = None,
+        output_image_analysis_id: Optional[str] = None,
+        output_registry_password: Optional[str] = None,
+        output_registry_user: Optional[str] = None,
+        output_registry_verify_tls: bool = True,
         buildlog_document_id: Optional[str] = None,
+        buildlog_parser_id: Optional[str] = None,
+        environment_type: Optional[str] = None,
         origin: Optional[str] = None,
-        job_id: Optional[str] = None,
+        force: bool = False,
+        debug: bool = False,
     ) -> Optional[str]:
         """Schedule a build analysis workflow."""
         if not self.middletier_namespace:
@@ -1137,17 +1144,23 @@ class OpenShift:
                 "Unable to schedule build report without middletier namespace being set"
             )
 
-        workflow_id = job_id or self.generate_id("build-analysis")
         template_parameters = {
-            "THOTH_BUILD_ANALYSIS_WORKFLOW_ID": workflow_id,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
             "THOTH_BUILD_ANALYSIS_BASE_IMAGE": base_image,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_USER": registry_user,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_PASSWORD": registry_password,
-            "THOTH_BUILD_ANALYSIS_REGISTRY_VERIFY_TLS": registry_verify_tls,
-            "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
+            "THOTH_BUILD_ANALYSIS_BASE_IMAGE_ANALYSIS_ID": base_image_analysis_id,
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_PASSWORD": base_registry_password,
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_USER": base_registry_user,
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_VERIFY_TLS": base_registry_verify_tls,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE_ANALYSIS_ID": output_image_analysis_id,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_PASSWORD": output_registry_password,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_USER": output_registry_user,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_VERIFY_TLS": output_registry_verify_tls,
             "THOTH_BUILD_ANALYSIS_BUILDLOG_DOCUMENT_ID": buildlog_document_id,
+            "THOTH_BUILD_ANALYSIS_BUILDLOG_PARSER_ID": buildlog_parser_id,
+            "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
             "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
+            "THOTH_BUILD_ANALYSIS_FORCE": force,
+            "THOTH_BUILD_ANALYSIS_DEBUG": debug,
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
