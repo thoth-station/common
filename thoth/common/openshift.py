@@ -1152,16 +1152,22 @@ class OpenShift:
         base_registry_credentials = None
         if base_registry_user:
             if not base_registry_password:
-                raise ValueError("Base registry user provided but no base registry password supplied")
+                raise ValueError(
+                    "Base registry user provided but no base registry password supplied"
+                )
 
             base_registry_credentials = f"{base_registry_user}:{base_registry_password}"
 
         output_registry_credentials = None
         if output_registry_user:
             if not output_registry_password:
-                raise ValueError("Output registry user provided but no base registry password supplied")
+                raise ValueError(
+                    "Output registry user provided but no base registry password supplied"
+                )
 
-            output_registry_credentials = f"{output_registry_user}:{output_registry_password}"
+            output_registry_credentials = (
+                f"{output_registry_user}:{output_registry_password}"
+            )
 
         if base_image and not base_image_analysis_id:
             base_image_analysis_id = self.generate_id("package-extract")
@@ -1180,12 +1186,16 @@ class OpenShift:
             "THOTH_BUILD_ANALYSIS_BASE_IMAGE_ANALYSIS_ID": base_image_analysis_id,
             "THOTH_BUILD_ANALYSIS_BASE_IMAGE_DOCUMENT_ID": base_image_analysis_id,
             "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_CREDENTIALS": base_registry_credentials,
-            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_NO_TLS_VERIFY": str(int(not base_registry_verify_tls)),
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_NO_TLS_VERIFY": str(
+                int(not base_registry_verify_tls)
+            ),
             "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
             "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE_ANALYSIS_ID": output_image_analysis_id,
             "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE_DOCUMENT_ID": output_image_analysis_id,
             "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_CREDENTIALS": output_registry_credentials,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_NO_TLS_VERIFY": str(int(not output_registry_verify_tls)),
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_NO_TLS_VERIFY": str(
+                int(not output_registry_verify_tls)
+            ),
             "THOTH_BUILD_ANALYSIS_BUILDLOG_DOCUMENT_ID": buildlog_document_id,
             "THOTH_BUILD_ANALYSIS_BUILDLOG_PARSER_ID": buildlog_parser_id,
             "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
