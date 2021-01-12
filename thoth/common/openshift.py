@@ -1136,29 +1136,62 @@ class OpenShift:
         environment_type: Optional[str] = None,
         origin: Optional[str] = None,
         debug: bool = False,
+        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule a build analysis workflow."""
         if not self.middletier_namespace:
             raise ConfigurationError(
-                "Unable to schedule build report without middletier namespace being set"
+                "Unable to schedule build analysis without middletier namespace being set"
             )
+
+        if not base_image and not output_image and not buildlog_document_id:
+            raise ValueError(
+                "Nothing to do, expected any combination of base image, output image and buildlog document id"
+            )
+
+        base_registry_credentials = None
+        if base_registry_user:
+            if not base_registry_password:
+                raise ValueError("Base registry user provided but no base registry password supplied")
+
+            base_registry_credentials = f"{base_registry_user}:{base_registry_password}"
+
+        output_registry_credentials = None
+        if output_registry_user:
+            if not output_registry_password:
+                raise ValueError("Output registry user provided but no base registry password supplied")
+
+            output_registry_credentials = f"{output_registry_user}:{output_registry_password}"
+
+        if base_image and not base_image_analysis_id:
+            base_image_analysis_id = self.generate_id("package-extract")
+
+        if output_image and not output_image_analysis_id:
+            output_image_analysis_id = self.generate_id("package-extract")
+
+        if buildlog_document_id and not buildlog_parser_id:
+            buildlog_parser_id = self.generate_id("buildlog-parser")
+
+        if not job_id:
+            job_id = self.generate_id("build-analysis")
 
         template_parameters = {
             "THOTH_BUILD_ANALYSIS_BASE_IMAGE": base_image,
             "THOTH_BUILD_ANALYSIS_BASE_IMAGE_ANALYSIS_ID": base_image_analysis_id,
-            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_PASSWORD": base_registry_password,
-            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_USER": base_registry_user,
-            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_VERIFY_TLS": base_registry_verify_tls,
+            "THOTH_BUILD_ANALYSIS_BASE_IMAGE_DOCUMENT_ID": base_image_analysis_id,
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_CREDENTIALS": base_registry_credentials,
+            "THOTH_BUILD_ANALYSIS_BASE_REGISTRY_NO_TLS_VERIFY": str(int(not base_registry_verify_tls)),
             "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE": output_image,
             "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE_ANALYSIS_ID": output_image_analysis_id,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_PASSWORD": output_registry_password,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_USER": output_registry_user,
-            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_VERIFY_TLS": output_registry_verify_tls,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_IMAGE_DOCUMENT_ID": output_image_analysis_id,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_CREDENTIALS": output_registry_credentials,
+            "THOTH_BUILD_ANALYSIS_OUTPUT_REGISTRY_NO_TLS_VERIFY": str(int(not output_registry_verify_tls)),
             "THOTH_BUILD_ANALYSIS_BUILDLOG_DOCUMENT_ID": buildlog_document_id,
             "THOTH_BUILD_ANALYSIS_BUILDLOG_PARSER_ID": buildlog_parser_id,
             "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
             "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
-            "THOTH_BUILD_ANALYSIS_DEBUG": debug,
+            "THOTH_BUILD_ANALYSIS_LOG": "DEBUG" if debug else "INFO",
+            "THOTH_BUILD_ANALYSIS_JOB_ID": job_id,
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
