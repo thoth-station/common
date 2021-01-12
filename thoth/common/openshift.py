@@ -1135,7 +1135,6 @@ class OpenShift:
         buildlog_parser_id: Optional[str] = None,
         environment_type: Optional[str] = None,
         origin: Optional[str] = None,
-        force: bool = False,
         debug: bool = False,
     ) -> Optional[str]:
         """Schedule a build analysis workflow."""
@@ -1159,7 +1158,6 @@ class OpenShift:
             "THOTH_BUILD_ANALYSIS_BUILDLOG_PARSER_ID": buildlog_parser_id,
             "THOTH_BUILD_ANALYSIS_ENVIRONMENT_TYPE": environment_type,
             "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
-            "THOTH_BUILD_ANALYSIS_FORCE": force,
             "THOTH_BUILD_ANALYSIS_DEBUG": debug,
         }
 
