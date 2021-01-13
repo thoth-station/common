@@ -780,7 +780,8 @@ class OpenShift:
 
         job_id = job_id or self.generate_id("graph-update-schema")
         self.set_template_parameters(
-            template, THOTH_SCHEMA_UPDATE_JOB_ID=job_id,
+            template,
+            THOTH_SCHEMA_UPDATE_JOB_ID=job_id,
         )
 
         template = self.oc_process(namespace, template)
