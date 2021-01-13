@@ -1239,6 +1239,12 @@ class OpenShift:
             "THOTH_BUILD_ANALYSIS_ORIGIN": origin,
             "THOTH_BUILD_ANALYSIS_LOG": "DEBUG" if debug else "INFO",
             "THOTH_BUILD_ANALYSIS_JOB_ID": job_id,
+            "THOTH_BUILD_ANALYSIS_METADATA": json.dumps(
+                {
+                    "origin": origin,
+                    "environment_type": environment_type,
+                }
+            ),
         }
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
