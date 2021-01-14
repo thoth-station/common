@@ -1243,6 +1243,10 @@ class OpenShift:
                 {
                     "origin": origin,
                     "environment_type": environment_type,
+                    "base_image_analysis_id": base_image_analysis_id,
+                    "output_image_analysis_id": output_image_analysis_id,
+                    "buildlog_document_id": buildlog_document_id,
+                    "build_analysis_job_id": job_id,
                 }
             ),
         }
