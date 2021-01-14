@@ -1173,6 +1173,7 @@ class OpenShift:
         environment_type: Optional[str] = None,
         origin: Optional[str] = None,
         debug: bool = False,
+        is_external: bool = True,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule a build analysis workflow."""
@@ -1247,6 +1248,7 @@ class OpenShift:
                     "output_image_analysis_id": output_image_analysis_id,
                     "buildlog_document_id": buildlog_document_id,
                     "build_analysis_job_id": job_id,
+                    "is_external": is_external,
                 }
             ),
         }
