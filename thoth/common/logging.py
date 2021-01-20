@@ -40,10 +40,9 @@ from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv("RSYSLOG_HOST")
 _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
-_LOKI_URL = os.getenv("THOTH_LOG_LOKI_URL")
-_LOKI_USERNAME = os.getenv("THOTH_LOG_LOKI_USERNAME")
-_LOKI_PASSWORD = os.getenv("THOTH_LOG_LOKI_PASSWORD")
-_LOKI_VERSION = os.getenv("THOTH_LOG_LOKI_VERSION", "1")
+_LOKI_URL = os.getenv("THOTH_LOKI_URL")
+_LOKI_USERNAME = os.getenv("THOTH_LOKI_USERNAME")
+_LOKI_PASSWORD = os.getenv("THOTH_LOKI_PASSWORD")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
@@ -273,7 +272,7 @@ def init_logging(
         logging.getLogger().setLevel(logging.WARNING)
         logging.getLogger().propagate = False
 
-    root_logger = logging.getLogger("thoth.common")
+    root_logger = logging.getLogger()
     environment = os.getenv("SENTRY_ENVIRONMENT", os.getenv("THOTH_DEPLOYMENT_NAME"))
 
     # Disable annoying unverified HTTPS request warnings.
@@ -372,20 +371,56 @@ def init_logging(
         root_logger.info("Logging to rsyslog endpoint is turned off")
 
     if _LOKI_URL:
-        _LOGGER.info("Initializing to a Loki")
+        root_logger.info("Initializing logging to a Loki instance")
         tags = {"application": "thoth"}
         thoth_deployment = os.getenv("THOTH_DEPLOYMENT_NAME")
         if thoth_deployment:
-            tags["thoth-deployment"] = thoth_deployment
+            tags["thoth_deployment"] = thoth_deployment  # Note: tags cannot have dashes.
 
-        loki_handler = logging_loki.LokiQueueHandler(
+        # loki_handler = Op1stLokiHandler(
+        loki_handler = Op1stLokiQueueHandler(
             Queue(-1),
             url=_LOKI_URL,
             tags={
-                "application": "thoth",
-                "thoth-deployment": thoth_deployment,
+                "app": "thoth",
+                "thoth_deployment": thoth_deployment,
             },
             auth=(_LOKI_USERNAME, _LOKI_PASSWORD),
-            version=_LOKI_VERSION,
         )
         root_logger.addHandler(loki_handler)
+
+
+class Op1stLokiLokiEmitter(logging_loki.emitter.LokiEmitterV1):
+    """An emitter implementation that is specific for Operate 1st Loki instance."""
+
+    def __call__(self, record: logging.LogRecord, line: str):
+        """Send log record to Loki."""
+        payload = self.build_payload(record, line)
+        resp = self.session.post(self.url, json=payload, headers={"X-Scope-OrgID": "opf-thoth"})
+        if resp.status_code != self.success_response_code:
+            raise ValueError("Unexpected Loki API response status code ({0}): {1}".format(resp.status_code, resp.text))
+
+
+class Op1stLokiQueueHandler(logging.handlers.QueueHandler):
+    """A custom Loki handler which works with Operate 1st Loki instance."""
+
+    def __init__(self, queue: Queue, **kwargs):
+        super().__init__(queue)
+        self.handler = Op1stLokiHandler(**kwargs)
+        self.listener = logging.handlers.QueueListener(self.queue, self.handler)
+        self.listener.start()
+
+
+class Op1stLokiHandler(logging_loki.handlers.LokiHandler):
+    """A custom Loki handler which works with Operate 1st Loki instance."""
+
+    def __init__(
+        self,
+        url: str,
+        tags: Optional[Dict[str, str]] = None,
+        auth: Optional[logging_loki.emitter.BasicAuth] = None,
+        version: Optional[str] = None,
+    ) -> None:
+        """Initialize the Operate 1st Loki handler."""
+        logging_loki.LokiHandler.__init__(self, url=url, tags=tags, auth=auth, version=version)
+        self.emitter = Op1stLokiLokiEmitter(url, tags, auth)
