@@ -18,6 +18,7 @@
 """Handling OpenShift and Kubernetes objects across project."""
 
 import os
+import datetime
 import logging
 import requests
 import typing
@@ -1074,17 +1075,14 @@ class OpenShift:
         prefix: Optional[str] = None, identifier: Optional[str] = None
     ) -> str:
         """Generate an identifier."""
-        # A very first method used 'generatedName' in ImageStream configuration,
-        # but it looks like there is a bug in OpenShift as it did not generated any
-        # name and failed with regexp issues (that were not related to the
-        # generateName configuration).
+        suffix = f"-{datetime.datetime.now():%y%m%d%H%M%S}-{random.getrandbits(64):08x}"
         if prefix and identifier:
-            return ("%s-%s-" + "%08x") % (prefix, identifier, random.getrandbits(128))
+            return f"{prefix}-{identifier}{suffix}"
 
         if prefix:
-            return prefix + "-%08x" % random.getrandbits(128)
+            return f"{prefix}{suffix}"
 
-        return "-%08x" % random.getrandbits(128)
+        return suffix
 
     def schedule_dependency_monkey(
         self,
