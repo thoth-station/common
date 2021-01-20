@@ -30,6 +30,8 @@ from typing import Tuple
 from typing import Any
 
 from jsonformatter import JsonFormatter
+import logging_loki
+from multiprocessing import Queue
 from sentry_sdk import init as sentry_sdk_init
 from sentry_sdk.integrations.logging import ignore_logger
 import daiquiri
@@ -38,6 +40,10 @@ from rfc5424logging import Rfc5424SysLogHandler
 
 _RSYSLOG_HOST = os.getenv("RSYSLOG_HOST")
 _RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
+_LOKI_URL = os.getenv("THOTH_LOG_LOKI_URL")
+_LOKI_USERNAME = os.getenv("THOTH_LOG_LOKI_USERNAME")
+_LOKI_PASSWORD = os.getenv("THOTH_LOG_LOKI_PASSWORD")
+_LOKI_VERSION = os.getenv("THOTH_LOG_LOKI_VERSION", "1")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
@@ -364,3 +370,22 @@ def init_logging(
         )
     else:
         root_logger.info("Logging to rsyslog endpoint is turned off")
+
+    if _LOKI_URL:
+        _LOGGER.info("Initializing to a Loki")
+        tags = {"application": "thoth"}
+        thoth_deployment = os.getenv("THOTH_DEPLOYMENT_NAME")
+        if thoth_deployment:
+            tags["thoth-deployment"] = thoth_deployment
+
+        loki_handler = logging_loki.LokiQueueHandler(
+            Queue(-1),
+            url=_LOKI_URL,
+            tags={
+                "application": "thoth",
+                "thoth-deployment": thoth_deployment,
+            },
+            auth=(_LOKI_USERNAME, _LOKI_PASSWORD),
+            version=_LOKI_VERSION,
+        )
+        root_logger.addHandler(loki_handler)

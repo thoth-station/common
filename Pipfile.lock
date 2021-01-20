@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "402627e6b2fd06c7425f28a4ae48c0f19900f3d5426b96b9bfa2a3da67e607d3"
+            "sha256": "1efbd3c8201671fceb21c76605940c6b24d3e23d6b7f3c6a6c2a6c13c3eb6787"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -222,6 +222,14 @@
             "markers": "python_version >= '3.4'",
             "version": "==2.0.1"
         },
+        "python-logging-loki": {
+            "hashes": [
+                "sha256:8a9131db037fbea3d390089c4c32dbe7ed233944905079615a9fb6f669b0f4e6",
+                "sha256:b83610c8a3adc99fbab072493b91dfb25ced69be4874fefe3ab457b391adbf60"
+            ],
+            "index": "pypi",
+            "version": "==0.3.1"
+        },
         "python-string-utils": {
             "hashes": [
                 "sha256:dcf9060b03f07647c0a603408dc8b03f807f3b54a05c6e19eb14460256fac0cb",
@@ -279,6 +287,13 @@
                 "sha256:fa6c47b933f01060936d87ae9327fead68768b69c6c9ea2109c48be30f2d4dbc"
             ],
             "version": "==1.3.0"
+        },
+        "rfc3339": {
+            "hashes": [
+                "sha256:d53c3b5eefaef892b7240ba2a91fef012e86faa4d0a0ca782359c490e00ad4d0",
+                "sha256:f44316b21b21db90a625cde04ebb0d46268f153e6093021fa5893e92a96f58a3"
+            ],
+            "version": "==6.2"
         },
         "rfc5424-logging-handler": {
             "hashes": [
@@ -514,7 +529,7 @@
                 "sha256:fda29412a66099af6d6de0baa6bd7c52674de177ec2ad2630ca264142d69c6c7",
                 "sha256:ff1330e8bc996570221b450e2d539134baa9465f5cb98aff0e0f73f34172e0ae"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
             "version": "==5.3.1"
         },
         "dependency-management": {
@@ -566,7 +581,7 @@
                 "sha256:c729845434366216d320e936b8ad6f9d681aab72dc7cbc2d51bedc3582f3ad1e",
                 "sha256:fff4f0c04e1825522ce6949973e83110a6e907750cd92d128b0d14aaaadbffdc"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4.0'",
+            "markers": "python_version >= '3.6' and python_version < '4'",
             "version": "==5.7.0"
         },
         "lazy-object-proxy": {

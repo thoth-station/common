@@ -15,6 +15,7 @@ attrs = "*"
 pyyaml = ">=3.12"
 flexmock = "*"
 jsonformatter = "*"
+python-logging-loki = "*"
 
 [dev-packages]
 pytest = "*"
