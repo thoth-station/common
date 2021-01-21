@@ -43,6 +43,11 @@ class RuntimeEnvironment:
     operating_system = attr.ib(type=OperatingSystem)
     python_version = attr.ib(type=str, default=None)
     cuda_version = attr.ib(type=str, default=None)
+    openblas_version = attr.ib(type=str, default=None)
+    openmpi_version = attr.ib(type=str, default=None)
+    cudnn_version = attr.ib(type=str, default=None)
+    mkl_version = attr.ib(type=str, default=None)
+    base_image = attr.ib(type=str, default=None)
     name = attr.ib(type=str, default=None)
     platform = attr.ib(type=str, default=None)
     _python_version_tuple = attr.ib(

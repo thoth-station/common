@@ -30,3 +30,4 @@ class HardwareInformation(ConfigEntryBase):
 
     cpu_family = attr.ib(type=int, default=None)
     cpu_model = attr.ib(type=int, default=None)
+    gpu_model = attr.ib(type=int, default=None)
