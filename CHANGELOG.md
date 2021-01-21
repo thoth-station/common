@@ -7026,3 +7026,10 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Automatic update of dependency daiquiri from 1.3.0 to 1.5.0
 * Automatic update of dependency thoth-storages from 0.0.26 to 0.0.28
 * Automatic update of dependency rfc5424-logging-handler from 1.1.0 to 1.1.2
+
+## Release 0.22.0 (2021-01-21T08:00:59)
+### Features
+* Extend Thamos configuration file (#1072)
+* Revisit generating id to avoid hash collisions (#1093)
+* :sparkles: add kind/ labels to feature and bug template (#1091)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1090)
