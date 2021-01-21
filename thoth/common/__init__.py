@@ -39,7 +39,7 @@ from .workflows import Workflow
 from .workflows import WorkflowManager
 
 __name__ = "thoth-common"
-__version__ = "0.21.4"
+__version__ = "0.22.0"
 
 
 __all__ = [
