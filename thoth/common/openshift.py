@@ -1007,12 +1007,12 @@ class OpenShift:
                 "Unknown environment type %r, has to be runtime or buildtime"
             )
 
+        job_id = job_id or self.generate_id("package-extract")
         template_parameters = {
             "THOTH_LOG_PACKAGE_EXTRACT": "DEBUG" if debug else "INFO",
             "THOTH_ANALYZED_IMAGE": image,
             "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
-            "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id
-            or self.generate_id("package-extract"),
+            "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_PACKAGE_EXTRACT_METADATA": json.dumps(
                 {
