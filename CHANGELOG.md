@@ -7033,3 +7033,11 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Revisit generating id to avoid hash collisions (#1093)
 * :sparkles: add kind/ labels to feature and bug template (#1091)
 * :arrow_up: Automatic update of dependencies by kebechet. (#1090)
+
+## Release 0.22.1 (2021-02-02T22:28:54)
+### Features
+* Fix package-extract job id propagation (#1100)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1099)
+* add enum for internal triggers (#1098)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1097)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1095)
