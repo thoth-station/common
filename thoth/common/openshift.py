@@ -1341,6 +1341,7 @@ class OpenShift:
         github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         source_type: Optional[str] = None,
+        kebechet_metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1397,6 +1398,7 @@ class OpenShift:
                 "origin": origin,
                 "re_run_adviser_id": re_run_adviser_id,
                 "source_type": source_type if source_type is not None else None,
+                "kebechet_metadata": kebechet_metadata,
             }
         )
 
@@ -1436,6 +1438,7 @@ class OpenShift:
         whitelisted_sources: Optional[List[str]] = None,
         debug: bool = False,
         job_id: Optional[str] = None,
+        kebechet_metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
@@ -1452,7 +1455,9 @@ class OpenShift:
         template_parameters = {
             "THOTH_ADVISER_REQUIREMENTS": requirements,
             "THOTH_ADVISER_REQUIREMENTS_LOCKED": requirements_locked,
-            "THOTH_ADVISER_METADATA": json.dumps({"origin": origin}),
+            "THOTH_ADVISER_METADATA": json.dumps(
+                {"origin": origin, "kebechet_metadata": kebechet_metadata}
+            ),
             "THOTH_WHITELISTED_SOURCES": ",".join(whitelisted_sources or []),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_PROVENANCE_CHECKER_JOB_ID": job_id,
@@ -1588,6 +1593,7 @@ class OpenShift:
         repo_url: str,
         service_name: str = "github",
         *,
+        kebechet_metadata: Optional[Dict[str, Any]] = None,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Kebechet Workflow for a particular valid slug and service name."""
@@ -1596,6 +1602,7 @@ class OpenShift:
             "WORKFLOW_ID": workflow_id,
             "KEBECHET_REPO_URL": repo_url,
             "KEBECHET_SERVICE_NAME": service_name,
+            "KEBECHET_METADATA": json.dumps(kebechet_metadata),
         }
 
         return self._schedule_workflow(
