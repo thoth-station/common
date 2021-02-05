@@ -7041,3 +7041,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * add enum for internal triggers (#1098)
 * :arrow_up: Automatic update of dependencies by kebechet. (#1097)
 * :arrow_up: Automatic update of dependencies by kebechet. (#1095)
+
+## Release 0.23.0 (2021-02-05T07:24:32)
+### Features
+* run dependency monkey workload on the amun-inspection namespace (#1104)
