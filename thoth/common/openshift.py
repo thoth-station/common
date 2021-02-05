@@ -1103,9 +1103,9 @@ class OpenShift:
         limit_latest_versions: Optional[int] = None,
     ) -> Optional[str]:
         """Schedule a dependency monkey run."""
-        if not self.middletier_namespace:
+        if not self.amun_inspection_namespace:
             raise ConfigurationError(
-                "Unable to schedule dependency monkey without middletier namespace being set"
+                "Unable to schedule dependency monkey without amun inspection namespace being set"
             )
 
         job_id = job_id or self.generate_id("dependency-monkey")
