@@ -1015,12 +1015,12 @@ class OpenShift:
                 "Unknown environment type %r, has to be runtime or buildtime"
             )
 
+        job_id = job_id or self.generate_id("package-extract")
         template_parameters = {
             "THOTH_LOG_PACKAGE_EXTRACT": "DEBUG" if debug else "INFO",
             "THOTH_ANALYZED_IMAGE": image,
             "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
-            "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id
-            or self.generate_id("package-extract"),
+            "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_PACKAGE_EXTRACT_METADATA": json.dumps(
                 {
@@ -1111,9 +1111,9 @@ class OpenShift:
         limit_latest_versions: Optional[int] = None,
     ) -> Optional[str]:
         """Schedule a dependency monkey run."""
-        if not self.middletier_namespace:
+        if not self.amun_inspection_namespace:
             raise ConfigurationError(
-                "Unable to schedule dependency monkey without middletier namespace being set"
+                "Unable to schedule dependency monkey without amun inspection namespace being set"
             )
 
         job_id = job_id or self.generate_id("dependency-monkey")

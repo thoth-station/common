@@ -28,3 +28,13 @@ class ThothAdviserIntegrationEnum(Enum):
     S2I = auto()
     GITHUB_APP = auto()
     JUPYTER_NOTEBOOK = auto()
+
+
+class InternalTriggerEnum(Enum):
+    """Class containing different types of triggers, this is used to generate justifications for PRs and issues."""
+
+    CVE = auto()
+    HASH_MISMATCH = auto()
+    MISSING_PACKAGE = auto()
+    MISSING_VERSION = auto()
+    NEW_RELEASE = auto()
