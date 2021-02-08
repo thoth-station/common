@@ -833,8 +833,6 @@ class OpenShift:
         *,
         raw_specification: Optional[Dict[str, Any]] = None,
         job_id: Optional[str] = None,
-        send_messages: Optional[int] = None,
-        force_sync: Optional[int] = None,
     ) -> Optional[str]:
         """Schedule an inspection run."""
         if not self.amun_inspection_namespace:
@@ -860,11 +858,12 @@ class OpenShift:
             "memory"
         ]
 
-        if send_messages:
-            template_parameters["SEND_MESSAGES"] = str(send_messages)
-
-        if force_sync:
-            template_parameters["FORCE_SYNC"] = str(force_sync)
+        template_parameters["THOTH_SEND_MESSAGES"] = str(
+            int(specification["send_messages"])
+        )
+        template_parameters["THOTH_FORCE_SYNC"] = str(
+            int(specification.get("force_sync", False))
+        )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
