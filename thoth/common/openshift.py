@@ -858,6 +858,11 @@ class OpenShift:
             "memory"
         ]
 
+        template_parameters["THOTH_SEND_MESSAGES"] = str(
+            int(specification["send_messages"])
+        )
+        template_parameters["THOTH_FORCE_SYNC"] = str(int(specification["force_sync"]))
+
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
         # Propagate raw specification to be placed on Ceph, not to submit escaped specification.
