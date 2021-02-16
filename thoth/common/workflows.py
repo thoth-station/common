@@ -598,8 +598,8 @@ class WorkflowManager:
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
-        if not self.openshift.middletier_namespace:
-            raise ConfigurationError("Middletier namespace was not provided.")
+        if not self.openshift.amun_inspection_namespace:
+            raise ConfigurationError("Amun Inspection namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
@@ -609,7 +609,7 @@ class WorkflowManager:
             label_selector="template=dependency-monkey",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.middletier_namespace,
+            workflow_namespace=self.openshift.amun_inspection_namespace,
         )
 
         return workflow_id
