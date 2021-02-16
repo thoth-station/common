@@ -861,7 +861,9 @@ class OpenShift:
         template_parameters["THOTH_SEND_MESSAGES"] = str(
             int(specification["send_messages"])
         )
-        template_parameters["THOTH_FORCE_SYNC"] = str(int(specification["force_sync"]))
+        template_parameters["THOTH_FORCE_SYNC"] = str(
+            int(specification.get("force_sync", False))
+        )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
