@@ -398,7 +398,7 @@ class OpenShift:
     ) -> Dict[str, Any]:
         """Get status from a task/node in a workflow."""
         pod_id = self.get_workflow_pod_name(node_name, workflow_id, namespace)
-        return self.get_pod_status(pod_id, namespace)
+        return self.get_pod_status_report(pod_id, namespace)
 
     def get_build(self, build_id: str, namespace: str) -> Dict[str, Any]:
         """Get a build in the given namespace."""
