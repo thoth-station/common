@@ -1001,6 +1001,7 @@ class OpenShift:
         registry_password: Optional[str] = None,
         verify_tls: bool = True,
         debug: bool = False,
+        graph_sync: bool = False,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule package extract workflow."""
@@ -1020,6 +1021,7 @@ class OpenShift:
             "THOTH_ANALYZED_IMAGE": image,
             "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
             "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id,
+            "THOTH_SYNC_PACKAGE_EXTRACT": int(graph_sync),
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_PACKAGE_EXTRACT_METADATA": json.dumps(
                 {
