@@ -7045,3 +7045,16 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.23.0 (2021-02-05T07:24:32)
 ### Features
 * run dependency monkey workload on the amun-inspection namespace (#1104)
+
+## Release 0.24.0 (2021-02-22T13:15:53)
+### Features
+* Fix parsing runtime environment entries
+* Fix obtaining pod status for workflows (#1113)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1114)
+* Do not propagate request data via messaging (#1109)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1112)
+* Thoth application#398 (#1111)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1110)
+* Thoth application#398 (#1107)
+### Improvements
+* Add flag to optionally sync results of package-extract
