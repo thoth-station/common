@@ -7058,3 +7058,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Thoth application#398 (#1107)
 ### Improvements
 * Add flag to optionally sync results of package-extract
+
+## Release 0.24.1 (2021-02-24T11:03:04)
+### Features
+* Add empty commit to trigger a new release for thoth-common
