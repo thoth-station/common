@@ -10,7 +10,7 @@ daiquiri = "*"
 requests = "*"
 sentry-sdk = "*"
 kubernetes = "~=11.0.0"  # required pyyaml>=3.12
-openshift = "*"
+openshift = "==0.11.0"
 attrs = "*"
 pyyaml = ">=3.12"
 flexmock = "*"
