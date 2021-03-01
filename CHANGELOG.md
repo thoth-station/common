@@ -7062,3 +7062,8 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.24.1 (2021-02-24T11:03:04)
 ### Features
 * Add empty commit to trigger a new release for thoth-common
+
+## Release 0.24.2 (2021-03-01T20:46:19)
+### Features
+* Pin openshift to help Pipenv resolve the stack (#1126)
+* :arrow_up: Automatic update of dependencies by Kebechet
