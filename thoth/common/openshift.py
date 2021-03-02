@@ -1517,11 +1517,9 @@ class OpenShift:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
         workflow_id = job_id or self.generate_id("kebechet-job")
         try:
-            url = webhook_payload["repository"]["html_url"]
-            _, _, _, _, slug, _, _ = urllib3.util.parse_url(url)
-            slug = slug[1:]
-        except Exception:
-            slug = "null"
+            slug = webhook_payload["repository"]["full_name"]
+        except KeyError:
+            slug = None
 
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
