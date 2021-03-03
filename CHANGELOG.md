@@ -7033,3 +7033,37 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Revisit generating id to avoid hash collisions (#1093)
 * :sparkles: add kind/ labels to feature and bug template (#1091)
 * :arrow_up: Automatic update of dependencies by kebechet. (#1090)
+
+## Release 0.22.1 (2021-02-02T22:28:54)
+### Features
+* Fix package-extract job id propagation (#1100)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1099)
+* add enum for internal triggers (#1098)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1097)
+* :arrow_up: Automatic update of dependencies by kebechet. (#1095)
+
+## Release 0.23.0 (2021-02-05T07:24:32)
+### Features
+* run dependency monkey workload on the amun-inspection namespace (#1104)
+
+## Release 0.24.0 (2021-02-22T13:15:53)
+### Features
+* Fix parsing runtime environment entries
+* Fix obtaining pod status for workflows (#1113)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1114)
+* Do not propagate request data via messaging (#1109)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1112)
+* Thoth application#398 (#1111)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1110)
+* Thoth application#398 (#1107)
+### Improvements
+* Add flag to optionally sync results of package-extract
+
+## Release 0.24.1 (2021-02-24T11:03:04)
+### Features
+* Add empty commit to trigger a new release for thoth-common
+
+## Release 0.24.2 (2021-03-01T20:46:19)
+### Features
+* Pin openshift to help Pipenv resolve the stack (#1126)
+* :arrow_up: Automatic update of dependencies by Kebechet
