@@ -1489,6 +1489,7 @@ class OpenShift:
         self,
         repository: str,
         entities: Optional[str] = None,
+        knowledge_path: Optional[str] = None,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -1503,6 +1504,7 @@ class OpenShift:
             "WORKFLOW_ID": workflow_id,
             "REPOSITORY": repository,
             "ENTITIES": entities,
+            "KNOWLEDGE_PATH": knowledge_path,
         }
 
         return self._schedule_workflow(
