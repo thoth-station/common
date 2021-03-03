@@ -398,7 +398,7 @@ class OpenShift:
     ) -> Dict[str, Any]:
         """Get status from a task/node in a workflow."""
         pod_id = self.get_workflow_pod_name(node_name, workflow_id, namespace)
-        return self.get_pod_status(pod_id, namespace)
+        return self.get_pod_status_report(pod_id, namespace)
 
     def get_build(self, build_id: str, namespace: str) -> Dict[str, Any]:
         """Get a build in the given namespace."""
@@ -861,7 +861,9 @@ class OpenShift:
         template_parameters["THOTH_SEND_MESSAGES"] = str(
             int(specification["send_messages"])
         )
-        template_parameters["THOTH_FORCE_SYNC"] = str(int(specification["force_sync"]))
+        template_parameters["THOTH_FORCE_SYNC"] = str(
+            int(specification.get("force_sync", False))
+        )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
@@ -999,6 +1001,7 @@ class OpenShift:
         registry_password: Optional[str] = None,
         verify_tls: bool = True,
         debug: bool = False,
+        graph_sync: bool = False,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule package extract workflow."""
@@ -1018,6 +1021,7 @@ class OpenShift:
             "THOTH_ANALYZED_IMAGE": image,
             "THOTH_ANALYZER_NO_TLS_VERIFY": int(not verify_tls),
             "THOTH_PACKAGE_EXTRACT_JOB_ID": job_id,
+            "THOTH_SYNC_PACKAGE_EXTRACT": int(graph_sync),
             "THOTH_DOCUMENT_ID": job_id,
             "THOTH_PACKAGE_EXTRACT_METADATA": json.dumps(
                 {
@@ -1091,14 +1095,10 @@ class OpenShift:
 
     def schedule_dependency_monkey(
         self,
-        requirements: Dict[str, Any],
-        context: Dict[str, Any],
         *,
-        pipeline: Optional[Dict[str, Any]] = None,
         predictor: Optional[str] = None,
         predictor_config: Optional[Dict[str, Any]] = None,
         stack_output: Optional[str] = None,
-        runtime_environment: Optional[Dict[Any, Any]] = None,
         seed: Optional[int] = None,
         dry_run: bool = False,
         decision: Optional[str] = None,
@@ -1115,17 +1115,11 @@ class OpenShift:
 
         job_id = job_id or self.generate_id("dependency-monkey")
         template_parameters = {
-            "THOTH_ADVISER_REQUIREMENTS": json.dumps(requirements).replace("\n", "\\n"),
-            "THOTH_ADVISER_RUNTIME_ENVIRONMENT": None
-            if runtime_environment is None
-            else json.dumps(runtime_environment),
-            "THOTH_AMUN_CONTEXT": json.dumps(context).replace("\n", "\\n"),
             "THOTH_DEPENDENCY_MONKEY_STACK_OUTPUT": stack_output or "-",
             "THOTH_DEPENDENCY_MONKEY_DRY_RUN": int(bool(dry_run)),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_DEPENDENCY_MONKEY_JOB_ID": job_id,
             "THOTH_DOCUMENT_ID": job_id,
-            "THOTH_ADVISER_PIPELINE": json.dumps(pipeline) if pipeline else "{}",
             "THOTH_ADVISER_PREDICTOR": predictor or "AUTO",
             "THOTH_ADVISER_PREDICTOR_CONFIG": json.dumps(predictor_config)
             if predictor_config
@@ -1328,14 +1322,11 @@ class OpenShift:
 
     def schedule_adviser(
         self,
-        application_stack: Dict[Any, Any],
         recommendation_type: str,
         *,
         count: Optional[int] = None,
         limit: Optional[int] = None,
         predictor_config: Optional[Dict[str, Any]] = None,
-        runtime_environment: Optional[Dict[Any, Any]] = None,
-        library_usage: Optional[Dict[Any, Any]] = None,
         origin: Optional[str] = None,
         dev: bool = False,
         debug: bool = False,
@@ -1370,48 +1361,33 @@ class OpenShift:
         )
 
         adviser_id = job_id or self.generate_id("adviser")
-        template_parameters = {}
-
-        if application_stack.get("requirements_lock"):
-            template_parameters[
-                "THOTH_ADVISER_REQUIREMENTS_LOCKED"
-            ] = application_stack["requirements_lock"]
-        template_parameters["THOTH_ADVISER_JOB_ID"] = adviser_id
-        template_parameters["THOTH_ADVISER_DEV"] = "1" if dev else "0"
-        template_parameters["THOTH_ADVISER_REQUIREMENTS"] = application_stack[
-            "requirements"
-        ]
-        template_parameters["THOTH_ADVISER_LIBRARY_USAGE"] = json.dumps(library_usage)
-        template_parameters["THOTH_LOG_ADVISER"] = "DEBUG" if debug else "INFO"
-        template_parameters[
-            "THOTH_ADVISER_REQUIREMENTS_FORMAT"
-        ] = application_stack.get("requirements_format", "pipenv")
-        template_parameters["THOTH_ADVISER_RECOMMENDATION_TYPE"] = recommendation_type
-        template_parameters["THOTH_ADVISER_RUNTIME_ENVIRONMENT"] = json.dumps(
-            runtime_environment
-        )
-        template_parameters["THOTH_ADVISER_PREDICTOR_CONFIG"] = (
-            json.dumps(predictor_config) if predictor_config else "{}"
-        )
-
-        template_parameters["THOTH_ADVISER_METADATA"] = json.dumps(
-            {
-                "github_event_type": github_event_type,
-                "github_check_run_id": github_check_run_id,
-                "github_installation_id": github_installation_id,
-                "github_base_repo_url": github_base_repo_url,
-                "origin": origin,
-                "re_run_adviser_id": re_run_adviser_id,
-                "source_type": source_type if source_type is not None else None,
-                "kebechet_metadata": kebechet_metadata,
-            }
-        )
+        template_parameters = {
+            "THOTH_ADVISER_JOB_ID": adviser_id,
+            "THOTH_ADVISER_DEV": "1" if dev else "0",
+            "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
+            "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type,
+            "THOTH_ADVISER_PREDICTOR_CONFIG": (
+                json.dumps(predictor_config) if predictor_config else "{}"
+            ),
+            "THOTH_ADVISER_METADATA": json.dumps(
+                {
+                    "github_event_type": github_event_type,
+                    "github_check_run_id": github_check_run_id,
+                    "github_installation_id": github_installation_id,
+                    "github_base_repo_url": github_base_repo_url,
+                    "origin": origin,
+                    "re_run_adviser_id": re_run_adviser_id,
+                    "source_type": source_type if source_type is not None else None,
+                    "kebechet_metadata": kebechet_metadata,
+                }
+            ),
+        }
 
         if limit is not None:
-            template_parameters["THOTH_ADVISER_LIMIT"] = limit
+            template_parameters["THOTH_ADVISER_LIMIT"] = str(limit)
 
         if count is not None:
-            template_parameters["THOTH_ADVISER_COUNT"] = count
+            template_parameters["THOTH_ADVISER_COUNT"] = str(count)
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
@@ -1437,7 +1413,6 @@ class OpenShift:
 
     def schedule_provenance_checker(
         self,
-        application_stack: Dict[Any, Any],
         *,
         origin: Optional[str] = None,
         whitelisted_sources: Optional[List[str]] = None,
@@ -1453,13 +1428,7 @@ class OpenShift:
 
         job_id = job_id or self.generate_id("provenance-checker")
 
-        requirements = application_stack.pop("requirements").replace("\n", "\\n")
-        requirements_locked = application_stack.pop("requirements_lock").replace(
-            "\n", "\\n"
-        )
         template_parameters = {
-            "THOTH_ADVISER_REQUIREMENTS": requirements,
-            "THOTH_ADVISER_REQUIREMENTS_LOCKED": requirements_locked,
             "THOTH_ADVISER_METADATA": json.dumps(
                 {"origin": origin, "kebechet_metadata": kebechet_metadata}
             ),

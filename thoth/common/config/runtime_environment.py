@@ -19,9 +19,10 @@
 
 import os
 import logging
-from typing import Optional
 from typing import Any
 from typing import Dict
+from typing import Optional
+from typing import Set
 from typing import Tuple
 
 import attr
@@ -41,18 +42,19 @@ class RuntimeEnvironment:
 
     hardware = attr.ib(type=HardwareInformation)
     operating_system = attr.ib(type=OperatingSystem)
-    python_version = attr.ib(type=str, default=None)
-    cuda_version = attr.ib(type=str, default=None)
-    openblas_version = attr.ib(type=str, default=None)
-    openmpi_version = attr.ib(type=str, default=None)
-    cudnn_version = attr.ib(type=str, default=None)
-    mkl_version = attr.ib(type=str, default=None)
-    base_image = attr.ib(type=str, default=None)
-    name = attr.ib(type=str, default=None)
-    platform = attr.ib(type=str, default=None)
+    python_version = attr.ib(type=Optional[str], default=None)
+    cuda_version = attr.ib(type=Optional[str], default=None)
+    openblas_version = attr.ib(type=Optional[str], default=None)
+    openmpi_version = attr.ib(type=Optional[str], default=None)
+    cudnn_version = attr.ib(type=Optional[str], default=None)
+    mkl_version = attr.ib(type=Optional[str], default=None)
+    base_image = attr.ib(type=Optional[str], default=None)
+    name = attr.ib(type=Optional[str], default=None)
+    platform = attr.ib(type=Optional[str], default=None)
     _python_version_tuple = attr.ib(
         type=Optional[Tuple[int, int]], default=None, init=False
     )
+    recommendation_type = attr.ib(type=Optional[str], default=None)
 
     @classmethod
     def load(cls, content: Optional[str] = None) -> "RuntimeEnvironment":
@@ -67,6 +69,15 @@ class RuntimeEnvironment:
         file_content = yaml.safe_load(content)
         return cls.from_dict(file_content)
 
+    @staticmethod
+    def _get_fields() -> Set[str]:
+        """Get defined fields in runtime environment."""
+        return {
+            f.name
+            for f in attr.fields(RuntimeEnvironment)
+            if not f.name.startswith("_")
+        }
+
     @classmethod
     def from_dict(cls, dict_: Optional[Dict[Any, Any]] = None) -> "RuntimeEnvironment":
         """Parse one configuration entry from a dictionary."""
@@ -74,27 +85,23 @@ class RuntimeEnvironment:
 
         hardware = dict_.pop("hardware", {})
         operating_system = dict_.pop("operating_system", {})
-        python_version = dict_.pop("python_version", None)
-        cuda_version = dict_.pop("cuda_version", None)
-        name = dict_.pop("name", None)
-        platform = dict_.pop("platform", None)
 
-        for key, value in dict_.items():
-            _LOGGER.warning(
-                "Unknown configuration entry in the configuration file %r with value %r",
-                key,
-                value,
-            )
+        known_fields = cls._get_fields()
+        for key, value in list(dict_.items()):
+            if key not in known_fields:
+                _LOGGER.warning(
+                    "Unknown configuration entry in the configuration file %r with value %r",
+                    key,
+                    value,
+                )
+                dict_.pop(key)
 
         instance = cls(
             hardware=HardwareInformation.from_dict(hardware),  # type: ignore
             operating_system=OperatingSystem.from_dict(  # type: ignore
                 operating_system
             ),
-            python_version=python_version,
-            cuda_version=cuda_version,
-            name=name,
-            platform=platform,
+            **dict_,
         )
 
         if instance.operating_system.version and not instance.operating_system.name:
