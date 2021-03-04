@@ -8,5 +8,5 @@ attrs
 pyyaml
 requests
 kubernetes ~= 11.0.0
-openshift
+openshift==0.11.0
 argo-workflows >=3.5,<4

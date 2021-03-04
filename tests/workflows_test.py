@@ -22,7 +22,7 @@ import pytest
 import requests
 from flexmock import flexmock
 
-from thoth.common import Workflow  # type: ignore
+from thoth.common import Workflow
 
 from .base_test import CommonTestCase
 
