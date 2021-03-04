@@ -1523,9 +1523,15 @@ class OpenShift:
     ) -> Optional[str]:
         """Schedule Kebechet Workflow for a Webhook from GitHub App.."""
         workflow_id = job_id or self.generate_id("kebechet-job")
+        try:
+            slug = webhook_payload["repository"]["full_name"]
+        except KeyError:
+            slug = None
+
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "WEBHOOK_PAYLOAD": json.dumps(webhook_payload),
+            "KEBECHET_SLUG": slug,
         }
 
         return self._schedule_workflow(
