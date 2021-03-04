@@ -7067,3 +7067,12 @@ Starting with this release we have a Zuul-CI pipeline that:
 ### Features
 * Pin openshift to help Pipenv resolve the stack (#1126)
 * :arrow_up: Automatic update of dependencies by Kebechet
+
+## Release 0.25.0 (2021-03-04T19:02:56)
+### Features
+* pass slug to kebechet workflow (#1125)
+* add metadata to relevant schedule methods (#1103)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1131)
+* Add knowledge_path as parameter for schedule_mi_workflow (#1129)
+### Improvements
+* :sparkles: reconfgured CI/CD to use prow and aicoe-ci
