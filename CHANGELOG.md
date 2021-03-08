@@ -7076,3 +7076,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add knowledge_path as parameter for schedule_mi_workflow (#1129)
 ### Improvements
 * :sparkles: reconfgured CI/CD to use prow and aicoe-ci
+
+## Release 0.26.0 (2021-03-08T19:40:01)
+### Features
+* thoth-adviser metadata
