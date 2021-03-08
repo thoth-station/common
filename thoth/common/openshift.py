@@ -1338,6 +1338,8 @@ class OpenShift:
         re_run_adviser_id: Optional[str] = None,
         source_type: Optional[str] = None,
         kebechet_metadata: Optional[Dict[str, Any]] = None,
+        justification: Optional[List[Dict[str, Any]]] = None,
+        stack_info: Optional[List[Dict[str, Any]]] = None,
     ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1379,6 +1381,10 @@ class OpenShift:
                     "re_run_adviser_id": re_run_adviser_id,
                     "source_type": source_type if source_type is not None else None,
                     "kebechet_metadata": kebechet_metadata,
+                    "thoth.adviser": {
+                        "justification": justification,
+                        "stack_info": stack_info,
+                    },
                 }
             ),
         }
@@ -1419,6 +1425,8 @@ class OpenShift:
         debug: bool = False,
         job_id: Optional[str] = None,
         kebechet_metadata: Optional[Dict[str, Any]] = None,
+        justification: Optional[List[Dict[str, Any]]] = None,
+        stack_info: Optional[List[Dict[str, Any]]] = None,
     ) -> Optional[str]:
         """Run provenance checks on the provided user input."""
         if not self.backend_namespace:
@@ -1430,7 +1438,14 @@ class OpenShift:
 
         template_parameters = {
             "THOTH_ADVISER_METADATA": json.dumps(
-                {"origin": origin, "kebechet_metadata": kebechet_metadata}
+                {
+                    "origin": origin,
+                    "kebechet_metadata": kebechet_metadata,
+                    "thoth.adviser": {
+                        "justification": justification,
+                        "stack_info": stack_info,
+                    },
+                }
             ),
             "THOTH_WHITELISTED_SOURCES": ",".join(whitelisted_sources or []),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
