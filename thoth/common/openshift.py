@@ -1505,7 +1505,7 @@ class OpenShift:
         repository: str,
         entities: Optional[str] = None,
         knowledge_path: Optional[str] = None,
-        mi_thoth: bool = False,
+        mi_used_for_thoth: bool = False,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
