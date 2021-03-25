@@ -1521,7 +1521,7 @@ class OpenShift:
             "REPOSITORY": repository,
             "ENTITIES": entities,
             "KNOWLEDGE_PATH": knowledge_path,
-            "MI_THOTH": "true" if mi_used_for_thoth else "false",
+            "MI_THOTH": "1" if mi_used_for_thoth else "0",
         }
 
         return self._schedule_workflow(
