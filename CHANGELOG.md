@@ -7080,3 +7080,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.26.0 (2021-03-08T19:40:01)
 ### Features
 * thoth-adviser metadata
+
+## Release 0.27.0 (2021-03-26T12:19:01)
+### Features
+* Be consistent with env vars supplied (#1143)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1142)
+* Add additional configuration as parameter (#1141)
