@@ -1425,6 +1425,7 @@ class OpenShift:
         origin: Optional[str] = None,
         whitelisted_sources: Optional[List[str]] = None,
         debug: bool = False,
+        authenticated: bool = False,
         job_id: Optional[str] = None,
         kebechet_metadata: Optional[Dict[str, Any]] = None,
         justification: Optional[List[Dict[str, Any]]] = None,
@@ -1449,6 +1450,7 @@ class OpenShift:
                     },
                 }
             ),
+            "THOTH_AUTHENTICATED_PROVENANCE_CHECK": "1" if authenticated else "0",
             "THOTH_WHITELISTED_SOURCES": ",".join(whitelisted_sources or []),
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_PROVENANCE_CHECKER_JOB_ID": job_id,
