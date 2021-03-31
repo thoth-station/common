@@ -7086,3 +7086,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Be consistent with env vars supplied (#1143)
 * :arrow_up: Automatic update of dependencies by Kebechet (#1142)
 * Add additional configuration as parameter (#1141)
+
+## Release 0.28.0 (2021-03-31T18:28:38)
+### Features
+* Allow running authenticated provenance check (#1147)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1148)
+* Provide an argument to run authenticated advises (#1146)
