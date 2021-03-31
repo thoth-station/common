@@ -1329,6 +1329,7 @@ class OpenShift:
         predictor_config: Optional[Dict[str, Any]] = None,
         origin: Optional[str] = None,
         dev: bool = False,
+        authenticated: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
         github_event_type: Optional[str] = None,
@@ -1368,6 +1369,7 @@ class OpenShift:
             "THOTH_ADVISER_DEV": "1" if dev else "0",
             "THOTH_LOG_ADVISER": "DEBUG" if debug else "INFO",
             "THOTH_ADVISER_RECOMMENDATION_TYPE": recommendation_type,
+            "THOTH_AUTHENTICATED_ADVISE": "1" if authenticated else "0",
             "THOTH_ADVISER_PREDICTOR_CONFIG": (
                 json.dumps(predictor_config) if predictor_config else "{}"
             ),
