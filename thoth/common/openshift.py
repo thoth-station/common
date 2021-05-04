@@ -1506,11 +1506,11 @@ class OpenShift:
 
     def schedule_mi_workflow(
         self,
-        repository: str,
+        repository: Optional[str] = None,
         entities: Optional[str] = None,
         knowledge_path: Optional[str] = None,
-        mi_used_for_thoth: bool = False,
-        mi_merge: bool = False,
+        mi_used_for_thoth: Optional[bool] = False,
+        mi_merge: Optional[bool] = False,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
