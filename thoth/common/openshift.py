@@ -1510,6 +1510,7 @@ class OpenShift:
         entities: Optional[str] = None,
         knowledge_path: Optional[str] = None,
         mi_used_for_thoth: bool = False,
+        mi_merge: bool = False,
         *,
         job_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -1526,6 +1527,7 @@ class OpenShift:
             "ENTITIES": entities,
             "KNOWLEDGE_PATH": knowledge_path,
             "MI_THOTH": "1" if mi_used_for_thoth else "0",
+            "MI_MERGE": "1" if mi_merge else "0",
         }
 
         return self._schedule_workflow(
