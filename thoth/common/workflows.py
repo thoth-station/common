@@ -576,14 +576,14 @@ class WorkflowManager:
         if not self.openshift.infra_namespace:
             raise ConfigurationError("Infra namespace was not provided.")
 
-        if not self.openshift.graph_namespace:
-            raise ConfigurationError("Graph namespace was not provided.")
+        if not self.openshift.middletier_namespace:
+            raise ConfigurationError("Middletier namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
 
         workflow_id: Optional[str] = self.submit_workflow_from_template(
-            self.openshift.infra_namespace,
+            self.openshift.middletier_namespace,
             label_selector="template=purge",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
