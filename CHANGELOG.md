@@ -7092,3 +7092,13 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Allow running authenticated provenance check (#1147)
 * :arrow_up: Automatic update of dependencies by Kebechet (#1148)
 * Provide an argument to run authenticated advises (#1146)
+
+## Release 0.29.0 (2021-05-05T19:22:28)
+### Features
+* Make graph namespace available to the OpenShift adapter (#1155)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1154)
+* Mi/feature/merge (#1153)
+### Improvements
+* Introduce methods for scheduling purge workflow (#1152)
+### Non-functional
+* Minor improvements to docs (#1151)
