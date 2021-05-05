@@ -71,6 +71,7 @@ class OpenShift:
         middletier_namespace: Optional[str] = None,
         backend_namespace: Optional[str] = None,
         infra_namespace: Optional[str] = None,
+        graph_namespace: Optional[str] = None,
         amun_infra_namespace: Optional[str] = None,
         amun_inspection_namespace: Optional[str] = None,
         kubernetes_api_url: Optional[str] = None,
@@ -147,6 +148,7 @@ class OpenShift:
         self.backend_namespace = backend_namespace or os.getenv(
             "THOTH_BACKEND_NAMESPACE"
         )
+        self.graph_namespace = graph_namespace or os.getenv("THOTH_GRAPH_NAMESPACE")
         self.infra_namespace = infra_namespace or os.getenv("THOTH_INFRA_NAMESPACE")
         self.kubernetes_api_url = kubernetes_api_url or os.getenv(
             "KUBERNETES_API_URL", "https://kubernetes.default.svc.cluster.local"
