@@ -7102,3 +7102,7 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Introduce methods for scheduling purge workflow (#1152)
 ### Non-functional
 * Minor improvements to docs (#1151)
+
+## Release 0.29.1 (2021-05-05T19:52:59)
+### Features
+* Run purge workflows in middletier namespace (#1158)
