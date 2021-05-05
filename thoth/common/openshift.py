@@ -47,6 +47,7 @@ from .helpers import (
     _get_incluster_token_file,
     get_service_account_token,
     normalize_os_version,
+    format_datetime,
 )
 from .enums import ThothAdviserIntegrationEnum
 
@@ -1980,3 +1981,89 @@ class OpenShift:
         )
         to_ret: Dict[str, Any] = wf["status"]
         return to_ret
+
+    def schedule_purge_solver_job(
+        self,
+        *,
+        os_name: str,
+        os_version: str,
+        python_version: str,
+        debug: bool = False,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a job for purging solver data."""
+        workflow_id = job_id or self.generate_id("purge-solver")
+        template_parameters = {
+            "THOTH_PURGE_JOB_SUBCOMMAND": "solver",
+            "THOTH_PURGE_WORKFLOW_ID": workflow_id,
+            "THOTH_PURGE_OPERATING_SYSTEM_NAME": os_name,
+            "THOTH_PURGE_OPERATING_SYSTEM_VERSION": os_version,
+            "THOTH_PURGE_PYTHON_VERSION": python_version,
+            "THOTH_PURGE_DEBUG": str(int(debug)),
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_purge,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
+    def schedule_purge_adviser_job(
+        self,
+        *,
+        end_datetime: Optional[datetime.datetime] = None,
+        adviser_version: Optional[str] = None,
+        debug: bool = False,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a job for purging adviser data."""
+        workflow_id = job_id or self.generate_id("purge-adviser")
+        template_parameters = {
+            "THOTH_PURGE_JOB_SUBCOMMAND": "adviser",
+            "THOTH_PURGE_WORKFLOW_ID": workflow_id,
+            "THOTH_PURGE_ADVISER_END_DATETIME": format_datetime(end_datetime)
+            if end_datetime
+            else "",
+            "THOTH_PURGE_ADVISER_VERSION": adviser_version if adviser_version else "",
+            "THOTH_PURGE_DEBUG": str(int(debug)),
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_purge,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
+
+    def schedule_purge_package_extract_job(
+        self,
+        *,
+        end_datetime: Optional[datetime.datetime] = None,
+        package_extract_version: Optional[str] = None,
+        debug: bool = False,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule a job for purging package-extract data."""
+        workflow_id = job_id or self.generate_id("purge-package-extract")
+        template_parameters = {
+            "THOTH_PURGE_JOB_SUBCOMMAND": "package-extract",
+            "THOTH_PURGE_WORKFLOW_ID": workflow_id,
+            "THOTH_PURGE_PACKAGE_EXTRACT_END_DATETIME": format_datetime(end_datetime)
+            if end_datetime
+            else "",
+            "THOTH_PURGE_PACKAGE_EXTRACT_VERSION": package_extract_version
+            if package_extract_version
+            else "",
+            "THOTH_PURGE_DEBUG": str(int(debug)),
+        }
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_purge,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
