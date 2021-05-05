@@ -1588,11 +1588,13 @@ class OpenShift:
             "THOTH_MESSAGE_TYPE": message_type,
         }
 
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_kebechet_administrator,
             parameters={
                 "template_parameters": template_parameters,
-                "workflow_parameters": {},
+                "workflow_parameters": workflow_parameters,
             },
         )
 
