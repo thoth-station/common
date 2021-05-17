@@ -908,6 +908,7 @@ class OpenShift:
         packages: str,
         *,
         indexes: Optional[List[str]] = None,
+        force_sync: bool = False,
         debug: bool = False,
         transitive: bool = False,
     ) -> typing.List[str]:
@@ -918,6 +919,7 @@ class OpenShift:
                 packages=packages,
                 solver=solver_name,
                 indexes=indexes,
+                force_sync=force_sync,
                 debug=debug,
                 transitive=transitive,
             )
@@ -932,6 +934,7 @@ class OpenShift:
         solver: str,
         *,
         indexes: Optional[List[str]] = None,
+        force_sync: bool = False,
         debug: bool = False,
         transitive: bool = True,
         job_id: Optional[str] = None,
@@ -949,6 +952,7 @@ class OpenShift:
             "THOTH_SOLVER_PACKAGES": packages.replace("\n", "\\n"),
             "THOTH_SOLVER_NO_TRANSITIVE": int(not transitive),
             "THOTH_SOLVER_INDEXES": ",".join(indexes) if indexes else "",
+            "THOTH_FORCE_SYNC": int(force_sync),
             "THOTH_LOG_SOLVER": "DEBUG" if debug else "INFO",
         }
 
