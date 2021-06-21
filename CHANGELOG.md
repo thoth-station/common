@@ -7106,3 +7106,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 ## Release 0.29.1 (2021-05-05T19:52:59)
 ### Features
 * Run purge workflows in middletier namespace (#1158)
+
+## Release 0.30.0 (2021-06-10T20:33:52)
+### Features
+* Add thoth.common to mypy.ini
+* Provide force_sync to solver schedule methods
+* :hatched_chick: update the prow resource limits (#1163)
