@@ -26,7 +26,7 @@ presubmits:
     context: aicoe-ci/prow/pytest
     spec:
       containers:
-        - image: quay.io/thoth-station/thoth-pytest-py38:v0.12.8
+        - image: quay.io/thoth-station/thoth-pytest-py38:v0.12.9
           command:
              - "/bin/run-pytest"
           resources:
