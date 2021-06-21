@@ -1,6 +1,22 @@
 Thoth Common
 ------------
 
+.. image:: https://img.shields.io/github/v/tag/thoth-station/common?style=plastic
+  :target: https://github.com/thoth-station/common/releases
+  :alt: GitHub tag (latest by date)
+
+.. image:: https://img.shields.io/pypi/v/thoth-common?style=plastic
+  :target: https://pypi.org/project/thoth-common
+  :alt: PyPI - Module Version
+
+.. image:: https://img.shields.io/pypi/l/thoth-common?style=plastic
+  :target: https://pypi.org/project/thoth-common
+  :alt: PyPI - License
+
+.. image:: https://img.shields.io/pypi/dm/thoth-common?style=plastic
+  :target: https://pypi.org/project/thoth-common
+  :alt: PyPI - Downloads
+
 A library used in project `Thoth <https://thoth-station.ninja>`_. It's aim is
 to provide core utilities for logger setup, manipulation with datetimes and
 similar handy helpers. Namely, you can find:
