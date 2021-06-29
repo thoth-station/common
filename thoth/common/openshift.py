@@ -37,7 +37,6 @@ from typing import Tuple
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
 from .exceptions import ThothCommonException
 from .exceptions import NotKnownThothIntegration
-from .exceptions import QebHwtInputsMissing
 from .exceptions import KebechetInputsMissing
 from .exceptions import NotFoundException
 from .exceptions import ConfigurationError
@@ -1280,21 +1279,6 @@ class OpenShift:
             )
 
     @staticmethod
-    def verify_github_app_inputs(
-        github_event_type: Optional[str],
-        github_check_run_id: Optional[int],
-        github_installation_id: Optional[int],
-        github_base_repo_url: Optional[str],
-        origin: Optional[str],
-    ) -> None:
-        """Verify if Thoth GitHub App integration inputs are correct."""
-        parameters = locals()
-        if not all(parameters.values()):
-            raise QebHwtInputsMissing(
-                f"Not all inputs to schedule Qeb-Hwt GitHub App are provided: {parameters}"
-            )
-
-    @staticmethod
     def verify_kebechet_inputs(
         origin: Optional[str],
     ) -> None:
@@ -1308,22 +1292,9 @@ class OpenShift:
     def verify_integration_inputs(
         self,
         source_type: Optional[ThothAdviserIntegrationEnum],
-        github_event_type: Optional[str] = None,
-        github_check_run_id: Optional[int] = None,
-        github_installation_id: Optional[int] = None,
-        github_base_repo_url: Optional[str] = None,
         origin: Optional[str] = None,
     ) -> None:
         """Verify if inputs for registered Thoth integrations are correct."""
-        if source_type is ThothAdviserIntegrationEnum.GITHUB_APP:
-            self.verify_github_app_inputs(
-                github_event_type=github_event_type,
-                github_check_run_id=github_check_run_id,
-                github_installation_id=github_installation_id,
-                github_base_repo_url=github_base_repo_url,
-                origin=origin,
-            )
-
         if source_type is ThothAdviserIntegrationEnum.KEBECHET:
             self.verify_kebechet_inputs(origin=origin)
 
@@ -1468,43 +1439,6 @@ class OpenShift:
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_provenance_checker,
-            parameters={
-                "template_parameters": template_parameters,
-                "workflow_parameters": workflow_parameters,
-            },
-        )
-
-    def schedule_qebhwt_workflow(
-        self,
-        github_event_type: str,
-        github_check_run_id: int,
-        github_installation_id: int,
-        github_base_repo_url: str,
-        github_head_repo_url: str,
-        origin: str,
-        revision: str,
-        host: str,
-        *,
-        job_id: Optional[str] = None,
-    ) -> Optional[str]:
-        """Schedule Workflow for Qeb-Hwt GitHub App.."""
-        workflow_id = job_id or self.generate_id("qeb-hwt")
-        template_parameters = {
-            "WORKFLOW_ID": workflow_id,
-            "GITHUB_EVENT_TYPE": github_event_type,
-            "GITHUB_CHECK_RUN_ID": str(github_check_run_id),
-            "GITHUB_INSTALLATION_ID": str(github_installation_id),
-            "GITHUB_BASE_REPO_URL": github_base_repo_url,
-            "GITHUB_HEAD_REPO_URL": github_head_repo_url,
-            "ORIGIN": origin,
-            "REVISION": revision,
-            "THOTH_HOST": host,
-        }
-
-        workflow_parameters = self._assign_workflow_parameters_for_ceph()
-
-        return self._schedule_workflow(
-            workflow=self.workflow_manager.submit_qebhwt,
             parameters={
                 "template_parameters": template_parameters,
                 "workflow_parameters": workflow_parameters,

@@ -786,31 +786,6 @@ class WorkflowManager:
 
         return workflow_id
 
-    def submit_qebhwt(
-        self,
-        template_parameters: Optional[Dict[str, str]] = None,
-        workflow_parameters: Optional[Dict[str, Any]] = None,
-    ) -> Optional[str]:
-        """Submit Workflow for Qeb-Hwt GitHub App."""
-        if not self.openshift.infra_namespace:
-            raise ConfigurationError("Infra namespace was not provided.")
-
-        if not self.openshift.backend_namespace:
-            raise ConfigurationError("Backend namespace was not provided.")
-
-        template_parameters = template_parameters or {}
-        workflow_parameters = workflow_parameters or {}
-
-        workflow_id: Optional[str] = self.submit_workflow_from_template(
-            self.openshift.infra_namespace,
-            label_selector="template=qeb-hwt",
-            template_parameters=template_parameters,
-            workflow_parameters=workflow_parameters,
-            workflow_namespace=self.openshift.backend_namespace,
-        )
-
-        return workflow_id
-
     def submit_security_indicator(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
