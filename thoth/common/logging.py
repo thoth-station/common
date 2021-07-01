@@ -325,9 +325,9 @@ def init_logging(
             sentry_sdk_init(
                 _SENTRY_DSN,
                 environment=environment,
-                integrations=integrations,
+                integrations=integrations,  # type: ignore
                 before_send=before_send_handler,
-                **sentry_sdk_init_kwargs,
+                **sentry_sdk_init_kwargs,  # type: ignore
             )
         except Exception:
             root_logger.exception(

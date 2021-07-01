@@ -1310,10 +1310,6 @@ class OpenShift:
         authenticated: bool = False,
         debug: bool = False,
         job_id: Optional[str] = None,
-        github_event_type: Optional[str] = None,
-        github_check_run_id: Optional[int] = None,
-        github_installation_id: Optional[int] = None,
-        github_base_repo_url: Optional[str] = None,
         re_run_adviser_id: Optional[str] = None,
         source_type: Optional[str] = None,
         kebechet_metadata: Optional[Dict[str, Any]] = None,
@@ -1334,10 +1330,6 @@ class OpenShift:
 
         self.verify_integration_inputs(
             source_type=source_type_enum,
-            github_event_type=github_event_type,
-            github_check_run_id=github_check_run_id,
-            github_installation_id=github_installation_id,
-            github_base_repo_url=github_base_repo_url,
             origin=origin,
         )
 
@@ -1353,10 +1345,6 @@ class OpenShift:
             ),
             "THOTH_ADVISER_METADATA": json.dumps(
                 {
-                    "github_event_type": github_event_type,
-                    "github_check_run_id": github_check_run_id,
-                    "github_installation_id": github_installation_id,
-                    "github_base_repo_url": github_base_repo_url,
                     "origin": origin,
                     "re_run_adviser_id": re_run_adviser_id,
                     "source_type": source_type if source_type is not None else None,
