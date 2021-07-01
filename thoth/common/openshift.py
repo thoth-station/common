@@ -25,6 +25,7 @@ import typing
 import json
 import random
 import urllib3
+from pathlib import Path
 
 from urllib.parse import urlparse
 
@@ -1528,11 +1529,15 @@ class OpenShift:
                                        multiple entities are in form of Foo,Bar,...
         """
         workflow_id = job_id or self.generate_id("mi")
+
+        deployment_name = os.environ["THOTH_DEPLOYMENT_NAME"]
+        path = Path(deployment_name).joinpath("mi").joinpath(knowledge_path)
+
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "REPOSITORY": repository,
             "ENTITIES": entities,
-            "KNOWLEDGE_PATH": knowledge_path,
+            "KNOWLEDGE_PATH": path,
             "MI_THOTH": "1" if mi_used_for_thoth else "0",
             "MI_MERGE": "1" if mi_merge else "0",
         }
