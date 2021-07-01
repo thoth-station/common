@@ -37,10 +37,6 @@ class NotKnownThothIntegration(ThothCommonException):
     """An exception raised if the given integration is not known to Thoth."""
 
 
-class QebHwtInputsMissing(ThothCommonException):
-    """An exception raised if there are inputs missing for QebHwt Github App."""
-
-
 class KebechetInputsMissing(ThothCommonException):
     """An exception raised if there are inputs missing for Kebechet."""
 
