@@ -7112,3 +7112,15 @@ Starting with this release we have a Zuul-CI pipeline that:
 * Add thoth.common to mypy.ini
 * Provide force_sync to solver schedule methods
 * :hatched_chick: update the prow resource limits (#1163)
+
+## Release 0.31.0 (2021-07-01T18:51:47)
+### Features
+* Remove from adviser method
+* :medal_sports: set badges for easy access to content (#1175)
+* :arrow_up: Automatic update of dependencies by Kebechet (#1168)
+### Bug Fixes
+* :arrow_up: updating the pytest fixes
+### Improvements
+* use numbers in enums
+* Use explicit values for enums
+* Remove qeb-hwt and github-app bits
