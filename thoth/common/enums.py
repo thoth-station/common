@@ -23,10 +23,10 @@ from enum import Enum, auto
 class ThothAdviserIntegrationEnum(Enum):
     """Class for Thoth Adviser integrations."""
 
-    CLI = "CLI"
-    KEBECHET = "KEBECHET"
-    S2I = "S2I"
-    JUPYTER_NOTEBOOK = "JUPYTER_NOTEBOOK"
+    CLI = 1
+    KEBECHET = 2
+    S2I = 3
+    JUPYTER_NOTEBOOK = 5
 
 
 class InternalTriggerEnum(Enum):
