@@ -1315,6 +1315,7 @@ class OpenShift:
         kebechet_metadata: Optional[Dict[str, Any]] = None,
         justification: Optional[List[Dict[str, Any]]] = None,
         stack_info: Optional[List[Dict[str, Any]]] = None,
+        package_update_info: Optional[Dict[str, str]] = None,
     ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1362,6 +1363,11 @@ class OpenShift:
 
         if count is not None:
             template_parameters["THOTH_ADVISER_COUNT"] = str(count)
+
+        if package_update_info:
+            template_parameters["THOTH_ADVISER_DEPLOYMENT_PACKAGE_UPDATE"] = json.dumps(
+                package_update_info
+            )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
 
