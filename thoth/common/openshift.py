@@ -48,7 +48,7 @@ from .helpers import (
     normalize_os_version,
     format_datetime,
 )
-from .enums import ThothAdviserIntegrationEnum
+from .enums import ThothAdviserIntegrationEnum, InternalTriggerEnum
 
 from typing import TYPE_CHECKING
 
@@ -1315,7 +1315,6 @@ class OpenShift:
         kebechet_metadata: Optional[Dict[str, Any]] = None,
         justification: Optional[List[Dict[str, Any]]] = None,
         stack_info: Optional[List[Dict[str, Any]]] = None,
-        package_update_info: Optional[Dict[str, str]] = None,
     ) -> Optional[str]:
         """Schedule an adviser run."""
         if not self.backend_namespace:
@@ -1364,9 +1363,17 @@ class OpenShift:
         if count is not None:
             template_parameters["THOTH_ADVISER_COUNT"] = str(count)
 
-        if package_update_info:
+        if (
+            kebechet_metadata
+            and kebechet_metadata.get("message_justification")
+            == InternalTriggerEnum.NEW_RELEASE.value
+        ):
             template_parameters["THOTH_ADVISER_DEPLOYMENT_PACKAGE_UPDATE"] = json.dumps(
-                package_update_info
+                {
+                    "package_name": kebechet_metadata.get("package_name"),
+                    "package_version": kebechet_metadata.get("package_version"),
+                    "index_url": kebechet_metadata.get("package_index"),
+                }
             )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
