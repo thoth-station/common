@@ -7124,3 +7124,9 @@ Starting with this release we have a Zuul-CI pipeline that:
 * use numbers in enums
 * Use explicit values for enums
 * Remove qeb-hwt and github-app bits
+
+## Release 0.32.0 (2021-07-08T13:57:35)
+### Features
+* get update info from kebechet meta
+* :arrow_up: Automatic update of dependencies by Kebechet
+* add function argument to add value to template parameter for update advises
