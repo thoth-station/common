@@ -1709,7 +1709,7 @@ class OpenShift:
             if repositories is not None and repositories != ""
             else []
         )
-        return (repos, orgs)
+        return ([r.split() for r in repos], [o.split() for o in orgs])
 
     @staticmethod
     def parse_cpu_spec(cpu_spec: typing.Optional[str]) -> typing.Optional[float]:
