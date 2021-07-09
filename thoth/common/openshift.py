@@ -888,6 +888,21 @@ class OpenShift:
             },
         )
 
+    def get_cache_expiration_configuration(self) -> Optional[int]:
+        """Retrieve cache expiration configuration [s]."""
+        if not self.frontend_namespace:
+            raise ConfigurationError(
+                "Frontend namespace is required in order to list solvers"
+            )
+
+        cm = self.get_configmap("user-api", namespace=self.frontend_namespace)
+        cache_expiration_time: Optional[int] = cm["data"].get("cache-expiration")
+        if not cache_expiration_time:
+            _LOGGER.warning("No cache expiration time identifed in user-api ConfigMap")
+            return None
+
+        return cache_expiration_time
+
     def get_solver_names(self) -> List[str]:
         """Retrieve name of solvers available in installation."""
         if not self.infra_namespace:
