@@ -35,10 +35,10 @@ from typing import Optional
 from typing import Tuple
 
 from openshift.dynamic.exceptions import NotFoundError as OpenShiftNotFoundError
-from .exceptions import ThothCommonException
-from .exceptions import NotKnownThothIntegration
-from .exceptions import KebechetInputsMissing
-from .exceptions import NotFoundException
+from .exceptions import ThothCommonExceptionError
+from .exceptions import NotKnownThothIntegrationError
+from .exceptions import KebechetInputsMissingError
+from .exceptions import NotFoundExceptionError
 from .exceptions import ConfigurationError
 from .exceptions import SolverNameParseError
 from .helpers import (
@@ -347,7 +347,7 @@ class OpenShift:
         )
 
         if response.status_code == 404:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"Pod with id {pod_id} was not found in namespace {namespace}"
             )
 
@@ -359,7 +359,7 @@ class OpenShift:
             # If Pod has not been initialized yet, there is returned 400 status code. Return None in this case.
             return None
         elif response.status_code == 400:
-            raise ThothCommonException(
+            raise ThothCommonExceptionError(
                 f"Failed to obtain logs, container name has to be specified: {response.json()['message']}"
             )
 
@@ -367,7 +367,7 @@ class OpenShift:
             response.raise_for_status()
         except Exception as exc:
             _LOGGER.error("Error response when obtaining pod logs: %r", response.json())
-            raise ThothCommonException(
+            raise ThothCommonExceptionError(
                 f"Failed to obtain logs for pod: {str(exc)}"
             ) from exc
 
@@ -384,7 +384,7 @@ class OpenShift:
             if node_info["displayName"] == node_name:
                 return pod_name  # type: ignore
 
-        raise NotFoundException(
+        raise NotFoundExceptionError(
             f"No node named {node_name!r} found in workflow {workflow_id!r} in namespace {namespace!r}"
         )
 
@@ -419,7 +419,7 @@ class OpenShift:
         )
 
         if response.status_code == 404:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"Build with id {build_id} was not found in namespace {namespace}"
             )
 
@@ -450,7 +450,7 @@ class OpenShift:
         )
 
         if response.status_code == 404:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"BuildConfig with id {buildconfig_id} was not found in namespace {namespace}"
             )
 
@@ -481,7 +481,7 @@ class OpenShift:
         )
 
         if response.status_code == 404:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"Build with id {build_id} was not found in namespace {namespace}"
             )
 
@@ -503,7 +503,7 @@ class OpenShift:
                 namespace=namespace, name=pod_id
             )
         except openshift.dynamic.exceptions.NotFoundError as exc:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"The given pod with id {pod_id} could not be found"
             ) from exc
 
@@ -585,7 +585,9 @@ class OpenShift:
                     f"Multiple pods for the same job name selector {job_id} found"
                 )
 
-            raise NotFoundException(f"Job with the given id {job_id} was not found")
+            raise NotFoundExceptionError(
+                f"Job with the given id {job_id} was not found"
+            )
 
         result: str = response["items"][0]["metadata"]["name"]
 
@@ -606,7 +608,9 @@ class OpenShift:
         _LOGGER.debug("OpenShift response for pod ids from job: %r", response)
 
         if not len(response.get("items", [])):
-            raise NotFoundException(f"Job with the given id {job_id} was not found")
+            raise NotFoundExceptionError(
+                f"Job with the given id {job_id} was not found"
+            )
 
         result: List[str] = [pod["metadata"]["name"] for pod in response["items"]]
 
@@ -621,7 +625,7 @@ class OpenShift:
             )
             return result
         except OpenShiftNotFoundError as exc:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"Configmap {configmap_id!r} not found in namespace {namespace!r}"
             ) from exc
 
@@ -672,7 +676,7 @@ class OpenShift:
             job_status["completions"] = job["spec"]["completions"]
 
         except OpenShiftNotFoundError as exc:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"Job {job_id!r} not found in namespace {namespace!r}"
             ) from exc
 
@@ -713,7 +717,7 @@ class OpenShift:
                 api_version="batch/v1", kind="Job"
             ).get(namespace=namespace, label_selector=label_selector)
         except openshift.dynamic.exceptions.NotFoundError as exc:
-            raise NotFoundException(
+            raise NotFoundExceptionError(
                 f"No Jobs with label {label_selector} could be found"
             ) from exc
 
@@ -1288,7 +1292,7 @@ class OpenShift:
             source_type not in ThothAdviserIntegrationEnum.__members__
             and source_type is not None
         ):
-            raise NotKnownThothIntegration(
+            raise NotKnownThothIntegrationError(
                 f"This integration {source_type} is not provided \
                     in Thoth: {ThothAdviserIntegrationEnum.__members__.keys()}"
             )
@@ -1300,7 +1304,7 @@ class OpenShift:
         """Verify if Thoth Kebechet integration inputs are correct."""
         parameters = locals()
         if not all(parameters.values()):
-            raise KebechetInputsMissing(
+            raise KebechetInputsMissingError(
                 f"Not all inputs to schedule Kebechet are provided: {parameters}"
             )
 
@@ -1856,7 +1860,7 @@ class OpenShift:
                     response.to_dict(),
                 )
             except OpenShiftNotFoundError as exc:
-                raise NotFoundException(
+                raise NotFoundExceptionError(
                     f"The given Workflow {name} could not be found"
                 ) from exc
 
@@ -1878,7 +1882,7 @@ class OpenShift:
                     response.to_dict(),
                 )
             except OpenShiftNotFoundError as exc:
-                raise NotFoundException(
+                raise NotFoundExceptionError(
                     f"The given Workflow containing label {label_selector} could not be found"
                 ) from exc
 
@@ -1910,8 +1914,8 @@ class OpenShift:
                 "started_at": wf_status.get("startedAt"),
                 "state": wf_status.get("phase", "pending").lower(),
             }
-        except NotFoundException as exc:
-            raise NotFoundException(
+        except NotFoundExceptionError as exc:
+            raise NotFoundExceptionError(
                 f"Requested status for analysis {workflow_id!r} was not found"
             ) from exc
         return status
