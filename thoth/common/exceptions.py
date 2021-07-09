@@ -17,29 +17,29 @@
 """Exceptions used within thoth-common package."""
 
 
-class ThothCommonException(Exception):
+class ThothCommonExceptionError(Exception):
     """A base class for Thoth-common exception hierarchy."""
 
 
-class NotFoundException(ThothCommonException):
+class NotFoundExceptionError(ThothCommonExceptionError):
     """Raised if the given resource cannot be found."""
 
 
-class ConfigurationError(ThothCommonException):
+class ConfigurationError(ThothCommonExceptionError):
     """Raised on miss-configuration issues."""
 
 
-class WorkflowError(ThothCommonException):
+class WorkflowError(ThothCommonExceptionError):
     """Raised on workflow related issues."""
 
 
-class NotKnownThothIntegration(ThothCommonException):
+class NotKnownThothIntegrationError(ThothCommonExceptionError):
     """An exception raised if the given integration is not known to Thoth."""
 
 
-class KebechetInputsMissing(ThothCommonException):
+class KebechetInputsMissingError(ThothCommonExceptionError):
     """An exception raised if there are inputs missing for Kebechet."""
 
 
-class SolverNameParseError(ThothCommonException):
+class SolverNameParseError(ThothCommonExceptionError):
     """Raised if unable to determine solver information out of solver name run."""
