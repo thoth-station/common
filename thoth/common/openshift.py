@@ -1490,7 +1490,7 @@ class OpenShift:
             "KNOWLEDGE_PATH": knowledge_path,
             "MI_THOTH": "1" if mi_used_for_thoth else "0",
             "MI_MERGE": "1" if mi_merge else "0",
-            "MI_MERGE_PATH": mi_merge_path,
+            "MI_MERGE_PATH": mi_merge_path or "",
         }
 
         return self._schedule_workflow(
