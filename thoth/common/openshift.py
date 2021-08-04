@@ -1470,6 +1470,7 @@ class OpenShift:
         repository: Optional[str] = None,
         entities: Optional[str] = None,
         knowledge_path: Optional[str] = None,
+        mi_merge_path: Optional[str] = None,
         mi_used_for_thoth: Optional[bool] = False,
         mi_merge: Optional[bool] = False,
         *,
@@ -1486,7 +1487,8 @@ class OpenShift:
             "WORKFLOW_ID": workflow_id,
             "REPOSITORY": repository,
             "ENTITIES": entities,
-            "KNOWLEDGE_PATH": knowledge_path,
+            "KNOWLEDGE_PATH": knowledge_path or "",
+            "MI_MERGE_PATH": mi_merge_path or "",
             "MI_THOTH": "1" if mi_used_for_thoth else "0",
             "MI_MERGE": "1" if mi_merge else "0",
         }
