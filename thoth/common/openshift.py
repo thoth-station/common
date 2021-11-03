@@ -2027,3 +2027,20 @@ class OpenShift:
                 "workflow_parameters": {},
             },
         )
+
+    def schedule_thoth_repo_init(
+        self, project_url: str, *, job_id: Optional[str] = None
+    ) -> Optional[str]:
+        """Schedule a workflow for running initial thoth-advise on a repo."""
+        workflow_id = job_id or self.generate_id("thoth-repo-init")
+        template_parameters = {
+            "WORKFLOW_ID": workflow_id,
+            "PROJECT_URL": project_url,
+        }
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_thoth_repo_init,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": {},
+            },
+        )
