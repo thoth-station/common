@@ -885,3 +885,25 @@ class WorkflowManager:
         )
 
         return workflow_id
+
+    def submit_thoth_repo_init(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Submit repo initialization workflow."""
+        if not self.openshift.backend_namespace:
+            raise ConfigurationError("Backend namespace was not provided.")
+
+        if not self.openshift.infra_namespace:
+            raise ConfigurationError("Infra namespace was not provided.")
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.infra_namespace,
+            label_selector="template=thoth-repo-init",
+            template_parameters=template_parameters or {},
+            workflow_parameters=workflow_parameters or {},
+            workflow_namespace=self.openshift.backend_namespace,
+        )
+
+        return workflow_id
