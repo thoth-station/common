@@ -34,6 +34,15 @@ from .operating_system import OperatingSystem
 from ..exceptions import ConfigurationError
 
 _LOGGER = logging.getLogger(__name__)
+_DEFAULT_PLATFORM = "linux-x86_64"
+
+
+def _platform_converter(value: Optional[str]) -> str:
+    """Make sure platform is correctly converted on None value."""
+    if value is None:
+        return _DEFAULT_PLATFORM
+
+    return value
 
 
 @attr.s(slots=True)
@@ -50,7 +59,7 @@ class RuntimeEnvironment:
     mkl_version = attr.ib(type=Optional[str], default=None)
     base_image = attr.ib(type=Optional[str], default=None)
     name = attr.ib(type=Optional[str], default=None)
-    platform = attr.ib(type=Optional[str], default=None)
+    platform = attr.ib(type=str, default=_DEFAULT_PLATFORM, converter=_platform_converter)
     _python_version_tuple = attr.ib(
         type=Optional[Tuple[int, int]], default=None, init=False
     )
@@ -110,6 +119,12 @@ class RuntimeEnvironment:
             )
 
         return instance
+
+    @platform.validator
+    def _platform_validator(self, _: str, value: str) -> None:
+        """Validate platform."""
+        if value != _DEFAULT_PLATFORM:
+            raise ValueError(f"Unsupported platform {value!r}, only {_DEFAULT_PLATFORM!r} is supported")
 
     def get_python_version_tuple(self) -> Tuple[int, int]:
         """Get tuple with Python version (major, minor) information."""
