@@ -12,6 +12,7 @@ Crossroad
 * `Documentation for thoth-python <../python>`_
 * `Documentation for thoth-solver <../solver>`_
 * `Documentation for thoth-storages <../storages>`_
+* `Documentation for kebechet <../kebechet>`_
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
