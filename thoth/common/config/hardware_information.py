@@ -18,6 +18,7 @@
 """Representation of hardware available with serialization/deserialization methods."""
 
 import attr
+from typing import Optional
 
 from .base import ConfigEntryBase
 
@@ -28,6 +29,6 @@ class HardwareInformation(ConfigEntryBase):
 
     _TYPE = "hardware information"
 
-    cpu_family = attr.ib(type=int, default=None)
-    cpu_model = attr.ib(type=int, default=None)
-    gpu_model = attr.ib(type=int, default=None)
+    cpu_family = attr.ib(type=Optional[int], default=None)
+    cpu_model = attr.ib(type=Optional[int], default=None)
+    gpu_model = attr.ib(type=Optional[int], default=None)
