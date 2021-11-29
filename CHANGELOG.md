@@ -1,5 +1,17 @@
 # Changelog for the Thoth common module
 
+## Release 0.33.0 (2021-11-29T16:11:43)
+* Fix typing for CPU and GPU properties
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* add kebechet to crossroads in docs
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* increase pytest timeout
+* add method to schedule thoth-repo-init workflow
+* Move variables closer to each other
+* Assign empty string if None
+* Add merge path to schedule mi workflows
+* :arrow_up: Automatic update of dependencies by Kebechet
+
 ## [0.2.1] - 2018-Jul-10 - goern
 
 ### Fixed
