@@ -48,6 +48,7 @@ class RuntimeEnvironment:
     openmpi_version = attr.ib(type=Optional[str], default=None)
     cudnn_version = attr.ib(type=Optional[str], default=None)
     mkl_version = attr.ib(type=Optional[str], default=None)
+    labels = attr.ib(type=Optional[Dict[str, str]], default=None)
     base_image = attr.ib(type=Optional[str], default=None)
     name = attr.ib(type=Optional[str], default=None)
     platform = attr.ib(type=Optional[str], default=None)
