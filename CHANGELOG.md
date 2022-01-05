@@ -1,5 +1,8 @@
 # Changelog for the Thoth common module
 
+## Release 0.33.1 (2022-01-05T14:28:46)
+* Runtime environment entries can have labels associated
+
 ## Release 0.33.0 (2021-11-29T16:11:43)
 * Fix typing for CPU and GPU properties
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
