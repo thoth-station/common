@@ -1517,8 +1517,10 @@ class OpenShift:
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
             "WEBHOOK_PAYLOAD": json.dumps(webhook_payload),
-            "KEBECHET_SLUG": slug,
         }
+
+        if slug is not None:
+            template_parameters["KEBECHET_SLUG"] = slug
 
         return self._schedule_workflow(
             workflow=self.workflow_manager.submit_kebechet,
