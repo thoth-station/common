@@ -1,5 +1,12 @@
 # Changelog for the Thoth common module
 
+## Release 0.34.0 (2022-01-12T11:49:13)
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* if slug is None then param should not be passed
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* common project repo is not built into container image
+
 ## Release 0.33.1 (2022-01-05T14:28:46)
 * Runtime environment entries can have labels associated
 
