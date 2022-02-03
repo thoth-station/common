@@ -217,7 +217,7 @@ class OpenShift:
                 f"Python version encoded into Python solver name does not start with 'py' prefix: {solver_name!r}"
             )
 
-        python_version = ".".join(list(python_version))
+        python_version = f"{python_version[0]}.{python_version[1:]}"
         return {
             "os_name": parts[0],
             "os_version": normalize_os_version(parts[0], parts[1]),
