@@ -865,7 +865,7 @@ class OpenShift:
         ]
 
         template_parameters["THOTH_SEND_MESSAGES"] = str(
-            int(specification["send_messages"])
+            int(specification.get("send_messages", True))
         )
         template_parameters["THOTH_FORCE_SYNC"] = str(
             int(specification.get("force_sync", False))
