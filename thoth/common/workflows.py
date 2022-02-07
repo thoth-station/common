@@ -31,7 +31,7 @@ from typing import Optional
 from typing import Union
 
 from argo.workflows import client
-from argo.workflows import models
+from argo.workflows.client import models
 
 from .exceptions import ConfigurationError
 from .exceptions import WorkflowError
