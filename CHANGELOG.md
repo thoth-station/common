@@ -1,5 +1,12 @@
 # Changelog for the Thoth common module
 
+## Release 0.34.1 (2022-02-09T06:05:03)
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1222)
+* Fix parsing solver name for Python 3.10
+* :fire: Fix the send_message assignment with default
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* Enable TLS verification
+
 ## Release 0.34.0 (2022-01-12T11:49:13)
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
 * if slug is None then param should not be passed
