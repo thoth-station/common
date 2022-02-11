@@ -1,5 +1,9 @@
 # Changelog for the Thoth common module
 
+## Release 0.35.0 (2022-02-11T09:41:07)
+* Increase test timeout
+* Allow passing dependency indexes to be checked for solver
+
 ## Release 0.34.1 (2022-02-09T06:05:03)
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1222)
 * Fix parsing solver name for Python 3.10
