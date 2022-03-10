@@ -1488,7 +1488,6 @@ class OpenShift:
         :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
                                        multiple entities are in form of Foo,Bar,...
         """
-
         prefixes = [repository]
         if create_knowledge:
             prefixes.append("analysis")
@@ -1502,7 +1501,7 @@ class OpenShift:
 
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
-            "CREATE_KNOWLEDGE": create_knowledge,
+            "CREATE_KNOWLEDGE": "1" if create_knowledge else "0",
             "REPOSITORY": repository,
             "ENTITIES": entities,
             "KNOWLEDGE_PATH": knowledge_path or "",
