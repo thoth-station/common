@@ -20,7 +20,6 @@
 import os
 import sys
 import logging
-import socket
 import time
 from collections import OrderedDict
 from typing import Optional
@@ -34,10 +33,7 @@ from sentry_sdk import init as sentry_sdk_init
 from sentry_sdk.integrations.logging import ignore_logger
 import daiquiri
 import daiquiri.formatter
-from rfc5424logging import Rfc5424SysLogHandler
 
-_RSYSLOG_HOST = os.getenv("RSYSLOG_HOST")
-_RSYSLOG_PORT = os.getenv("RSYSLOG_PORT")
 _DEFAULT_LOGGING_CONF_START = "THOTH_LOG_"
 _LOGGING_ADJUSTMENT_CONF = "THOTH_ADJUST_LOGGING"
 _SENTRY_DSN = os.getenv("SENTRY_DSN")
@@ -342,25 +338,3 @@ def init_logging(
             )
     else:
         root_logger.warning("Logging to a Sentry instance is turned off")
-
-    if _RSYSLOG_HOST and _RSYSLOG_PORT:
-        root_logger.info(
-            f"Setting up logging to rsyslog endpoint {_RSYSLOG_HOST}:{_RSYSLOG_PORT}"
-        )
-
-        try:
-            syslog_handler = Rfc5424SysLogHandler(
-                address=(_RSYSLOG_HOST, int(_RSYSLOG_PORT))
-            )
-            root_logger.addHandler(syslog_handler)
-        except socket.gaierror:
-            root_logger.exception(
-                f"RSYSLOG_HOST and RSYSLOG_PORT have been set but {_RSYSLOG_HOST}:{_RSYSLOG_PORT} cannot be reached"
-            )
-    elif int(bool(_RSYSLOG_PORT)) + int(bool(_RSYSLOG_HOST)) == 1:
-        raise RuntimeError(
-            f"Please provide both RSYSLOG_HOST and RSYSLOG_PORT configuration"
-            f"in order to use rsyslog logging, host: {_RSYSLOG_HOST}, port: {_RSYSLOG_PORT}"
-        )
-    else:
-        root_logger.info("Logging to rsyslog endpoint is turned off")
