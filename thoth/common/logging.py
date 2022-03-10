@@ -20,7 +20,6 @@
 import os
 import sys
 import logging
-import socket
 import time
 from collections import OrderedDict
 from typing import Optional
