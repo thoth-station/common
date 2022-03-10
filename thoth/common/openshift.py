@@ -20,6 +20,7 @@
 import os
 import datetime
 import logging
+from venv import create
 import requests
 import typing
 import json
@@ -1473,14 +1474,13 @@ class OpenShift:
 
     def schedule_mi_workflow(
         self,
+        create_knowledge: Optional[bool] = False,
         repository: Optional[str] = None,
         entities: Optional[str] = None,
         knowledge_path: Optional[str] = None,
         mi_merge_path: Optional[str] = None,
         mi_used_for_thoth: Optional[bool] = False,
         mi_merge: Optional[bool] = False,
-        *,
-        job_id: Optional[str] = None,
     ) -> Optional[str]:
         """Schedule Meta-information Indicators Workflow.
 
@@ -1488,9 +1488,21 @@ class OpenShift:
         :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
                                        multiple entities are in form of Foo,Bar,...
         """
-        workflow_id = job_id or self.generate_id("mi")
+
+        prefixes = [repository]
+        if create_knowledge:
+            prefixes.append("analysis")
+        if mi_merge:
+            prefixes.append("merge")
+        if mi_used_for_thoth:
+            prefixes.append("thoth")
+
+        workflow_name = "-".join(prefixes)
+        workflow_id = self.generate_id(workflow_name)
+
         template_parameters = {
             "WORKFLOW_ID": workflow_id,
+            "CREATE_KNOWLEDGE": create_knowledge,
             "REPOSITORY": repository,
             "ENTITIES": entities,
             "KNOWLEDGE_PATH": knowledge_path or "",
