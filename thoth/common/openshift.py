@@ -1488,7 +1488,9 @@ class OpenShift:
         :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
                                        multiple entities are in form of Foo,Bar,...
         """
-        prefixes = [repository]
+        prefixes = []
+        if repository:
+            prefixes.append(repository)
         if create_knowledge:
             prefixes.append("analysis")
         if mi_merge:
