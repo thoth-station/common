@@ -23,6 +23,7 @@ managers:
         - fridex
         - pacospace
         - sesheta
+        - mayaCostantini
       assignees:
         - sesheta
       labels: [bot]
