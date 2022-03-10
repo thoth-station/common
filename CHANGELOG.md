@@ -1,5 +1,12 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.0 (2022-03-10T17:22:54)
+* Add username to maintainers
+* Remove [mypy-rfc5424logging] from mypy.ini
+* Drop rfc5424logging and syslog
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.35.0 (2022-02-11T09:41:07)
 * Increase test timeout
 * Allow passing dependency indexes to be checked for solver
