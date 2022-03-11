@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"rfc5424-logging-handler" = "*"
 argo-workflows = ">=3.5,<4"
 daiquiri = "*"
 requests = "*"
