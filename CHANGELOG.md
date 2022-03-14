@@ -1,5 +1,12 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.1 (2022-03-14T15:17:12)
+* Remove rfc5424-logging-handler from dependencies
+* Remove venv import
+* Make pre-commit happy
+* Remove blank line:
+* Add create_knowledge parameter, change workflow name
+
 ## Release 0.36.0 (2022-03-10T17:22:54)
 * Add username to maintainers
 * Remove [mypy-rfc5424logging] from mypy.ini
