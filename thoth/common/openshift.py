@@ -864,12 +864,15 @@ class OpenShift:
             "memory"
         ]
 
-        template_parameters["THOTH_SEND_MESSAGES"] = str(
-            int(specification.get("send_messages", True))
-        )
-        template_parameters["THOTH_FORCE_SYNC"] = str(
-            int(specification.get("force_sync", False))
-        )
+        if specification.get("send_messages") is not None:
+            template_parameters["THOTH_SEND_MESSAGES"] = str(
+                int(specification["send_messages"])
+            )
+
+        if specification.get("force_sync") is not None:
+            template_parameters["THOTH_FORCE_SYNC"] = str(
+                int(specification["force_sync"])
+            )
 
         workflow_parameters = self._assign_workflow_parameters_for_ceph()
         workflow_parameters["dockerfile"] = dockerfile
