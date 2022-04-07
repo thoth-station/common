@@ -24,6 +24,11 @@ coala = "*"
 pytest-mypy = "*"
 mypy = "*"
 pre-commit = "==2.15.0"
+types-pyyaml = "*"
+types-attrs = "*"
+stubs = "*"
+types-certifi = "*"
+types-setuptools = "*"
 
 [requires]
 python_version = "3.8"
