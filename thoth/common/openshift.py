@@ -1778,37 +1778,37 @@ class OpenShift:
 
         if memory_spec.endswith("E"):
             parsed = float(memory_spec[:-1])
-            return parsed * 1000 ** 6
+            return parsed * 1000**6
         elif memory_spec.endswith("P"):
             parsed = float(memory_spec[:-1])
-            return parsed * 1000 ** 5
+            return parsed * 1000**5
         elif memory_spec.endswith("T"):
             parsed = float(memory_spec[:-1])
-            return parsed * 1000 ** 4
+            return parsed * 1000**4
         elif memory_spec.endswith("G"):
             parsed = float(memory_spec[:-1])
-            return parsed * 1000 ** 3
+            return parsed * 1000**3
         elif memory_spec.endswith("M"):
             parsed = float(memory_spec[:-1])
-            return parsed * 1000 ** 2
+            return parsed * 1000**2
         elif memory_spec.endswith("K"):
             parsed = float(memory_spec[:-1])
             return parsed * 1000
         elif memory_spec.endswith("Ei"):
             parsed = float(memory_spec[:-2])
-            return parsed * 1024 ** 6
+            return parsed * 1024**6
         elif memory_spec.endswith("Pi"):
             parsed = float(memory_spec[:-2])
-            return parsed * 1024 ** 5
+            return parsed * 1024**5
         elif memory_spec.endswith("Ti"):
             parsed = float(memory_spec[:-2])
-            return parsed * 1024 ** 4
+            return parsed * 1024**4
         elif memory_spec.endswith("Gi"):
             parsed = float(memory_spec[:-2])
-            return parsed * 1024 ** 3
+            return parsed * 1024**3
         elif memory_spec.endswith("Mi"):
             parsed = float(memory_spec[:-2])
-            return parsed * 1024 ** 2
+            return parsed * 1024**2
         elif memory_spec.endswith("Ki"):
             parsed = float(memory_spec[:-2])
             return parsed * 1024
