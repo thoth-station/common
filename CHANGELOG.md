@@ -1,5 +1,15 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.2 (2022-04-12T14:30:11)
+* f60c5ce Replace slash with dash in repo slug [scheduling mi workflows] (#1249)
+* cc06aad Moving out the mypy as separate check
+* d2b808b Update mypy config python version to 3.8
+* 54c810c Fix pre-commit version to be ==2.15.0
+* 53b4441 Update prow image tags
+* 9c87ab5 Autoupdate pre-commit
+* 11c303f :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* e0dc247 Send messages based on template defaults, do not hardcode (#1231)
+
 ## Release 0.36.1 (2022-03-14T15:17:12)
 * Remove rfc5424-logging-handler from dependencies
 * Remove venv import
