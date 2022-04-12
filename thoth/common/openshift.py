@@ -1492,7 +1492,7 @@ class OpenShift:
         """
         prefixes = []
         if repository:
-            prefixes.append(repository)
+            prefixes.append("-".join(repository.split("/")))
         if create_knowledge:
             prefixes.append("analysis")
         if mi_merge:
