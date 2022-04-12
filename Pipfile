@@ -23,7 +23,7 @@ pylint = "*"
 coala = "*"
 pytest-mypy = "*"
 mypy = "*"
-pre-commit = "==2.0.1"
+pre-commit = "==2.15.0"
 
 [requires]
 python_version = "3.8"
