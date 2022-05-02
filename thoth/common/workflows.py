@@ -861,6 +861,27 @@ class WorkflowManager:
 
         return workflow_id
 
+    def submit_sync_job(
+        self,
+        template_parameters: Optional[Dict[str, str]] = None,
+        workflow_parameters: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Submit graph-sync workflow."""
+        if not self.openshift.backend_namespace:
+            raise ConfigurationError("Backend namespace was not provided.")
+
+        template_parameters = template_parameters or {}
+        workflow_parameters = workflow_parameters or {}
+
+        workflow_id: Optional[str] = self.submit_workflow_from_template(
+            self.openshift.backend_namespace,
+            label_selector="template=sync",
+            template_parameters=template_parameters,
+            workflow_parameters=workflow_parameters,
+            workflow_namespace=self.openshift.graph_namespace,
+        )
+        return workflow_id
+
     def submit_graph_sync(
         self,
         template_parameters: Optional[Dict[str, str]] = None,
