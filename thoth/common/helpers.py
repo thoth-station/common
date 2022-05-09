@@ -196,3 +196,16 @@ def normalize_os_version(
 
     # Discard any minor release, if present.
     return os_version.split(".", maxsplit=1)[0]
+
+
+def get_solver_parts(solver_name: str) -> str:
+    """Get the tuple (os_name, os_version, python_version) from the solver name.
+
+    Example:
+        >>> get_solver_parts("fedora-35-py310")
+        ("fedora", "35", "3.10")
+    """
+    os_name, os_version, python_version = solver_name.split("-")[1:]
+    python_version = f"{python_version[2:][0]}.{python_version[2:][1:]}"
+
+    return (os_name, os_version, python_version)
