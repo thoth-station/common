@@ -1,5 +1,11 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.3 (2022-06-03T17:31:34)
+* 0e8ae96 Update .thoth.yaml
+* 35e798c :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* 898a361 bump kubernetes version for common image
+* 1f0cfe5 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.36.2 (2022-04-12T14:30:11)
 * f60c5ce Replace slash with dash in repo slug [scheduling mi workflows] (#1249)
 * cc06aad Moving out the mypy as separate check
