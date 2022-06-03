@@ -25,7 +25,5 @@ managers:
         - sesheta
         - mayaCostantini
         - shreekarSS
-      assignees:
-        - sesheta
       labels: [bot]
       changelog_file: true
