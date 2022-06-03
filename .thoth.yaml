@@ -24,6 +24,7 @@ managers:
         - pacospace
         - sesheta
         - mayaCostantini
+        - shreekarSS
       assignees:
         - sesheta
       labels: [bot]
