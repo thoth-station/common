@@ -1081,6 +1081,36 @@ class OpenShift:
             },
         )
 
+    def schedule_sync_job(
+        self,
+        document_type: Optional[str],
+        force_sync: bool = False,
+        graceful: bool = True,
+        job_id: Optional[str] = None,
+    ) -> Optional[str]:
+        """Schedule graph sync for specific document id."""
+        if not self.middletier_namespace:
+            raise ConfigurationError(
+                "Unable to schedule graph-sync without middletier namespace being set"
+            )
+
+        sync_id = job_id or self.generate_id("sync")
+        template_parameters = {
+            "THOTH_SYNC_JOB_ID": sync_id,
+            "THOTH_DOCUMENT_TYPE": document_type,
+            "THOTH_SYNC_GRACEFUL": graceful,
+            "THOTH_SYNC_FORCE_SYNC": force_sync,
+        }
+        workflow_parameters = self._assign_workflow_parameters_for_ceph()
+
+        return self._schedule_workflow(
+            workflow=self.workflow_manager.submit_sync_job,
+            parameters={
+                "template_parameters": template_parameters,
+                "workflow_parameters": workflow_parameters,
+            },
+        )
+
     def create_config_map(
         self,
         configmap_name: str,
