@@ -868,7 +868,7 @@ class WorkflowManager:
     ) -> Optional[str]:
         """Submit graph-sync workflow."""
         if not self.openshift.backend_namespace:
-            raise ConfigurationError("Backend namespace was not provided.")
+            raise ConfigurationError("Middletier namespace was not provided.")
 
         template_parameters = template_parameters or {}
         workflow_parameters = workflow_parameters or {}
