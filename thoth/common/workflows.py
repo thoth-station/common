@@ -874,7 +874,7 @@ class WorkflowManager:
         workflow_parameters = workflow_parameters or {}
 
         workflow_id: Optional[str] = self.submit_workflow_from_template(
-            self.openshift.backend_namespace,
+            self.openshift.middletier_namespace,
             label_selector="template=sync",
             template_parameters=template_parameters,
             workflow_parameters=workflow_parameters,
