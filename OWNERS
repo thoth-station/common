@@ -2,12 +2,15 @@
 
 approvers:
   - kpostoffice
+  - harshad16
   - mayaCostantini
   - sesheta
 
 reviewers:
+  - kpostoffice
   - harshad16
+  - mayaCostantini
 
 emeritus_approvers:
   - pacospace
-  - fridex 
+  - fridex
