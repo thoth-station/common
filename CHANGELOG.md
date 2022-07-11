@@ -1,5 +1,15 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.3 (2022-07-11T17:04:39)
+* e0b56ea :recycle: HouseKeeping: Updated OWNERS and pre-commit changes (#1267)
+* 0564012 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1266)
+* fcd6755 🥹 moving @fridex in the OWNERS file, thanks for all the great work!!! (#1265)
+* f177706 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* 2a5d90b adding openshift function and schedule workflow for sync-job (#1260)
+* 35e798c :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* 898a361 bump kubernetes version for common image
+* 1f0cfe5 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.36.2 (2022-04-12T14:30:11)
 * f60c5ce Replace slash with dash in repo slug [scheduling mi workflows] (#1249)
 * cc06aad Moving out the mypy as separate check
