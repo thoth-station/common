@@ -1,5 +1,8 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.4 (2022-07-20T12:36:34)
+* b8578b1 Update OWNERS
+
 ## Release 0.36.3 (2022-07-11T17:04:39)
 * e0b56ea :recycle: HouseKeeping: Updated OWNERS and pre-commit changes (#1267)
 * 0564012 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1266)
