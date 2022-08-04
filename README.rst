@@ -107,4 +107,3 @@ Sentry:
 Remember all builtin exception classes need to be specified as in the same
 manner as ``ValueError`` is specified above.
 
-
