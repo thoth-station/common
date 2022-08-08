@@ -1,5 +1,9 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.12 (2022-08-08T17:05:56)
+* c703df2 Update README.rst
+* c2d2975 Update README.rst
+
 ## Release 0.36.11 (2022-08-04T18:43:33)
 * 22f436a Update README.rst
 
