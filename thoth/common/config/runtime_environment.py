@@ -99,9 +99,7 @@ class RuntimeEnvironment:
 
         instance = cls(
             hardware=HardwareInformation.from_dict(hardware),  # type: ignore
-            operating_system=OperatingSystem.from_dict(  # type: ignore
-                operating_system
-            ),
+            operating_system=OperatingSystem.from_dict(operating_system),
             **dict_,
         )
 
@@ -118,11 +116,13 @@ class RuntimeEnvironment:
             raise ValueError("No Python version provided")
 
         if self._python_version_tuple is None:
-            self._python_version_tuple = tuple(map(int, self.python_version.split(".", maxsplit=2)))  # type: ignore
+            self._python_version_tuple = tuple(
+                map(int, self.python_version.split(".", maxsplit=2))
+            )
 
         return self._python_version_tuple  # type: ignore
 
-    def to_dict(self, without_none: bool = False) -> Dict[str, Any]:
+    def to_dict(self, without_none: bool = False) -> Any:
         """Convert runtime environment configuration to a dict representation."""
         dict_ = attr.asdict(self)
         dict_.pop("_python_version_tuple", None)
