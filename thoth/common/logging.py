@@ -244,7 +244,7 @@ def init_logging(
         # The most straightforward way for setting up all the loggers (werkzeug, flask, gunicorn) is to
         # discard their default configuration and force them to use JSON logger configured for the root logger.
         logging._acquireLock()  # type: ignore
-        for logger in logging.Logger.manager.loggerDict.values():  # type: ignore
+        for logger in logging.Logger.manager.loggerDict.values():
             if not isinstance(logger, logging.Logger):
                 continue
             if logger.name == "gunicorn.access":
@@ -281,7 +281,7 @@ def init_logging(
 
     ignored_loggers = os.getenv("THOTH_SENTRY_IGNORE_LOGGER")
     if ignored_loggers:
-        for logger in ignored_loggers.split(","):
+        for logger in ignored_loggers.split(","):  # type: ignore
             ignore_logger(logger)
 
     ignored_exceptions = os.getenv("THOTH_SENTRY_IGNORE_EXCEPTION")

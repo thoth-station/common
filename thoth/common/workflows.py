@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Mapping
 from typing import Optional
 from typing import Union
 
@@ -172,12 +171,12 @@ class WorkflowManager:
     def __init__(
         self,
         openshift: Optional[OpenShift] = None,
-        openshift_config: Optional[Mapping[str, str]] = None,
+        openshift_config: Optional[Dict[str, str]] = None,
     ):
         """Initialize WorkflowManager instance."""
         ocp_config = openshift_config or {}
 
-        self.openshift = openshift or OpenShift(**ocp_config)
+        self.openshift = openshift or OpenShift(**ocp_config)  # type: ignore
         self.api = client.V1alpha1Api(client.ApiClient(self.openshift.configuration))
 
     def get_workflow_template(

@@ -18,9 +18,7 @@
 """A base class for configuration entries."""
 
 import logging
-from typing import Dict
-from typing import Union
-from typing import Optional
+from typing import Any, Dict
 
 import attr
 
@@ -40,7 +38,7 @@ class ConfigEntryBase:
 
         constructor_kwargs = {}
         for attribute in cls.__attrs_attrs__:  # type: ignore
-            constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)
+            constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)  # type: ignore
 
         for key, value in dict_.items():
             _LOGGER.warning(
@@ -50,12 +48,10 @@ class ConfigEntryBase:
                 value,
             )
 
-        instance = cls(**constructor_kwargs)  # type: ignore
+        instance = cls(**constructor_kwargs)
         return instance
 
-    def to_dict(
-        self, without_none: bool = False
-    ) -> Dict[str, Optional[Union[str, int]]]:
+    def to_dict(self, without_none: bool = False) -> Any:
         """Convert runtime environment object representation to a dict."""
         # We do not support nested items here.
         if without_none:
