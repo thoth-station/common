@@ -59,4 +59,4 @@ repos:
       - id: mypy
         exclude: '^(docs|tasks|tests|features)|setup\.py'
         args: [--ignore-missing-imports]
-        additional_dependencies: [types-PyYAML, types-toml, types-requests]
+        additional_dependencies: [types-PyYAML, types-toml, types-requests, attrs~=22.1.0]
