@@ -38,7 +38,7 @@ class ConfigEntryBase:
 
         constructor_kwargs = {}
         for attribute in cls.__attrs_attrs__:  # type: ignore
-            constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)
+            constructor_kwargs[attribute.name] = dict_.pop(attribute.name, None)  # type: ignore
 
         for key, value in dict_.items():
             _LOGGER.warning(

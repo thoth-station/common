@@ -99,7 +99,7 @@ class RuntimeEnvironment:
 
         instance = cls(
             hardware=HardwareInformation.from_dict(hardware),  # type: ignore
-            operating_system=OperatingSystem.from_dict(operating_system),
+            operating_system=OperatingSystem.from_dict(operating_system),  # type: ignore
             **dict_,
         )
 
@@ -116,7 +116,7 @@ class RuntimeEnvironment:
             raise ValueError("No Python version provided")
 
         if self._python_version_tuple is None:
-            self._python_version_tuple = tuple(
+            self._python_version_tuple = tuple(  # type: ignore
                 map(int, self.python_version.split(".", maxsplit=2))
             )
 
