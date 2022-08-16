@@ -1,5 +1,10 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.4 (2022-08-16T12:53:12)
+* 28f1e89 Pinned Kubernetes version to 11.0.0 (#1279)
+* f7f147a Add mypy back to pre-commit (#1275)
+* ccfc001 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.36.3 (2022-07-11T17:04:39)
 * e0b56ea :recycle: HouseKeeping: Updated OWNERS and pre-commit changes (#1267)
 * 0564012 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1266)
