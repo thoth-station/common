@@ -8,8 +8,8 @@ argo-workflows = ">=3.5,<4"
 daiquiri = "*"
 requests = "*"
 sentry-sdk = "*"
-kubernetes = ">=12.0.1"  # required pyyaml>=5.3.1
-openshift = "~=0.12.0"
+kubernetes = "~=11.0.0"  # https://github.com/thoth-station/common/issues/1273
+openshift = "==0.11.0"
 pyyaml = ">=5.3.1"
 flexmock = "*"
 jsonformatter = "*"
