@@ -1,6 +1,5 @@
 Thoth Common
 ------------
-
 .. image:: https://img.shields.io/github/v/tag/thoth-station/common?style=plastic
   :target: https://github.com/thoth-station/common/releases
   :alt: GitHub tag (latest by date)
