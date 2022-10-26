@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thoth-common"
+description = "Shared code logic in the project Thoth."
+readme = "README.rst"
+authors = [
+    { name = "Fridolin Pokorny", email = "fridolin@redhat.com" }
+]
+license = { text = "GPLv3+" }
+dynamic = [ "version", "dependencies" ]
+
+[tool.setuptools]
+zip-safe = false
+packages = ["thoth.common", "thoth.common.config"]
+
+[tool.setuptools.dynamic]
+version = {attr = "thoth.common.__version__"}
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.package-data]
+thoth.common = ["py.typed"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--timeout=90 --cov --cov-report=xml --mypy --capture=no --verbose -l -s -vv"
+testpaths = [
+    "tests"
+]
+
+[tool.coverage.run]
+source = ["thoth"]
