@@ -1520,9 +1520,12 @@ class OpenShift:
         :param entities:Optional[str]: Meta-information Indicator Entities that will be inspected
                                        multiple entities are in form of Foo,Bar,...
         """
+        # '_' is only allowed character for repository name that is not accepted in workflow name
+        allowed_repo_name = repository.replace("_", "-")
+
         prefixes = []
         if repository:
-            prefixes.append("-".join(repository.split("/")))
+            prefixes.append("-".join(allowed_repo_name.split("/")))
         if create_knowledge:
             prefixes.append("analysis")
         if mi_merge:
