@@ -21,7 +21,7 @@ version = {attr = "thoth.common.__version__"}
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.package-data]
-thoth.common = ["py.typed"]
+"thoth.common" = ["py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
