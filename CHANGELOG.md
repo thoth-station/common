@@ -1,5 +1,11 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.5 (2022-10-27T12:50:09)
+* b6d8564 Make pre-commit happy
+* 82b4364 Remove underscores from repo name
+* 6145628 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment (#1286)
+* 54280cb :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.36.4 (2022-08-16T12:53:12)
 * 28f1e89 Pinned Kubernetes version to 11.0.0 (#1279)
 * f7f147a Add mypy back to pre-commit (#1275)
