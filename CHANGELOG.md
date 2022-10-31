@@ -1,5 +1,12 @@
 # Changelog for the Thoth common module
 
+## Release 0.36.6 (2022-10-31T13:45:45)
+* bf6e947 Add @goern as approver
+* f4fa1fe Add @xtuchyna as reviewer
+* 883ab77 Add @xtuchyna as maintainer
+* d83f867 Make workflows lowercase
+* 7cbdec5 :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+
 ## Release 0.36.5 (2022-10-27T12:50:09)
 * b6d8564 Make pre-commit happy
 * 82b4364 Remove underscores from repo name
