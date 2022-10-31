@@ -5,11 +5,15 @@ approvers:
   - harshad16
   - mayaCostantini
   - sesheta
+  - xtuchyna
+  - goern
 
 reviewers:
   - kpostoffice
   - harshad16
   - mayaCostantini
+  - xtuchyna
+
 
 emeritus_approvers:
   - pacospace
