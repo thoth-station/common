@@ -1523,7 +1523,7 @@ class OpenShift:
         prefixes = []
         if repository:
             # '_' is only allowed character for repository name that is not accepted in workflow name
-            prefixes.append("-".join(repository.replace("_", "-").split("/")))
+            prefixes.append("-".join(repository.lower().replace("_", "-").split("/")))
         if create_knowledge:
             prefixes.append("analysis")
         if mi_merge:
